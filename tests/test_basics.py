@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.basics import (
+from graphcalc.basics import (
     order,
     size,
     connected,

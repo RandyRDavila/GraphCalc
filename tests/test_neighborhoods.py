@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.neighborhoods import (
+from graphcalc.neighborhoods import (
     neighborhood,
     closed_neighborhood,
     set_neighbors,

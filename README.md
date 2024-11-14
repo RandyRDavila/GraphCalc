@@ -1,8 +1,8 @@
-# graphcomp
+# graphcalc
 
 ## Overview
 
-`graphcomp` is a Python package for performing a variety of graph computations, including maximum clique detection, chromatic number calculation, and vertex cover identification. It is built on top of `networkx` and provides efficient implementations of fundamental graph theory algorithms.
+`graphcalc` is a Python package for performing a variety of graph computations, including maximum clique detection, chromatic number calculation, and vertex cover identification. It is built on top of `networkx` and provides efficient implementations of fundamental graph theory algorithms.
 
 ## Features
 
@@ -13,11 +13,9 @@
 
 ## Installation
 
-To install `graphcomp`, make sure you have Python 3.7 or higher, then install it:
+To install `graphcalc`, make sure you have Python 3.7 or higher, then install it:
 
 ```bash
-git clone https://github.com/yourusername/graphcomp.git
-cd graphcomp
-pip install -e .
+pip install graphcalc
 ```
 

@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.degree_sequence_invariants import (
+from graphcalc.degree_sequence_invariants import (
     sub_k_domination_number,
     slater,
     sub_total_domination_number,

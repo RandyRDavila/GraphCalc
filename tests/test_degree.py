@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.degree import (
+from graphcalc.degree import (
     degree,
     degree_sequence,
     average_degree,

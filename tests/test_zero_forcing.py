@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.zero_forcing import (
+from graphcalc.zero_forcing import (
     is_zero_forcing_set,
     minimum_zero_forcing_set,
     zero_forcing_number,

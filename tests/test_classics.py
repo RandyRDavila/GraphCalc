@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.classics import (
+from graphcalc.classics import (
     maximum_clique,
     clique_number,
     maximum_independent_set,

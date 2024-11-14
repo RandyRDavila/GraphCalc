@@ -1,5 +1,5 @@
 import networkx as nx
-from graphcomp.domination import (
+from graphcalc.domination import (
     is_dominating_set,
     minimum_dominating_set,
     domination_number,

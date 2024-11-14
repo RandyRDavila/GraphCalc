@@ -5,15 +5,15 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setup(
-    name="graphcomp",
-    version="0.1.0",
+    name="graphcalc",
+    version="0.1.1",
     author="Randy Davila",
     author_email="rrd6@rice.edu",
     description="A Python package for graph computation functions",
     license="MIT",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/randydavila/graphcomp",
+    url="https://github.com/randydavila/graphcalc",
     packages=find_packages(),
     install_requires=requirements,  # Use requirements from the file
     classifiers=[
