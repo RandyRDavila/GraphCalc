@@ -9,21 +9,49 @@ from pulp import (
 from .neighborhoods import neighborhood, closed_neighborhood
 
 __all__ = [
+    "is_dominating_set",
+    "minimum_dominating_set",
     "domination_number",
+    "minimum_total_domination_set",
     "total_domination_number",
+    "minimum_independent_dominating_set",
     "independent_domination_number",
+    "complement_is_connected",
+    "is_outer_connected_dominating_set",
     "outer_connected_domination_number",
+    "minimum_roman_dominating_function",
     "roman_domination_number",
+    "minimum_double_roman_dominating_function",
     "double_roman_domination_number",
+    "minimum_rainbow_dominating_function",
     "two_rainbow_domination_number",
     "three_rainbow_domination_number",
     "min_maximal_matching_number",
 ]
 
 def is_dominating_set(G, S):
+    """
+    Checks if a set of nodes, S, is a dominating set in the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to check.
+    S (set): A set of nodes in the graph.
+
+    Returns:
+    bool: True if S is a dominating set, otherwise False.
+    """
     return all(any(u in S for u in closed_neighborhood(G, v)) for v in G.nodes())
 
 def minimum_dominating_set(G):
+    """
+    Finds a minimum dominating set for the graph G using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the dominating set for.
+
+    Returns:
+    set: A minimum dominating set of nodes in G.
+    """
     pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MinDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
@@ -41,9 +69,27 @@ def minimum_dominating_set(G):
     return solution_set
 
 def domination_number(G):
+    """
+    Calculates the domination number of the graph G, which is the size of a minimum dominating set.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the domination number for.
+
+    Returns:
+    int: The domination number of G.
+    """
     return len(minimum_dominating_set(G))
 
 def minimum_total_domination_set(G):
+    """
+    Finds a minimum total dominating set for the graph G using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the total dominating set for.
+
+    Returns:
+    set: A minimum total dominating set of nodes in G.
+    """
     pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MinTotalDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
@@ -61,9 +107,27 @@ def minimum_total_domination_set(G):
     return solution_set
 
 def total_domination_number(G):
+    """
+    Calculates the total domination number of the graph G, which is the size of a minimum total dominating set.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the total domination number for.
+
+    Returns:
+    int: The total domination number of G.
+    """
     return len(minimum_total_domination_set(G))
 
 def minimum_independent_dominating_set(G):
+    """
+    Finds a minimum independent dominating set for the graph G using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the independent dominating set for.
+
+    Returns:
+    set: A minimum independent dominating set of nodes in G.
+    """
     prob = pulp.LpProblem("MinIndependentDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
@@ -76,7 +140,7 @@ def minimum_independent_dominating_set(G):
 
     # Set domination constraints.
     for node in G.nodes():
-        combination = [variables[n] for n in variables if n in neighborhood(G, node)]
+        combination = [variables[n] for n in variables if n in closed_neighborhood(G, node)]
         prob += pulp.lpSum(combination) >= 1
 
     prob.solve()
@@ -84,16 +148,54 @@ def minimum_independent_dominating_set(G):
     return solution_set
 
 def independent_domination_number(G):
+    """
+    Calculates the independent domination number of the graph G, which is the size of a minimum independent dominating set.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the independent domination number for.
+
+    Returns:
+    int: The independent domination number of G.
+    """
     return len(minimum_independent_dominating_set(G))
 
 def complement_is_connected(G, S):
+    """
+    Checks if the complement of set S in the graph G is connected.
+
+    Parameters:
+    G (networkx.Graph): The graph to check.
+    S (set): A set of nodes in the graph.
+
+    Returns:
+    bool: True if the complement of S is connected, otherwise False.
+    """
     X = G.nodes() - S
     return nx.is_connected(G.subgraph(X))
 
 def is_outer_connected_dominating_set(G, S):
+    """
+    Checks if set S is an outer-connected dominating set in the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to check.
+    S (set): A set of nodes in the graph.
+
+    Returns:
+    bool: True if S is an outer-connected dominating set, otherwise False.
+    """
     return is_dominating_set(G, S) and complement_is_connected(G, S)
 
-def min_outer_connected_dominating_set(G):
+def minimum_outer_connected_dominating_set(G):
+    """
+    Finds a minimum outer-connected dominating set for the graph G by trying all subset sizes.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the outer-connected dominating set for.
+
+    Returns:
+    set: A minimum outer-connected dominating set of nodes in G.
+    """
     n = len(G.nodes())
     min_set = None
 
@@ -104,10 +206,28 @@ def min_outer_connected_dominating_set(G):
                 return S
 
 def outer_connected_domination_number(G):
-    return len(min_outer_connected_dominating_set(G))
+    """
+    Calculates the outer-connected domination number of the graph G, which is the size of a minimum outer-connected dominating set.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the outer-connected domination number for.
+
+    Returns:
+    int: The outer-connected domination number of G.
+    """
+    return len(minimum_outer_connected_dominating_set(G))
 
 
-def roman_domination(graph):
+def minimum_roman_dominating_function(graph):
+    """
+    Finds a Roman dominating function for the graph G using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the Roman dominating function for.
+
+    Returns:
+    dict: A solution with the values for each vertex and the objective value.
+    """
     pulp.LpSolverDefault.msg = 0
     # Initialize the problem
     prob = pulp.LpProblem("RomanDomination", pulp.LpMinimize)
@@ -141,10 +261,28 @@ def roman_domination(graph):
     return solution
 
 def roman_domination_number(graph):
-    solution = roman_domination(graph)
+    """
+    Calculates the Roman domination number of the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the Roman domination number for.
+
+    Returns:
+    int: The Roman domination number of G.
+    """
+    solution = minimum_roman_dominating_function(graph)
     return solution["objective"]
 
-def double_roman_domination(graph):
+def minimum_double_roman_dominating_function(graph):
+    """
+    Finds a double Roman dominating function for the graph G using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the double Roman dominating function for.
+
+    Returns:
+    dict: A solution with the values for each vertex and the objective value.
+    """
     pulp.LpSolverDefault.msg = 0
     # Initialize the problem
     prob = pulp.LpProblem("DoubleRomanDomination", pulp.LpMinimize)
@@ -185,10 +323,29 @@ def double_roman_domination(graph):
     return solution
 
 def double_roman_domination_number(graph):
-    solution = double_roman_domination(graph)
+    """
+    Calculates the double Roman domination number of the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the double Roman domination number for.
+
+    Returns:
+    int: The double Roman domination number of G.
+    """
+    solution = minimum_double_roman_dominating_function(graph)
     return solution["objective"]
 
-def solve_rainbow_domination(G, k):
+def minimum_rainbow_dominating_function(G, k):
+    """
+    Finds a rainbow dominating set for the graph G with k colors using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the rainbow dominating set for.
+    k (int): The number of colors.
+
+    Returns:
+    tuple: A list of colored vertices and a list of uncolored vertices.
+    """
     pulp.LpSolverDefault.msg = 0
     # Create a PuLP problem instance
     prob = pulp.LpProblem("Rainbow_Domination", pulp.pulp.LpMinimize)
@@ -228,17 +385,54 @@ def solve_rainbow_domination(G, k):
     return colored_vertices, uncolored_vertices
 
 def rainbow_domination_number(G, k):
-    colored_vertices, uncolored_vertices = solve_rainbow_domination(G, k)
+    """
+    Calculates the rainbow domination number of the graph G with k colors.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the rainbow domination number for.
+    k (int): The number of colors.
+
+    Returns:
+    int: The rainbow domination number of G.
+    """
+    colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, k)
     return len(colored_vertices)
 
 def two_rainbow_domination_number(G):
+    """
+    Calculates the 2-rainbow domination number of the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the 2-rainbow domination number for.
+
+    Returns:
+    int: The 2-rainbow domination number of G.
+    """
     return rainbow_domination_number(G, 2)
 
 def three_rainbow_domination_number(G):
+    """
+    Calculates the 3-rainbow domination number of the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the 3-rainbow domination number for.
+
+    Returns:
+    int: The 3-rainbow domination number of G.
+    """
     return rainbow_domination_number(G, 3)
 
 
 def minimum_restrained_dominating_set(G):
+    """
+    Finds a minimum restrained dominating set for the graph G using integer programming.
+
+    Parameters:
+    G (networkx.Graph): The graph to find the restrained dominating set for.
+
+    Returns:
+    list: A minimum restrained dominating set of nodes in G.
+    """
     pulp.LpSolverDefault.msg = 0
     # Initialize the linear programming problem
     prob = pulp.LpProblem("MinimumRestrainedDomination", pulp.LpMinimize)
@@ -266,8 +460,26 @@ def minimum_restrained_dominating_set(G):
     return restrained_dom_set
 
 def restrained_domination_number(G):
+    """
+    Calculates the restrained domination number of the graph G.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the restrained domination number for.
+
+    Returns:
+    int: The restrained domination number of G.
+    """
     restrained_dom_set = minimum_restrained_dominating_set(G)
     return len(restrained_dom_set)
 
 def min_maximal_matching_number(G):
+    """
+    Calculates the minimum maximal matching number of the graph G by finding the domination number of its line graph.
+
+    Parameters:
+    G (networkx.Graph): The graph to calculate the minimum maximal matching number for.
+
+    Returns:
+    int: The minimum maximal matching number of G.
+    """
     return domination_number(nx.line_graph(G))

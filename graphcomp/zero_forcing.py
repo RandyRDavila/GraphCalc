@@ -6,12 +6,23 @@ from .basics import connected
 from .degree import minimum_degree
 
 __all__ = [
+    "minimum_k_forcing_set",
     "k_forcing_number",
+    "is_zero_forcing_set",
+    "minimum_zero_forcing_set",
     "zero_forcing_number",
     "two_forcing_number",
+    "is_total_zero_forcing_set",
+    "minimum_total_zero_forcing_set",
     "total_zero_forcing_number",
+    "minimum_connected_k_forcing_set",
+    "minimum_connected_zero_forcing_set",
     "connected_zero_forcing_number",
+    "minimum_psd_zero_forcing_set",
     "positive_semidefinite_zero_forcing_number",
+    "minimum_k_power_dominating_set",
+    "k_power_domination_number",
+    "minimum_power_dominating_set",
     "power_domination_number",
 ]
 
@@ -109,7 +120,7 @@ def is_k_forcing_set(G, nodes, k):
     return Z == set(G.nodes())
 
 
-def min_k_forcing_set(G, k):
+def minimum_k_forcing_set(G, k):
     """Return a smallest *k*-forcing set in *G*.
 
     The method used to compute the set is brute force.
@@ -133,7 +144,7 @@ def min_k_forcing_set(G, k):
     for i in range(rangeMin, G.order() + 1):
         for S in combinations(G.nodes(), i):
             if is_k_forcing_set(G, S, k):
-                return list(S)
+                return set(S)
 
 
 def k_forcing_number(G, k):
@@ -155,7 +166,7 @@ def k_forcing_number(G, k):
     int
         The *k*-forcing number of *G*.
     """
-    return len(min_k_forcing_set(G, k))
+    return len(minimum_k_forcing_set(G, k))
 
 
 def is_zero_forcing_vertex(G, v, nbunch):
@@ -223,7 +234,7 @@ def is_zero_forcing_set(G, nbunch):
     return is_k_forcing_set(G, nbunch, 1)
 
 
-def min_zero_forcing_set(G):
+def minimum_zero_forcing_set(G):
     """Return a smallest zero forcing set in *G*.
 
     The method used to compute the set is brute force.
@@ -238,7 +249,7 @@ def min_zero_forcing_set(G):
     list
         A list of nodes in a smallest zero forcing set in *G*.
     """
-    return min_k_forcing_set(G, 1)
+    return minimum_k_forcing_set(G, 1)
 
 
 def zero_forcing_number(G):
@@ -257,7 +268,7 @@ def zero_forcing_number(G):
     int
         The zero forcing number of *G*.
     """
-    return len(min_zero_forcing_set(G))
+    return len(minimum_zero_forcing_set(G))
 
 def two_forcing_number(G):
     return k_forcing_number(G, 2)
@@ -291,7 +302,7 @@ def is_total_zero_forcing_set(G, nodes):
     return is_zero_forcing_set(G, S)
 
 
-def min_total_zero_forcing_set(G):
+def minimum_total_zero_forcing_set(G):
     """Return a smallest total zero forcing set in *G*.
 
     The method used to compute the set is brute force.
@@ -309,7 +320,7 @@ def min_total_zero_forcing_set(G):
     for i in range(2, G.order() + 1):
         for S in combinations(G.nodes(), i):
             if is_total_zero_forcing_set(G, S):
-                return list(S)
+                return set(S)
     # if the above loop completes, return None (should not occur)
     return None
 
@@ -330,11 +341,11 @@ def total_zero_forcing_number(G):
     int
         The total zero forcing number of *G*.
     """
-    Z = min_total_zero_forcing_set(G)
+    Z = minimum_total_zero_forcing_set(G)
     if Z is None:
         return None
     else:
-        return len(min_total_zero_forcing_set(G))
+        return len(Z)
 
 
 def is_connected_k_forcing_set(G, nodes, k):
@@ -396,7 +407,7 @@ def is_connected_zero_forcing_set(G, nodes):
     return is_connected_k_forcing_set(G, nodes, 1)
 
 
-def min_connected_k_forcing_set(G, k):
+def minimum_connected_k_forcing_set(G, k):
     """Return a smallest connected k-forcing set in *G*.
 
     The method used to compute the set is brute force.
@@ -426,10 +437,10 @@ def min_connected_k_forcing_set(G, k):
     for i in range(1, G.order() + 1):
         for S in combinations(G.nodes(), i):
             if is_connected_k_forcing_set(G, S, k):
-                return list(S)
+                return set(S)
 
 
-def min_connected_zero_forcing_set(G):
+def minimum_connected_zero_forcing_set(G):
     """Return a smallest connected zero forcing set in *G*.
 
     The method used to compute the set is brute force.
@@ -447,7 +458,7 @@ def min_connected_zero_forcing_set(G):
     list
         A list of nodes in a smallest connected zero forcing set in *G*.
     """
-    return min_connected_k_forcing_set(G, 1)
+    return minimum_connected_k_forcing_set(G, 1)
 
 
 def connected_k_forcing_number(G, k):
@@ -472,7 +483,7 @@ def connected_k_forcing_number(G, k):
     k = int(k)
     if k < 1:
         raise ValueError("Expected k to be a positive integer.")
-    Z = min_connected_k_forcing_set(G, k)
+    Z = minimum_connected_k_forcing_set(G, k)
     if Z is None:
         return None
     else:
@@ -589,7 +600,7 @@ def is_psd_zero_forcing_set(G, black_set):
     return len(derived_set) == G.order()
 
 
-def min_psd_zero_forcing_set(G):
+def minimum_psd_zero_forcing_set(G):
     """
     Return a smallest PSD zero forcing set in G.
 
@@ -625,7 +636,7 @@ def positive_semidefinite_zero_forcing_number(G):
     int
         The PSD zero forcing number of G.
     """
-    return len(min_psd_zero_forcing_set(G))
+    return len(minimum_psd_zero_forcing_set(G))
 
 
 def is_k_power_dominating_set(G, nodes, k):
@@ -652,7 +663,7 @@ def is_k_power_dominating_set(G, nodes, k):
     return is_k_forcing_set(G, closed_neighborhood(G, nodes), k)
 
 
-def min_k_power_dominating_set(G, k):
+def minimum_k_power_dominating_set(G, k):
     """Return a smallest k-power dominating set of nodes in *G*.
 
     The method used to compute the set is brute force.
@@ -670,7 +681,7 @@ def min_k_power_dominating_set(G, k):
     for i in range(1, G.order() + 1):
         for S in combinations(G.nodes(), i):
             if is_k_power_dominating_set(G, S, k):
-                return list(S)
+                return set(S)
 
 
 def k_power_domination_number(G, k):
@@ -686,7 +697,7 @@ def k_power_domination_number(G, k):
     int
         The k-power domination number of *G*.
     """
-    return len(min_k_power_dominating_set(G, k))
+    return len(minimum_k_power_dominating_set(G, k))
 
 
 def is_power_dominating_set(G, nodes):
@@ -710,7 +721,7 @@ def is_power_dominating_set(G, nodes):
     return is_k_power_dominating_set(G, nodes, 1)
 
 
-def min_power_dominating_set(G):
+def minimum_power_dominating_set(G):
     """Return a smallest power dominating set of nodes in *G*.
 
     The method used to compute the set is brute force.
@@ -725,7 +736,7 @@ def min_power_dominating_set(G):
     list
         A list of nodes in a smallest power dominating set in *G*.
     """
-    return min_k_power_dominating_set(G, 1)
+    return minimum_k_power_dominating_set(G, 1)
 
 
 def power_domination_number(G):
