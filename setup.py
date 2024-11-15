@@ -6,7 +6,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="graphcalc",
-    version="0.1.3",
+    version="0.1.5",
     author="Randy Davila",
     author_email="rrd6@rice.edu",
     description="A Python package for graph computation functions",
