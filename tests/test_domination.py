@@ -17,6 +17,11 @@ def test_is_dominating_set():
     result = is_dominating_set(G, dominating_set)
     assert result == True
 
+    G = nx.star_graph(4)
+    dominating_set = {0}
+    result = is_dominating_set(G, dominating_set)
+    assert result == True
+
 def test_minimum_dominating_set():
     G = nx.star_graph(3)
     result = minimum_dominating_set(G)
