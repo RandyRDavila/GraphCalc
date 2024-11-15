@@ -1,4 +1,4 @@
-# graphcalc
+# GraphCalc
 
 ## Overview
 

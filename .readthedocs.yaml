@@ -1,0 +1,17 @@
+# .readthedocs.yaml
+
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"  # Or the Python version compatible with your project
+
+sphinx:
+  configuration: docs/source/conf.py  # Path to your Sphinx config file
+
+python:
+  install:
+    - requirements: docs/requirements.txt  # Specify a requirements file for documentation dependencies if you have one
+    - method: pip
+      path: .
