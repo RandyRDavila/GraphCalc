@@ -1,4 +1,6 @@
 # GraphCalc
+[![Documentation Status](https://readthedocs.org/projects/graphcalc/badge/?version=latest)](https://graphcalc.readthedocs.io/en/latest/?badge=latest)
+
 
 ## Overview
 

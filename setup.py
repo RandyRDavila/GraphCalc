@@ -23,4 +23,9 @@ setup(
     ],
     python_requires=">=3.7",
     keywords="graph theory, networkx, graph computation",
+    project_urls={
+        "Documentation": "https://graphcalc.readthedocs.io/en/latest/",
+        "Source Code": "https://github.com/yourusername/graphcalc",
+        "PyPI": "https://pypi.org/project/graphcalc/"
+    },
 )
