@@ -17,24 +17,21 @@ __all__ = [
 ]
 
 def maximum_independent_set(G):
-    """Return a largest independent set of nodes in *G*.
+    r"""Return a largest independent set of nodes in *G*.
 
     This method uses integer programming to solve for a largest
     independent set. It solves the following integer program:
-    maximize
+
 
     .. math::
-
-        \\sum_{v \\in V} x_v
+        \max \sum_{v \in V} x_v
 
     subject to
 
-    ... math::
+    .. math::
+        \sum_{\{u, v\} \in E} x_u + x_v \leq 1 \text{ for all } e \in E
 
-        \\sum_{\\{u, v\\} \\in E} x_u + x_v \\leq 1 \\mathrm{ for all } e \\in E
-
-    where *E* and *V* are the set of edges and nodes of G, and *N(v)* is
-    the set of neighbors of the vertex *v*.
+    where *E* and *V* are the set of edges and nodes of G.
 
     Parameters
     ----------
@@ -46,6 +43,14 @@ def maximum_independent_set(G):
     set
         A set of nodes comprising a largest independent set in *G*.
 
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.maximum_independent_set(G)
+    {0}
     """
 
     # surpress output logs from pulp
@@ -66,7 +71,7 @@ def maximum_independent_set(G):
     return solution_set
 
 def independence_number(G):
-    """Return the size of a largest independent set in *G*.
+    r"""Return the size of a largest independent set in *G*.
 
     Parameters
     ----------
@@ -78,11 +83,21 @@ def independence_number(G):
     int
         The size of a largest independent set in *G*.
 
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.independence_number(G)
+    1
+
     """
     return len(maximum_independent_set(G))
 
 def maximum_clique(G):
-    """Finds the maximum clique in a graph.
+    r"""Finds the maximum clique in a graph.
 
     This function computes the maximum clique of a graph `G` by finding the maximum independent set
     of the graph's complement.
@@ -92,12 +107,22 @@ def maximum_clique(G):
 
     Returns:
         list: A list of nodes representing the maximum clique in the graph `G`.
+
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.maximum_clique(G)
+    {0, 1, 2, 3}
     """
     return maximum_independent_set(nx.complement(G))
 
 
 def clique_number(G):
-    """Calculates the clique number of a graph.
+    r"""Calculates the clique number of a graph.
 
     The clique number of a graph `G` is the size of the largest clique. This function finds it by
     calculating the independence number of the complement of `G`.
@@ -107,12 +132,22 @@ def clique_number(G):
 
     Returns:
         int: The clique number of the graph `G`.
+
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.clique_number(G)
+    4
     """
     return independence_number(nx.complement(G))
 
 
 def optimal_proper_coloring(G):
-    """Finds the optimal proper coloring of a graph using linear programming.
+    r"""Finds the optimal proper coloring of a graph using linear programming.
 
     This function uses integer linear programming to find the optimal (minimum) number of colors
     required to color the graph `G` such that no two adjacent nodes have the same color. Each node
@@ -124,6 +159,16 @@ def optimal_proper_coloring(G):
     Returns:
         dict: A dictionary where keys are color indices and values are lists of nodes in `G`
               assigned that color.
+
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.optimal_proper_coloring(G)
+    {0: [0], 1: [1], 2: [2], 3: [3]}
     """
     pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("OptimalProperColoring", pulp.LpMinimize)
@@ -151,7 +196,7 @@ def optimal_proper_coloring(G):
 
 
 def chromatic_number(G):
-    """Return the chromatic number of the graph G.
+    r"""Return the chromatic number of the graph G.
 
     The chromatic number of a graph is the smallest number of colors needed to color the vertices of G so that no two
     adjacent vertices share the same color.
@@ -166,13 +211,23 @@ def chromatic_number(G):
     int
         The chromatic number of G.
 
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.chromatic_number(G)
+    4
+
     """
     coloring = optimal_proper_coloring(G)
     colors = [color for color in coloring if len(coloring[color]) > 0]
     return len(colors)
 
 def minimum_vertex_cover(G):
-    """Return a smallest vertex cover of the graph G.
+    r"""Return a smallest vertex cover of the graph G.
     Parameters
     ----------
     G : NetworkX graph
@@ -181,12 +236,21 @@ def minimum_vertex_cover(G):
     -------
     set
         A smallest vertex cover of G.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.minimum_vertex_cover(G)
+    {1, 2, 3}
     """
     X = maximum_independent_set(G)
     return G.nodes() - X
 
 def vertex_cover_number(G):
-    """Return a the size of smallest vertex cover in the graph G.
+    r"""Return a the size of smallest vertex cover in the graph G.
     Parameters
     ----------
     G : NetworkX graph
@@ -195,11 +259,21 @@ def vertex_cover_number(G):
     -------
     number
         The size of a smallest vertex cover of G.
+
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.vertex_cover_number(G)
+    3
     """
     return G.order() - independence_number(G)
 
 def minimum_edge_cover(G):
-    """Return a smallest edge cover of the graph G.
+    r"""Return a smallest edge cover of the graph G.
     Parameters
     ----------
     G : NetworkX graph
@@ -212,7 +286,7 @@ def minimum_edge_cover(G):
     return nx.min_edge_cover(G)
 
 def edge_cover_number(G):
-    """Return the size of a smallest edge cover in the graph G.
+    r"""Return the size of a smallest edge cover in the graph G.
     Parameters
     ----------
     G : NetworkX graph
@@ -225,7 +299,7 @@ def edge_cover_number(G):
     return len(nx.min_edge_cover(G))
 
 def maximum_matching(G):
-    """Return a maximum matching in the graph G.
+    r"""Return a maximum matching in the graph G.
     Parameters
     ----------
     G : NetworkX graph
@@ -234,6 +308,16 @@ def maximum_matching(G):
     -------
     set
         A maximum matching of G.
+
+    Examples
+    --------
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> gc.maximum_matching(G)
+    {(0, 1), (2, 3)}
     """
     pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MaximumMatchingSet", pulp.LpMaximize)
@@ -252,7 +336,7 @@ def maximum_matching(G):
     return solution_set
 
 def matching_number(G):
-    """Return the size of a maximum matching in the graph G.
+    r"""Return the size of a maximum matching in the graph G.
     Parameters
     ----------
     G : NetworkX graph
@@ -262,6 +346,15 @@ def matching_number(G):
     -------
     number
         The size of a maximum matching of G.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.matching_number(G)
+    2
 
     """
     pulp.LpSolverDefault.msg = 0

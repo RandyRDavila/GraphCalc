@@ -28,28 +28,44 @@ __all__ = [
 
 
 def is_k_forcing_vertex(G, v, nodes, k):
-    """Return whether or not *v* can *k*-force relative to the set of nodes
-    in `nodes`.
+    r"""
+    Determines whether a node *v* can perform *k*-forcing with respect to a set of nodes.
+
+    A node *v* is said to *k*-force if it is in the set `nodes` and has between 1 and *k* neighbors
+    not in `nodes`.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     v : node
-        A single node in *G*.
-
-    nodes : list, set
-        An iterable container of nodes in G.
-
+        The node to check for *k*-forcing.
+    nodes : list or set
+        The set of nodes under consideration.
     k : int
-        A positive integer.
+        The parameter for *k*-forcing, which must be a positive integer.
 
     Returns
     -------
-    boolean
-        True if *v* can *k*-force relative to the nodes in `nodes`. False
-        otherwise.
+    bool
+        True if *v* can *k*-force relative to `nodes`. False otherwise.
+
+    Raises
+    ------
+    TypeError
+        If *k* is not an integer.
+    ValueError
+        If *k* is not a positive integer.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0, 1}
+    >>> print(gc.is_k_forcing_vertex(G, 0, nodes, 1))
+    True
     """
     # check that k is a positive integer
     if not float(k).is_integer():
@@ -63,24 +79,32 @@ def is_k_forcing_vertex(G, v, nodes, k):
 
 
 def is_k_forcing_active_set(G, nodes, k):
-    """Return whether or not at least one node in `nodes` can *k*-force.
+    r"""
+    Checks if at least one node in the given set can perform *k*-forcing.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nbunch :
-        A single node or iterable container or nodes.
-
+    nodes : list or set
+        The set of nodes under consideration.
     k : int
-        A positive integer.
+        The parameter for *k*-forcing.
 
     Returns
     -------
-    boolean
-        True if at least one of the nodes in `nodes` can *k*-force. False
-        otherwise.
+    bool
+        True if at least one node in `nodes` can *k*-force. False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0, 1}
+    >>> print(gc.is_k_forcing_active_set(G, nodes, 1))
+    True
     """
     S = set(n for n in nodes if n in G)
     for v in S:
@@ -90,25 +114,35 @@ def is_k_forcing_active_set(G, nodes, k):
 
 
 def is_k_forcing_set(G, nodes, k):
-    """Return whether or not the nodes in `nodes` comprise a *k*-forcing set in
-    *G*.
+    r"""
+    Determines whether the given set of nodes is a *k*-forcing set in the graph.
+
+    A set of nodes is a *k*-forcing set if, starting from the set, all nodes in the graph
+    can eventually be included by repeatedly applying the *k*-forcing rule.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nodes : list, set
-        An iterable container of nodes in G.
-
+    nodes : list or set
+        The set of nodes under consideration.
     k : int
-        A positive integer.
+        The parameter for *k*-forcing.
 
     Returns
     -------
-    boolean
-        True if the nodes in `nodes` comprise a *k*-forcing set in *G*. False
-        otherwise.
+    bool
+        True if the nodes form a *k*-forcing set. False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0, 2}
+    >>> print(gc.is_k_forcing_set(G, nodes, 1))
+    True
     """
     Z = set(n for n in nodes if n in G)
     while is_k_forcing_active_set(G, Z, k):
@@ -121,22 +155,29 @@ def is_k_forcing_set(G, nodes, k):
 
 
 def minimum_k_forcing_set(G, k):
-    """Return a smallest *k*-forcing set in *G*.
-
-    The method used to compute the set is brute force.
+    r"""
+    Finds a smallest *k*-forcing set in the graph using brute force.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     k : int
-        A positive integer.
+        The parameter for *k*-forcing.
 
     Returns
     -------
-    list
-        A list of nodes in a smallest *k*-forcing set in *G*.
+    set
+        A smallest *k*-forcing set.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.minimum_k_forcing_set(G, 1))
+    {0}
     """
     # use naive lower bound to compute a starting point for the search range
     rangeMin = minimum_degree(G) if k == 1 else 1
@@ -148,152 +189,236 @@ def minimum_k_forcing_set(G, k):
 
 
 def k_forcing_number(G, k):
-    """Return the *k*-forcing number of *G*.
+    r"""
+    Calculates the *k*-forcing number of the graph.
 
-    The *k*-forcing number of a graph is the cardinality of a smallest
-    *k*-forcing set in the graph.
+    The *k*-forcing number is the size of the smallest *k*-forcing set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     k : int
-        A positive integer.
+        The parameter for *k*-forcing.
 
     Returns
     -------
     int
-        The *k*-forcing number of *G*.
+        The *k*-forcing number.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.k_forcing_number(G, 1))
+    1
     """
     return len(minimum_k_forcing_set(G, k))
 
 
 def is_zero_forcing_vertex(G, v, nbunch):
-    """Return whether or not *v* can force relative to the set of nodes
-    in nbunch.
+    r"""
+    Determines whether a node *v* can force relative to a set of nodes.
+
+    This is a special case of *k*-forcing where *k = 1*.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     v : node
-        A single node in *G*.
-
-    nbunch :
-        A single node or iterable container or nodes.
+        The node to check.
+    nbunch : list or set
+        The set of nodes under consideration.
 
     Returns
     -------
-    boolean
-        True if *v* can force relative to the nodes in nbunch. False
-        otherwise.
+    bool
+        True if *v* can force. False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nbunch = {0, 1}
+    >>> print(gc.is_zero_forcing_vertex(G, 0, nbunch))
+    True
     """
     return is_k_forcing_vertex(G, v, nbunch, 1)
 
 
 def is_zero_forcing_active_set(G, nbunch):
-    """Return whether or not at least one node in nbunch can force.
+    r"""
+    Checks whether the given set of nodes forms a zero forcing set in the graph.
+
+    A zero forcing set is a special case of a *k*-forcing set where *k = 1*.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nbunch :
-        A single node or iterable container or nodes.
+    nbunch : list or set
+        The set of nodes under consideration.
 
     Returns
     -------
-    boolean
-        True if at least one of the nodes in nbunch can force. False
-        otherwise.
+    bool
+        True if the nodes form a zero forcing set. False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nbunch = {0, 3}
+    >>> print(gc.is_zero_forcing_set(G, nbunch))
+    True
     """
     return is_k_forcing_active_set(G, nbunch, 1)
 
 
 def is_zero_forcing_set(G, nbunch):
-    """Return whether or not the nodes in nbunch comprise a zero forcing set in
-    *G*.
+    r"""
+    Checks whether the given set of nodes forms a zero forcing set in the graph.
+
+    A zero forcing set is a special case of a *k*-forcing set where *k = 1*.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nbunch :
-        A single node or iterable container or nodes.
+    nbunch : list or set
+        The set of nodes under consideration.
 
     Returns
     -------
-    boolean
-        True if the nodes in nbunch comprise a zero forcing set in *G*. False
-        otherwise.
+    bool
+        True if the nodes form a zero forcing set. False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nbunch = {0, 3}
+    >>> print(gc.is_zero_forcing_set(G, nbunch))
+    True
     """
     return is_k_forcing_set(G, nbunch, 1)
 
 
 def minimum_zero_forcing_set(G):
-    """Return a smallest zero forcing set in *G*.
-
-    The method used to compute the set is brute force.
+    r"""
+    Finds a smallest zero forcing set in the graph using brute force.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
-    list
-        A list of nodes in a smallest zero forcing set in *G*.
+    set
+        A smallest zero forcing set.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.minimum_zero_forcing_set(G, 1))
+    {0}
     """
     return minimum_k_forcing_set(G, 1)
 
 
 def zero_forcing_number(G):
-    """Return the zero forcing number of *G*.
+    r"""
+    Calculates the zero forcing number of the graph.
 
-    The zero forcing number of a graph is the cardinality of a smallest
-    zero forcing set in the graph.
+    The zero forcing number is the size of the smallest zero forcing set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
     int
-        The zero forcing number of *G*.
+        The zero forcing number of the graph.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.zero_forcing_number(G))
+    1
     """
     return len(minimum_zero_forcing_set(G))
 
 def two_forcing_number(G):
+    r"""
+    Calculates the 2-forcing number of the graph.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        An undirected graph.
+
+    Returns
+    -------
+    int
+        The 2-forcing number of the graph.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.two_forcing_number(G))
+    1
+    """
     return k_forcing_number(G, 2)
 
 
 def is_total_zero_forcing_set(G, nodes):
-    """Return whether or not the nodes in `nodes` comprise a total zero forcing
-    set in *G*.
+    r"""
+    Checks if the given nodes form a total zero forcing set.
 
-    A *total zero forcing set* in a graph *G* is a zero forcing set that does
-    not induce any isolated vertices.
+    A total zero forcing set is a zero forcing set that does not induce any isolated vertices.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nodes : list, set
-        An iterable container of nodes in G.
+    nodes : list or set
+        The set of nodes under consideration.
 
     Returns
     -------
-    boolean
-        True if the nodes in `nodes` comprise a total zero forcing set in *G*.
-        False otherwise.
+    bool
+        True if the nodes form a total zero forcing set. False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0, 1}
+    >>> print(gc.is_total_zero_forcing_set(G, nodes))
+    True
     """
     S = set(n for n in nodes if n in G)
     for v in S:
@@ -303,19 +428,30 @@ def is_total_zero_forcing_set(G, nodes):
 
 
 def minimum_total_zero_forcing_set(G):
-    """Return a smallest total zero forcing set in *G*.
+    r"""
+    Finds a smallest total zero forcing set in the graph G.
 
-    The method used to compute the set is brute force.
+    A total zero forcing set is a zero forcing set that does not induce any isolated vertices.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
-    list
-        A list of nodes in a smallest zero forcing set in *G*.
+    set
+        A smallest total zero forcing set in G, or None if none exists.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> result = gc.minimum_total_zero_forcing_set(G)
+    >>> print(result)
+    {0, 3}
     """
     for i in range(2, G.order() + 1):
         for S in combinations(G.nodes(), i):
@@ -326,20 +462,29 @@ def minimum_total_zero_forcing_set(G):
 
 
 def total_zero_forcing_number(G):
-    """Return the total zero forcing number of *G*.
+    r"""
+    Calculates the total zero forcing number of the graph G.
 
-    The *total zero forcing number* of a graph is the cardinality of a smallest
-    total zero forcing set in the graph.
+    The total zero forcing number is the size of the smallest total zero forcing set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
     int
-        The total zero forcing number of *G*.
+        The total zero forcing number of G, or None if no such set exists.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.total_zero_forcing_number(G))
+    2
     """
     Z = minimum_total_zero_forcing_set(G)
     if Z is None:
@@ -349,28 +494,34 @@ def total_zero_forcing_number(G):
 
 
 def is_connected_k_forcing_set(G, nodes, k):
-    """Return whether or not the nodes in `nodes` comprise a connected k-forcing
-    set in *G*.
+    r"""
+    Determines whether the given nodes form a connected k-forcing set in the graph G.
 
-    A *connected k-forcing set* in a graph *G* is a k-forcing set that induces
-    a connected subgraph.
+    A connected k-forcing set is a k-forcing set that induces a connected subgraph.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nodes : list, set
-        An iterable container of nodes in G.
-
+    nodes : list or set
+        A set of nodes under consideration.
     k : int
-        A positive integer.
+        A positive integer representing the k-forcing parameter.
 
     Returns
     -------
-    boolean
-        True if the nodes in nbunch comprise a connected k-forcing set in *G*.
-        False otherwise.
+    bool
+        True if the nodes form a connected k-forcing set, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0, 1}
+    >>> print(gc.is_connected_k_forcing_set(G, nodes, 1))
+    True
     """
     # check that k is a positive integer
     if not float(k).is_integer():
@@ -384,46 +535,60 @@ def is_connected_k_forcing_set(G, nodes, k):
 
 
 def is_connected_zero_forcing_set(G, nodes):
-    """Return whether or not the nodes in `nodes` comprise a connected zero
-    forcing set in *G*.
+    r"""
+    Determines whether the given nodes form a connected zero forcing set in the graph G.
 
-    A *connected zero forcing set* in a graph *G* is a zero forcing set that
-    induces a connected subgraph.
+    A connected zero forcing set is a zero forcing set that induces a connected subgraph.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nodes : list, set
-        An iterable container of nodes in G.
+    nodes : list or set
+        A set of nodes under consideration.
 
     Returns
     -------
-    boolean
-        True if the nodes in `nodes` comprise a connected zero forcing set in
-        *G*. False otherwise.
+    bool
+        True if the nodes form a connected k-forcing set, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0, 1}
+    >>> print(gc.is_connected_zero_forcing_set(G, nodes))
+    True
     """
     return is_connected_k_forcing_set(G, nodes, 1)
 
 
 def minimum_connected_k_forcing_set(G, k):
-    """Return a smallest connected k-forcing set in *G*.
-
-    The method used to compute the set is brute force.
+    r"""
+    Finds the smallest connected k-forcing set in the graph G using brute force.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     k : int
-        A positive integer
+        A positive integer representing the k-forcing parameter.
 
     Returns
     -------
-    list
-        A list of nodes in a smallest connected k-forcing set in *G*.
+    set
+        A smallest connected k-forcing set in G, or None if the graph is disconnected.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.minimum_connected_k_forcing_set(G, 1))
+    {0}
     """
     # check that k is a positive integer
     if not float(k).is_integer():
@@ -441,41 +606,57 @@ def minimum_connected_k_forcing_set(G, k):
 
 
 def minimum_connected_zero_forcing_set(G):
-    """Return a smallest connected zero forcing set in *G*.
-
-    The method used to compute the set is brute force.
+    r"""
+    Finds the smallest connected zero forcing set in the graph G using brute force.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    k : int
-        A positive integer
 
     Returns
     -------
-    list
-        A list of nodes in a smallest connected zero forcing set in *G*.
+    set
+        A smallest connected zero forcing set in G, or None if the graph is disconnected.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.minimum_connected_zero_forcing_set(G))
+    {0}
     """
     return minimum_connected_k_forcing_set(G, 1)
 
 
 def connected_k_forcing_number(G, k):
-    """Return the connected k-forcing number of *G*.
+    r"""
+    Calculates the connected kforcing number of the graph G.
 
-    The *connected k-forcing number* of a graph is the cardinality of a smallest
-    connected k-forcing set in the graph.
+    The connected zero forcing number is the size of the smallest connected zero forcing set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
+    k : int
+        A positive integer representing the k-forcing parameter.
 
     Returns
     -------
     int
-        The connected k-forcing number of *G*.
+        The connected k-forcing number of G, or None if no such set exists.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.connected_zero_forcing_number(G, 1))
+    1
     """
     # check that k is a positive integer
     if not float(k).is_integer():
@@ -491,45 +672,66 @@ def connected_k_forcing_number(G, k):
 
 
 def connected_zero_forcing_number(G):
-    """Return the connected zero forcing number of *G*.
+    r"""
+    Calculates the connected zero forcing number of the graph G.
 
-    The *connected zero forcing number* of a graph is the cardinality of a
-    smallest connected zero forcing set in the graph.
+    The connected zero forcing number is the size of the smallest connected zero forcing set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
     int
-        The connected k-forcing number of *G*.
+        The connected zero forcing number of G, or None if no such set exists.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.connected_zero_forcing_number(G))
+    1
     """
     return connected_k_forcing_number(G, 1)
 
 def is_psd_forcing_vertex(G, v, black_set, component):
-    """
-    Return whether or not v can force any white vertex in the component.
+    r"""
+    Determines whether a node *v* can perform positive semidefinite (PSD) forcing in a specific component.
+
+    A node *v* in the black set can force a single white vertex in a connected component
+    of G - black_set if it has exactly one white neighbor in that component.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     v : node
         A single node in G.
-
     black_set : set
-        A set of black vertices in G.
-
+        A set of nodes considered as "black" in the forcing process.
     component : set
-        A set of vertices in a component of G - black_set.
+        A set of nodes representing a connected component of G - black_set.
 
     Returns
     -------
     tuple
-        A tuple (True, w) if v can force the white vertex w in the component, (False, None) otherwise.
+        (True, w) if *v* can force the white vertex *w* in the component,
+        (False, None) otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> black_set = {0, 1}
+    >>> component = {2, 3}
+    >>> print(gc.is_psd_forcing_vertex(G, 1, black_set, component))
+    (True, 2)
     """
     set_neighbors = set(neighborhood(G, v))
     white_neighbors_in_component = set_neighbors.intersection(component)
@@ -541,21 +743,36 @@ def is_psd_forcing_vertex(G, v, black_set, component):
 
 
 def psd_color_change(G, black_set):
-    """
-    Apply the PSD color change rule repeatedly until no more vertices can be forced.
+    r"""
+    Applies the Positive Semidefinite (PSD) color change rule to a graph G.
+
+    The PSD color change rule allows a black vertex *v* to force a white vertex *w*
+    in a connected component of G - black_set if *v* has exactly one white neighbor
+    in that component. This process is applied iteratively until no more vertices can
+    be forced.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     black_set : set
         A set of initial black vertices.
 
     Returns
     -------
     set
-        The derived set of black vertices.
+        The derived set of black vertices after applying the PSD color change rule.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(5)
+    >>> black_set = {0}
+    >>> result = gc.psd_color_change(G, black_set)
+    >>> print(result)
+    {0, 1}
     """
     black_set = set(black_set)
     white_set = set(G.nodes()) - black_set
@@ -580,41 +797,64 @@ def psd_color_change(G, black_set):
 
 
 def is_psd_zero_forcing_set(G, black_set):
-    """
-    Return whether or not the vertices in black_set comprise a PSD zero forcing set in G.
+    r"""
+    Determines whether the given set of black vertices is a PSD zero forcing set.
+
+    A PSD zero forcing set is a set of vertices that, through iterative application
+    of the PSD color change rule, results in all vertices of the graph being black.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
     black_set : set
         A set of initial black vertices.
 
     Returns
     -------
-    boolean
-        True if the black_set is a PSD zero forcing set in G. False otherwise.
+    bool
+        True if the given set is a PSD zero forcing set, otherwise False.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> black_set = {0, 3}
+    >>> print(gc.is_psd_zero_forcing_set(G, black_set))
+    True
     """
     derived_set = psd_color_change(G, black_set)
     return len(derived_set) == G.order()
 
 
 def minimum_psd_zero_forcing_set(G):
-    """
-    Return a smallest PSD zero forcing set in G.
+    r"""
+    Finds a smallest PSD zero forcing set in the graph G.
 
-    The method used to compute the set is brute force.
+    The PSD zero forcing set is computed using brute force by iterating through
+    all possible subsets of vertices until a valid set is found.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
     list
-        A list of nodes in a smallest PSD zero forcing set in G.
+        A list of nodes representing the smallest PSD zero forcing set in G.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> result = gc.minimum_psd_zero_forcing_set(G)
+    >>> print(result)
+    [0, 3]
     """
     for i in range(1, G.order() + 1):
         for black_set in combinations(G.nodes(), i):
@@ -623,60 +863,113 @@ def minimum_psd_zero_forcing_set(G):
 
 
 def positive_semidefinite_zero_forcing_number(G):
-    """
-    Return the PSD zero forcing number of G.
+    r"""
+    Calculates the Positive Semidefinite (PSD) zero forcing number of the graph G.
+
+    The PSD zero forcing number is the size of the smallest PSD zero forcing set
+    in the graph.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
     int
         The PSD zero forcing number of G.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.positive_semidefinite_zero_forcing_number(G))
+    1
     """
     return len(minimum_psd_zero_forcing_set(G))
 
 
 def is_k_power_dominating_set(G, nodes, k):
-    """Return whether or not the nodes in `nodes` comprise a k-power dominating
-    set.
+    r"""
+    Checks if the given nodes comprise a k-power dominating set in the graph G.
+
+    A k-power dominating set is a subset of nodes such that all nodes in the
+    graph can be dominated through the k-forcing process. The k-forcing process
+    begins with the closed neighborhood of the given nodes, and iteratively
+    propagates domination by ensuring each dominated node dominates at least k
+    additional nodes in its neighborhood.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nodes : list, set
-        An iterable container of nodes in G.
-
+    nodes : list or set
+        An iterable container of nodes in G to test as a k-power dominating set.
     k : int
-        A positive integer.
+        A positive integer representing the power domination threshold.
 
     Returns
     -------
-    boolean
-        True if the nodes in `nodes` comprise a k-power dominating set, False
-        otherwise.
+    bool
+        True if the nodes form a k-power dominating set, otherwise False.
+
+    Notes
+    -----
+    - The closed neighborhood of a node v in a graph G includes v itself and
+      all its neighbors.
+    - A k-power dominating set is a generalization of the concept of domination
+      in graphs.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(5)
+    >>> nodes = {0}
+    >>> print(gc.is_k_power_dominating_set(G, nodes, 2))
+    True
+
+    >>> nodes = {4}
+    >>> print(gc.is_k_power_dominating_set(G, nodes, 3))
+    False
     """
     return is_k_forcing_set(G, closed_neighborhood(G, nodes), k)
 
 
 def minimum_k_power_dominating_set(G, k):
-    """Return a smallest k-power dominating set of nodes in *G*.
+    r"""
+    Checks if the given nodes comprise a k-power dominating set in the graph G.
 
-    The method used to compute the set is brute force.
+    A k-power dominating set is a subset of vertices such that all vertices
+    of the graph can be dominated through the k-forcing process starting
+    from the closed neighborhood of the given nodes.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
+    nodes : list or set
+        An iterable container of nodes in G.
+    k : int
+        A positive integer representing the power domination threshold.
 
     Returns
     -------
-    list
-        A list of nodes in a smallest k-power dominating set in *G*.
+    bool
+        True if the given nodes form a k-power dominating set, otherwise False.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0}
+    >>> print(gc.is_k_power_dominating_set(G, nodes, 2))
+    True
     """
     for i in range(1, G.order() + 1):
         for S in combinations(G.nodes(), i):
@@ -685,71 +978,126 @@ def minimum_k_power_dominating_set(G, k):
 
 
 def k_power_domination_number(G, k):
-    """Return the k-power domination number of *G*.
+    r"""
+    Finds the smallest k-power dominating set in the graph G.
+
+    This function uses a brute-force approach to identify the minimum subset
+    of vertices that form a k-power dominating set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
+    k : int
+        A positive integer representing the power domination threshold.
 
     Returns
     -------
-    int
-        The k-power domination number of *G*.
+    set
+        A set of nodes representing the smallest k-power dominating set.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> result = gc.minimum_k_power_dominating_set(G, 2)
+    >>> print(result)
+    {0}
     """
+    for i in range(1, G.order() + 1):
+        for S in combinations(G.nodes(), i):
+            if is_k_power_dominating_set(G, S, k):
+                return set(S)
     return len(minimum_k_power_dominating_set(G, k))
 
 
 def is_power_dominating_set(G, nodes):
-    """Return whether or not the nodes in `nodes` comprise a power dominating
-    set.
+    r"""
+    Checks if the given nodes form a power dominating set in the graph G.
+
+    A power dominating set is a 1-power dominating set, meaning the domination
+    process follows the 1-forcing rule starting from the closed neighborhood of the nodes.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
-
-    nodes : list, set
+    nodes : list or set
         An iterable container of nodes in G.
 
     Returns
     -------
-    boolean
-        True if the nodes in `nodes` comprise a power dominating set, False
-        otherwise.
+    bool
+        True if the nodes form a power dominating set, otherwise False.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> nodes = {0}
+    >>> print(gc.is_power_dominating_set(G, nodes))
+    True
     """
     return is_k_power_dominating_set(G, nodes, 1)
 
 
 def minimum_power_dominating_set(G):
-    """Return a smallest power dominating set of nodes in *G*.
+    r"""
+    Finds the smallest power dominating set in the graph G.
 
-    The method used to compute the set is brute force.
+    This function uses a brute-force approach to identify the minimum subset
+    of vertices that form a power dominating set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
-    list
-        A list of nodes in a smallest power dominating set in *G*.
+    set
+        A set of nodes representing the smallest power dominating set.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> result = gc.minimum_power_dominating_set(G)
+    >>> print(result)
+    {0}
     """
     return minimum_k_power_dominating_set(G, 1)
 
 
 def power_domination_number(G):
-    """Return the power domination number of *G*.
+    r"""
+    Calculates the power domination number of the graph G.
+
+    The power domination number is the size of the smallest power dominating set.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : networkx.Graph
         An undirected graph.
 
     Returns
     -------
     int
-        The power domination number of *G*.
+        The power domination number of G.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> print(gc.power_domination_number(G))
+    1
     """
     return k_power_domination_number(G, 1)

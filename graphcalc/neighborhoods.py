@@ -8,73 +8,121 @@ __all__= [
 ]
 
 def neighborhood(G, v):
-    """
+    r"""
     Returns the neighborhood of a vertex in a graph.
+
+    The neighborhood of a vertex v consists of all vertices directly connected
+    to v by an edge.
 
     Parameters
     ----------
     G : nx.Graph
-        The graph.
+        The input graph.
     v : int
-        The vertex.
+        The vertex whose neighborhood is to be computed.
 
     Returns
     -------
     set
-        The set of neighbors of the vertex.
+        A set of vertices adjacent to v.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> gc.neighborhood(G, 1)
+    {0, 2}
     """
     return set(G.neighbors(v))
 
 def closed_neighborhood(G, v):
-    """
+    r"""
     Returns the closed neighborhood of a vertex in a graph.
+
+    The closed neighborhood of a vertex v consists of v and all vertices
+    directly connected to v by an edge.
 
     Parameters
     ----------
     G : nx.Graph
-        The graph.
+        The input graph.
     v : int
-        The vertex.
+        The vertex whose closed neighborhood is to be computed.
 
     Returns
     -------
     set
-        The set of neighbors of the vertex, including the vertex itself.
+        A set of vertices including v and its neighbors.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> gc.closed_neighborhood(G, 1)
+    {0, 1, 2}
     """
     return neighborhood(G, v) | {v}
 
 def set_neighbors(G, S):
-    """
+    r"""
     Returns the set of neighbors of a set of vertices in a graph.
+
+    The neighbors of a set of vertices S are all vertices adjacent to at least
+    one vertex in S.
 
     Parameters
     ----------
     G : nx.Graph
-        The graph.
+        The input graph.
     S : set
-        The set of vertices.
+        A set of vertices whose neighbors are to be computed.
 
     Returns
     -------
     set
-        The set of neighbors of the vertices in the set.
+        A set of vertices adjacent to at least one vertex in S.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> gc.set_neighbors(G, {1, 2})
+    {0, 3}
     """
     return set.union(*[neighborhood(G, v) for v in S])
 
 def set_closed_neighbors(G, S):
-    """
+    r"""
     Returns the set of closed neighbors of a set of vertices in a graph.
+
+    The closed neighbors of a set of vertices S are all vertices in S along
+    with all vertices adjacent to at least one vertex in S.
 
     Parameters
     ----------
     G : nx.Graph
-        The graph.
+        The input graph.
     S : set
-        The set of vertices.
+        A set of vertices whose closed neighbors are to be computed.
 
     Returns
     -------
     set
-        The set of closed neighbors of the vertices in the set.
+        A set of vertices in S and their neighbors.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> gc.set_closed_neighbors(G, {1, 2})
+    {0, 1, 2, 3}
     """
     return set.union(*[closed_neighborhood(G, v) for v in S])
