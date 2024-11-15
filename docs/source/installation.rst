@@ -8,27 +8,39 @@ Prerequisites
 
 1. **Python**: Ensure you have Python 3.7 or later installed. Check your Python version by running:
 
-``python --version``
+.. code-block:: bash
+
+    python --version
 
 2. **Pip**: Make sure you have ``pip`` installed. You can check your ``pip`` version by running:
 
-   ``pip --version``
+.. code-block:: bash
+
+    pip --version
 
 3. **Virtual Environment (Optional)**: It is recommended to create a virtual environment for GraphcCalc to avoid conflicts with other Python packages. You can create a virtual environment using the following command:
 
-   ``python -m venv .venv``
+.. code-block:: bash
 
-Activate the virtual environment by running:
+     python -m venv .venv
 
-   ``source .venv/bin/activate``
+Activate the virtual environment by running
 
-On Windows, you can activate the virtual environment by running:
+.. code-block:: bash
 
-   ``.venv\Scripts\activate``
+    source .venv/bin/activate
+
+On Windows, you can activate the virtual environment by running
+
+.. code-block:: bash
+
+    .venv\Scripts\activate
 
 To deactivate the virtual environment, run:
 
-   ``deactivate``
+.. code-block:: bash
+
+    deactivate
 
 For more information on virtual environments, refer to the `Python documentation <https://docs.python.org/3/library/venv.html>`__.
 
@@ -37,31 +49,38 @@ Installation
 
 You can install GraphCalc from the Python Package Index (PyPI) using ``pip``. Run the following command to install the latest version of GraphCalc:
 
-   ``pip install graphcalc``
+.. code-block:: bash
+
+    pip install graphcalc
 
 Verify the Installation
 -----------------------
 
 To confirm that GraphCalc was installed correctly, open a Python interpreter and try importing it:
 
-   ```
+.. code-block:: python
+
    import graphcalc
    print(graphcalc.__version__)
-   ```
+
 
 Updating GraphCalc
 -------------------
 
 To update GraphCalc to the latest version, use:
 
-   ``pip install --upgrade graphcalc``
+.. code-block:: bash
+
+   pip install --upgrade graphcalc
 
 Uninstalling GraphCalc
 -----------------------
 
 If you need to uninstall GraphCalc, run:
 
-   ``pip uninstall graphcalc``
+.. code-block:: bash
+
+    pip uninstall graphcalc
 
 Troubleshooting
 ---------------

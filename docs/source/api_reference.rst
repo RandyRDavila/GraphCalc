@@ -3,21 +3,21 @@ API Reference
 
 This section provides a detailed overview of all modules, classes, and functions in `graphcalc`.
 
-.. toctree::
-   :maxdepth: 1
+.. .. toctree::
+..    :maxdepth: 1
 
-   modules/basics
-   modules/classics
-   modules/degree
-   modules/degree_sequence_invariants
-   modules/domination
-   modules/neighborhoods
-   modules/zero_forcing
+..    modules/basics
+..    modules/classics
+..    modules/degree
+..    modules/degree_sequence_invariants
+..    modules/domination
+..    modules/neighborhoods
+..    modules/zero_forcing
 
-Modules
--------
+.. Modules
+.. -------
 
-The following modules are available in `graphcalc`:
+.. The following modules are available in `graphcalc`:
 
 Basics
 ------
