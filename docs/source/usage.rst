@@ -31,4 +31,17 @@ Here’s how to calculate the domination number of a graph using `graphcalc`.
    G = nx.cycle_graph(5)
 
    # Calculate and print the domination number
-   print("Independence Number:", gc.domination_number(G))
+   print("Domination Number:", gc.domination_number(G))
+
+Return a minimum dominating set.
+
+.. code-block:: python
+
+   import networkx as nx
+   import graphcalc as gc
+
+   # Create a sample graph
+   G = nx.cycle_graph(5)
+
+   # Calculate and print the domination number
+   print("Minimimum Dominating Set:", gc.minimum_dominating_set(G))
