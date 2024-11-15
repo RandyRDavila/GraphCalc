@@ -32,15 +32,15 @@ import graphcalc as gc
 
 # Calculate and print the independence number of the Petersen graph.
 G = nx.petersen_graph()
-print(f"independence number of G = {gc.independence_number(G)})
+print(f"independence number of G = {gc.independence_number(G)}")
 
 # Calculate and print the domination number of the Petersen graph.
-print(f"domination number of G = {gc.domination_number(G)})
+print(f"domination number of G = {gc.domination_number(G)}")
 
 # Calculate and print the zero forcing number of the Petersen graph.
-print(f"zero forcing number of G = {gc.zero_forcing_number(G)})
+print(f"zero forcing number of G = {gc.zero_forcing_number(G)}")
 ```
 
 
-## Author
+### Author
 Randy Davila, PhD
