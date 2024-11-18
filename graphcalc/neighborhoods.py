@@ -35,7 +35,7 @@ def neighborhood(G, v):
     >>> gc.neighborhood(G, 1)
     {0, 2}
     """
-    return set(G.neighbors(v))
+    return set([u for u in G[v]])
 
 def closed_neighborhood(G, v):
     r"""

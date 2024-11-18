@@ -301,7 +301,7 @@ def connected_and_cubic(G):
     >>> gc.connected_and_cubic(G)
     True
     """
-    return nx.is_connected(G) and maximum_degree(G) == 3
+    return nx.is_connected(G) and maximum_degree(G) == minimum_degree(G) == 3
 
 def connected_and_subcubic(G):
     r"""
