@@ -658,7 +658,7 @@ def minimum_rainbow_dominating_function(G, k):
     """
     pulp.LpSolverDefault.msg = 0
     # Create a PuLP problem instance
-    prob = pulp.LpProblem("Rainbow_Domination", pulp.pulp.LpMinimize)
+    prob = pulp.LpProblem("Rainbow_Domination", pulp.LpMinimize)
 
     # Create binary variables f_vi where f_vi = 1 if vertex v is colored with color i
     f = pulp.LpVariable.dicts("f", ((v, i) for v in G.nodes for i in range(1, k+1)), cat='Binary')

@@ -10,6 +10,9 @@ from graphcalc.domination import (
     independent_domination_number,
     minimum_outer_connected_dominating_set,
     outer_connected_domination_number,
+    double_roman_domination_number,
+    rainbow_domination_number,
+    restrained_domination_number,
 )
 
 @pytest.mark.parametrize("G, dom_set, expected", [
