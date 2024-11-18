@@ -3,6 +3,8 @@ from graphcalc.zero_forcing import (
     is_zero_forcing_set,
     minimum_zero_forcing_set,
     zero_forcing_number,
+    total_zero_forcing_number,
+    connected_zero_forcing_number,
     minimum_k_forcing_set,
     k_forcing_number,
     is_power_dominating_set,
@@ -80,3 +82,12 @@ def test_positive_semidefinite_zero_forcing_number():
     for n in range(2, 6):  # Test for trees of size 2 to 5
         G = nx.random_labeled_tree(n)
         assert positive_semidefinite_zero_forcing_number(G) == 1
+
+def petersen_tests():
+    G = nx.petersen_graph()
+    assert zero_forcing_number(G) == 5
+    assert k_forcing_number(G, 2) == 2
+    assert power_domination_number(G) == 2
+    assert positive_semidefinite_zero_forcing_number(G) == 1
+    assert total_zero_forcing_number(G) == 5
+    assert connected_zero_forcing_number(G) == 5
