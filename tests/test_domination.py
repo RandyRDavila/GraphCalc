@@ -96,3 +96,10 @@ def test_minimum_outer_connected_dominating_set(G, expected):
 ])
 def test_outer_connected_domination_number(G, expected):
     assert outer_connected_domination_number(G) == expected
+
+def petersen_tests():
+    G = nx.petersen_graph()
+    assert domination_number(G) == 3
+    assert total_domination_number(G) == 4
+    assert independent_domination_number(G) == 3
+    assert outer_connected_domination_number(G) == 3

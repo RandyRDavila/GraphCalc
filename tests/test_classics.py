@@ -177,3 +177,12 @@ def test_vertex_cover_number(G, expected):
 ])
 def test_edge_cover_number(G, expected):
     assert edge_cover_number(G) == expected
+
+def petersen_tests():
+    G = nx.petersen_graph()
+    assert independence_number(G) == 4
+    assert chromatic_number(G) == 3
+    assert matching_number(G) == 5
+    assert vertex_cover_number(G) == 6
+    assert edge_cover_number(G) == 3
+    assert clique_number(G) == 2
