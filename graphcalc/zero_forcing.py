@@ -1,7 +1,7 @@
 import networkx as nx
 from itertools import combinations
 
-from .neighborhoods import neighborhood, closed_neighborhood
+from .neighborhoods import neighborhood, closed_neighborhood, set_closed_neighbors
 from .basics import connected
 from .degree import minimum_degree
 
@@ -218,7 +218,7 @@ def k_forcing_number(G, k):
     return len(minimum_k_forcing_set(G, k))
 
 
-def is_zero_forcing_vertex(G, v, nbunch):
+def is_zero_forcing_vertex(G, v, S):
     r"""
     Determines whether a node *v* can force relative to a set of nodes.
 
@@ -230,7 +230,7 @@ def is_zero_forcing_vertex(G, v, nbunch):
         An undirected graph.
     v : node
         The node to check.
-    nbunch : list or set
+    S : list or set
         The set of nodes under consideration.
 
     Returns
@@ -244,14 +244,14 @@ def is_zero_forcing_vertex(G, v, nbunch):
     >>> import graphcalc as gc
 
     >>> G = nx.path_graph(4)
-    >>> nbunch = {0, 1}
-    >>> print(gc.is_zero_forcing_vertex(G, 0, nbunch))
+    >>> S = {0, 1}
+    >>> print(gc.is_zero_forcing_vertex(G, 0, S))
     True
     """
-    return is_k_forcing_vertex(G, v, nbunch, 1)
+    return is_k_forcing_vertex(G, v, S, 1)
 
 
-def is_zero_forcing_active_set(G, nbunch):
+def is_zero_forcing_active_set(G, S):
     r"""
     Checks whether the given set of nodes forms a zero forcing set in the graph.
 
@@ -261,7 +261,7 @@ def is_zero_forcing_active_set(G, nbunch):
     ----------
     G : networkx.Graph
         An undirected graph.
-    nbunch : list or set
+    S : list or set
         The set of nodes under consideration.
 
     Returns
@@ -275,14 +275,14 @@ def is_zero_forcing_active_set(G, nbunch):
     >>> import graphcalc as gc
 
     >>> G = nx.path_graph(4)
-    >>> nbunch = {0, 3}
-    >>> print(gc.is_zero_forcing_set(G, nbunch))
+    >>> S = {0, 3}
+    >>> print(gc.is_zero_forcing_set(G, S))
     True
     """
-    return is_k_forcing_active_set(G, nbunch, 1)
+    return is_k_forcing_active_set(G, S, 1)
 
 
-def is_zero_forcing_set(G, nbunch):
+def is_zero_forcing_set(G, S):
     r"""
     Checks whether the given set of nodes forms a zero forcing set in the graph.
 
@@ -292,7 +292,7 @@ def is_zero_forcing_set(G, nbunch):
     ----------
     G : networkx.Graph
         An undirected graph.
-    nbunch : list or set
+    S : list or set
         The set of nodes under consideration.
 
     Returns
@@ -306,11 +306,11 @@ def is_zero_forcing_set(G, nbunch):
     >>> import graphcalc as gc
 
     >>> G = nx.path_graph(4)
-    >>> nbunch = {0, 3}
-    >>> print(gc.is_zero_forcing_set(G, nbunch))
+    >>> S = {0, 3}
+    >>> print(gc.is_zero_forcing_set(G, S))
     True
     """
-    return is_k_forcing_set(G, nbunch, 1)
+    return is_k_forcing_set(G, S, 1)
 
 
 def minimum_zero_forcing_set(G):
@@ -859,7 +859,7 @@ def minimum_psd_zero_forcing_set(G):
     for i in range(1, G.order() + 1):
         for black_set in combinations(G.nodes(), i):
             if is_psd_zero_forcing_set(G, black_set):
-                return list(black_set)
+                return set(black_set)
 
 
 def positive_semidefinite_zero_forcing_number(G):
@@ -936,7 +936,7 @@ def is_k_power_dominating_set(G, nodes, k):
     >>> print(gc.is_k_power_dominating_set(G, nodes, 3))
     False
     """
-    return is_k_forcing_set(G, closed_neighborhood(G, nodes), k)
+    return is_k_forcing_set(G, set_closed_neighbors(G, nodes), k)
 
 
 def minimum_k_power_dominating_set(G, k):
@@ -1009,8 +1009,7 @@ def k_power_domination_number(G, k):
     for i in range(1, G.order() + 1):
         for S in combinations(G.nodes(), i):
             if is_k_power_dominating_set(G, S, k):
-                return set(S)
-    return len(minimum_k_power_dominating_set(G, k))
+                return i
 
 
 def is_power_dominating_set(G, nodes):
