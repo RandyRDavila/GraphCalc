@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 # Read requirements from requirements.txt
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
+# with open("requirements.txt") as f:
+#     requirements = f.read().splitlines()
 
 setup(
     name="graphcalc",
-    version="0.1.11",
+    version="0.1.12",
     author="Randy Davila",
     author_email="rrd6@rice.edu",
     description="A Python package for graph computation functions",
@@ -15,7 +15,14 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/randydavila/graphcalc",
     packages=find_packages(),
-    install_requires=requirements,  # Use requirements from the file
+    install_requires=[
+    "numpy",             # Numerical operations
+    "networkx",           # Graph-theoretic computations
+    "pillow",             # Image handling (if used for visualization)
+    "PuLP",               # Linear programming
+    "matplotlib",         # Plotting (if visualization is part of the package)
+    "python-dateutil",    # Date handling (if required by your package)
+],  # Use requirements from the file
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

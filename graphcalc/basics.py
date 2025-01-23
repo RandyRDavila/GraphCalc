@@ -1,5 +1,7 @@
 import networkx as nx
+import itertools
 from .degree import *
+from .neighborhoods import neighborhood
 
 __all__= [
     'order',
@@ -303,6 +305,32 @@ def connected_and_cubic(G):
     """
     return nx.is_connected(G) and maximum_degree(G) == minimum_degree(G) == 3
 
+def subcubic(G):
+    r"""
+    Checks if the graph is subcubic.
+
+    A graph is subcubic if the degree of every vertex is at most 3.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is subcubic, otherwise False.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.cycle_graph(4)  # Degree of all nodes is 2
+    >>> gc.subcubic(G)
+    True
+    """
+
 def connected_and_subcubic(G):
     r"""
     Checks if the graph is both connected and subcubic.
@@ -343,6 +371,105 @@ def connected_and_subcubic(G):
     False
     """
     return nx.is_connected(G) and maximum_degree(G) <= 3
+
+def claw_free(G):
+    r"""
+    Checks if a graph is claw-free. A claw is a tree with three leaves adjacent to a single vertex.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is claw-free, otherwise False.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+
+    >>> G = nx.path_graph(4)
+    >>> gc.claw_free(G)
+    True
+    """
+    claw = nx.star_graph(3)
+    for S in set(itertools.combinations(G.nodes(), 3)):
+        H = G.subgraph(list(S))
+        if nx.is_isomorphic(H, claw):
+            return False
+    # if the above loop completes, the graph is claw-free
+    return True
+
+def K_4_free(G):
+    r"""Returns True if *G* does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is a complete graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gp
+
+    >>> G = nx.complete_graph(4)
+    >>> gc.K_n(G)
+    True
+    """
+    K_4 = nx.complete_graph(4)
+    for S in set(itertools.combinations(G.nodes(), 4)):
+        H = G.subgraph(list(S))
+        if nx.is_isomorphic(H, K_4):
+            return False
+    return True
+
+
+def triangle_free(G):
+    r"""Returns True if *G* is triangle-free, and False otherwise.
+
+    A graph is *triangle-free* if it contains no induced subgraph isomorphic to
+    the complete graph on 3 vertices.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is triangle-free, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gp
+
+    >>> G = nx.complete_graph(4)
+    >>> gp.is_triangle_free(G)
+    False
+    """
+    # define a triangle graph, also known as the complete graph K_3
+    triangle = nx.complete_graph(3)
+
+    # enumerate over all possible combinations of 3 vertices contained in G
+    for S in set(itertools.combinations(G.nodes(), 3)):
+        H = G.subgraph(list(S))
+        if nx.is_isomorphic(H, triangle):
+            return False
+    # if the above loop completes, the graph is triangle free
+    return True
+
+
 
 def diameter(G):
     r"""
