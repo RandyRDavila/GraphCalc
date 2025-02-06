@@ -5,3 +5,4 @@ from .degree_sequence_invariants import *
 from .domination import *
 from .neighborhoods import *
 from .zero_forcing import *
+from .polytope import *
