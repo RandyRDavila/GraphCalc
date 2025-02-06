@@ -31,8 +31,9 @@ def p_vector(G_nx):
     Compute the p-vector of a simple planar graph:
 
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.cycle_graph(6)  # Hexagon
-    >>> p_vector(G)
+    >>> gc.p_vector(G)
     [0, 1]  # One hexagonal face and no smaller faces
 
     Compute the p-vector of a graph with multiple face sizes:
@@ -43,7 +44,7 @@ def p_vector(G_nx):
     ...     (0, 4), (4, 1),  # Two triangular faces
     ...     (1, 5), (5, 2)
     ... ])
-    >>> p_vector(G)
+    >>> gc.p_vector(G)
     [2, 1]  # Two triangles and one quadrilateral
     """
     # Ensure the graph is labeled with consecutive integers
@@ -132,13 +133,14 @@ def p_gons(graph, p=3):
     Count the number of triangular faces in a hexagonal graph:
 
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.cycle_graph(6)  # Hexagon
-    >>> p_gons(G, p=3)
+    >>> gc.p_gons(G, p=3)
     0  # The hexagon has no triangular faces
 
     Count the number of hexagonal faces in the same graph:
 
-    >>> p_gons(G, p=6)
+    >>> gc.p_gons(G, p=6)
     1  # The hexagon has exactly one 6-sided face
 
     Count the number of pentagonal faces in a graph with multiple face types:
@@ -149,24 +151,15 @@ def p_gons(graph, p=3):
     ...     (0, 4), (4, 1),  # Two triangular faces
     ...     (1, 5), (5, 2)
     ... ])
-    >>> p_gons(G, p=5)
+    >>> gc.p_gons(G, p=5)
     0  # The graph has no pentagonal faces
     """
     p_vector = p_vector(graph)
     return p_vector[p - 3] if p - 3 < len(p_vector) else 0
 
-
-
 def fullerene(G):
     r"""
     Determine if a graph is a fullerene.
-
-    A graph is a fullerene if it satisfies the following properties:
-    - **3-regular**: Every vertex has degree 3.
-    - **Planar**: The graph can be embedded in the plane without edge crossings.
-    - **Face structure**:
-        - The graph contains exactly 12 pentagonal faces.
-        - All remaining faces are hexagonal.
 
     Parameters
     ----------
@@ -181,29 +174,15 @@ def fullerene(G):
     Notes
     -----
     This function assumes the graph is simple and connected. It uses the
-    `p_vector_graph` function to compute the face structure of the graph.
+    `p_vector` function to compute the face structure of the graph.
 
     Examples
     --------
-    Check if a truncated icosahedron (C₆₀) is a fullerene:
-
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.Graph()
-    >>> G.add_edges_from([
-    ...     (0, 1), (0, 5), (0, 6), (1, 2), (1, 7), (2, 3), (2, 8), (3, 4), (3, 9),
-    ...     (4, 5), (4, 10), (5, 11), (6, 12), (6, 7), (7, 13), (8, 13), (8, 9),
-    ...     (9, 14), (10, 14), (10, 11), (11, 15), (12, 16), (12, 17), (13, 17),
-    ...     (14, 18), (15, 18), (15, 19), (16, 20), (16, 21), (17, 21), (18, 22),
-    ...     (19, 22), (19, 23), (20, 24), (21, 25), (22, 26), (23, 27), (24, 28),
-    ...     (25, 28), (26, 29), (27, 29), (28, 30), (29, 31), (30, 32), (31, 32)
-    ... ])
-    >>> fullerene(G)
-    True
-
-    Verify a non-fullerene graph:
-
-    >>> H = nx.cycle_graph(6)  # Hexagon
-    >>> fullerene(H)
+    >>> G.add_edges_from([(0, 1), (1, 2), (2, 0)])
+    >>> gc.fullerene(G)
     False
     """
     # Check if the graph is 3-regular
