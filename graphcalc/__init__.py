@@ -6,3 +6,4 @@ from .domination import *
 from .neighborhoods import *
 from .zero_forcing import *
 from .polytope import *
+from .spectral import *

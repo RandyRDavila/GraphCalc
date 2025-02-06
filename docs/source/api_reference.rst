@@ -82,3 +82,11 @@ Polytope
    :members:
    :undoc-members:
    :show-inheritance:
+
+Spectral
+--------
+
+.. automodule:: graphcalc.spectral
+   :members:
+   :undoc-members:
+   :show-inheritance:
