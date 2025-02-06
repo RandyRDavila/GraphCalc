@@ -195,14 +195,14 @@ def fullerene(G):
         return False
 
     # Use the p_vector_graph function to count faces of different sizes
-    p_vector = p_vector(G)
+    vector = p_vector(G)
 
     # Ensure there are exactly 12 pentagonal faces
-    if len(p_vector) < 1 or p_vector[0] != 12:
+    if len(vector) < 1 or vector[0] != 12:
         return False
 
     # Ensure all other faces are hexagonal
-    if any(p_vector[i] != 0 for i in range(1, len(p_vector) - 1)):
+    if any(vector[i] != 0 for i in range(1, len(vector) - 1)):
         return False
 
     return True
