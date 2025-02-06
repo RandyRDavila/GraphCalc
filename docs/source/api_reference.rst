@@ -74,3 +74,11 @@ Zero Forcing
    :members:
    :undoc-members:
    :show-inheritance:
+
+Polytope
+--------
+
+.. automodule:: graphcalc.polytope
+   :members:
+   :undoc-members:
+   :show-inheritance:
