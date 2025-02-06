@@ -6,7 +6,8 @@ contourpy==1.3.0
 cycler==0.12.1
 docutils==0.21.2
 fonttools==4.55.8
-graphcalc @ file:///Users/randydavila/Documents/Python-Packages/graph_compute/graphcomp
+-e .
+
 idna==3.10
 imagesize==1.4.1
 importlib_metadata==8.6.1
