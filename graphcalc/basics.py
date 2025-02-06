@@ -2,6 +2,9 @@ import networkx as nx
 import itertools
 from .degree import *
 from .neighborhoods import neighborhood
+import matplotlib.pyplot as plt
+import csv
+import numpy as np
 
 __all__= [
     'order',
@@ -18,7 +21,292 @@ __all__= [
     'connected_and_regular',
     'connected_and_subcubic',
     'tree',
+    'SimpleGraph',
 ]
+
+class SimpleGraph(nx.Graph):
+    r"""
+    A subclass of networkx.Graph with additional functionality.
+
+    Features:
+    - Optional `name` and `info` attributes for metadata.
+    - Default integer labels for nodes.
+    - Methods to read and write edge lists to/from CSV files.
+    - Method to draw the graph using Matplotlib.
+    """
+
+    def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
+        """
+        Initialize a SimpleGraph instance with optional edges and nodes.
+
+        Parameters
+        ----------
+        edges : list of tuple, optional
+            A list of edges to initialize the graph.
+        nodes : list, optional
+            A list of nodes to initialize the graph.
+        name : str, optional
+            An optional name for the graph.
+        info : str, optional
+            Additional information about the graph.
+        *args, **kwargs : arguments
+            Arguments passed to the base `networkx.Graph` class.
+        """
+        super().__init__(*args, **kwargs)
+        self.name = name
+        self.info = info
+
+        # Add nodes and edges if provided
+        if nodes:
+            self.add_nodes_from(nodes)
+
+        if edges:
+            self.add_edges_from(edges)
+
+    def write_edgelist_to_csv(self, filepath):
+        """
+        Write the edge list of the graph to a CSV file.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the CSV file where the edge list will be written.
+
+        Examples
+        --------
+        >>> G = SimpleGraph(name="Example Graph")
+        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+        >>> G.write_edgelist_to_csv("edgelist.csv")
+        """
+        with open(filepath, mode='w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Source", "Target"])
+            for edge in self.edges:
+                writer.writerow(edge)
+
+    def read_edge_list(self, filepath, delimiter=None):
+        """
+        Read an edge list from a file (CSV or TXT) and add edges to the graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the edge list.
+        delimiter : str, optional
+            The delimiter used in the file (default is ',' for CSV and whitespace for TXT).
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist.
+        ValueError
+            If the file format is invalid.
+
+        Notes
+        -----
+        - For CSV files, the file must have a header with "Source" and "Target".
+        - For TXT files, the file should contain one edge per line with node pairs separated by whitespace.
+        """
+        import os
+
+        # Determine the file type
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lower()
+
+        if ext == ".csv":
+            # Set default delimiter for CSV
+            delimiter = delimiter or ","
+            self._read_edge_list_csv(filepath, delimiter)
+        elif ext == ".txt":
+            # Set default delimiter for TXT
+            delimiter = delimiter or None  # Default for whitespace-separated files
+            self._read_edge_list_txt(filepath, delimiter)
+        else:
+            raise ValueError("Unsupported file format. Only .csv and .txt files are supported.")
+
+    def _read_edge_list_csv(self, filepath, delimiter):
+        """Internal method to read edge lists from a CSV file."""
+        import csv
+
+        try:
+            with open(filepath, mode="r") as csvfile:
+                reader = csv.reader(csvfile, delimiter=delimiter)
+                header = next(reader)  # Read the header
+                if header != ["Source", "Target"]:
+                    raise ValueError("CSV file must have 'Source' and 'Target' as headers.")
+                for row in reader:
+                    if len(row) != 2:
+                        raise ValueError(f"Invalid row in CSV file: {row}")
+                    u, v = map(int, row)  # Convert nodes to integers
+                    self.add_edge(u, v)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        except Exception as e:
+            raise Exception(f"Error reading edge list from '{filepath}': {e}")
+
+    def _read_edge_list_txt(self, filepath, delimiter):
+        """Internal method to read edge lists from a TXT file."""
+        try:
+            with open(filepath, mode="r") as txtfile:
+                for line in txtfile:
+                    if line.strip():  # Skip empty lines
+                        nodes = line.strip().split(delimiter)
+                        if len(nodes) != 2:
+                            raise ValueError(f"Invalid line in TXT file: {line.strip()}")
+                        u, v = map(int, nodes)  # Convert nodes to integers
+                        self.add_edge(u, v)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        except Exception as e:
+            raise Exception(f"Error reading edge list from '{filepath}': {e}")
+
+    def read_adjacency_matrix(self, filepath, delimiter=None):
+        """
+        Read an adjacency matrix from a file (CSV or TXT) and create the graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the adjacency matrix.
+        delimiter : str, optional
+            The delimiter used in the file (default is ',' for CSV and whitespace for TXT).
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist.
+        ValueError
+            If the file format is invalid or the adjacency matrix is not square.
+
+        Examples
+        --------
+        >>> G = SimpleGraph()
+        >>> G.read_adjacency_matrix("adjacency_matrix.csv")
+        """
+        import os
+
+        # Determine the file type
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lower()
+
+        # Set default delimiter
+        if ext == ".csv":
+            delimiter = delimiter or ","
+        elif ext == ".txt":
+            delimiter = delimiter or None  # Default for whitespace-separated files
+        else:
+            raise ValueError("Unsupported file format. Only .csv and .txt files are supported.")
+
+        try:
+            # Load the adjacency matrix
+            adjacency_matrix = np.loadtxt(filepath, delimiter=delimiter)
+
+            # Validate that the adjacency matrix is square
+            if adjacency_matrix.shape[0] != adjacency_matrix.shape[1]:
+                raise ValueError("The adjacency matrix must be square.")
+
+            # Create the graph from the adjacency matrix
+            G = nx.from_numpy_array(adjacency_matrix, create_using=type(self))
+            self.clear()  # Clear any existing edges/nodes in the current graph
+            self.add_edges_from(G.edges)
+
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        except Exception as e:
+            raise Exception(f"Error reading adjacency matrix from '{filepath}': {e}")
+
+    def get_adjacency_matrix(self, as_numpy_array=True):
+        """
+        Returns the adjacency matrix of the graph.
+
+        Parameters
+        ----------
+        as_numpy_array : bool, optional
+            If True (default), returns the adjacency matrix as a NumPy array.
+            If False, returns the adjacency matrix as a SciPy sparse matrix.
+
+        Returns
+        -------
+        numpy.ndarray or scipy.sparse.csr_matrix
+            The adjacency matrix of the graph.
+
+        Examples
+        --------
+        >>> G = SimpleGraph()
+        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+        >>> adjacency_matrix = G.get_adjacency_matrix()
+        >>> print(adjacency_matrix)
+        [[0. 1. 0. 0.]
+         [1. 0. 1. 0.]
+         [0. 1. 0. 1.]
+         [0. 0. 1. 0.]]
+        """
+        if as_numpy_array:
+            return nx.to_numpy_array(self)
+        else:
+            return nx.to_scipy_sparse_matrix(self)
+
+    def draw(self, with_labels=True, node_color="lightblue", node_size=500, font_size=10):
+        """
+        Draw the graph using Matplotlib.
+
+        Parameters
+        ----------
+        with_labels : bool, optional
+            Whether to display node labels (default is True).
+        node_color : str or list, optional
+            The color of the nodes (default is "lightblue").
+        node_size : int, optional
+            The size of the nodes (default is 500).
+        font_size : int, optional
+            The font size of the labels (default is 10).
+
+        Examples
+        --------
+        >>> G = SimpleGraph(name="Example Graph")
+        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+        >>> G.draw()
+        """
+        plt.figure(figsize=(8, 6))
+        nx.draw(
+            self,
+            with_labels=with_labels,
+            node_color=node_color,
+            node_size=node_size,
+            font_size=font_size,
+            edge_color="gray"
+        )
+        if self.name:
+            plt.title(self.name, fontsize=14)
+        plt.show()
+
+    def __repr__(self):
+        """
+        String representation of the SimpleGraph.
+
+        Returns
+        -------
+        str
+            A string summarizing the graph's name, information, and basic properties.
+        """
+        description = super().__repr__()
+        metadata = f"Name: {self.name}" if self.name else "No Name"
+        info = f"Info: {self.info}" if self.info else "No Additional Information"
+        return f"{description}\n{metadata}\n{info}"
+
+    def complement(self):
+        """
+        Returns the complement of the graph as a standard NetworkX graph.
+
+        This ensures that constraints specific to SimpleGraph or its subclasses
+        are not applied to the complement graph.
+
+        Returns
+        -------
+        networkx.Graph
+            The complement of the graph.
+        """
+        return nx.complement(nx.Graph(self))
 
 def order(G):
     r"""

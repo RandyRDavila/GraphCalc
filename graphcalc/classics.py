@@ -122,28 +122,23 @@ def maximum_clique(G):
 
 
 def clique_number(G):
-    r"""Calculates the clique number of a graph.
+    r"""
+    Compute the clique number of the graph.
 
-    The clique number of a graph `G` is the size of the largest clique. This function finds it by
-    calculating the independence number of the complement of `G`.
+    The clique number is the size of the largest clique in the graph.
 
-    Args:
-        G (networkx.Graph): The input graph.
+    Parameters
+    ----------
+    G : networkx.Graph or subclass
+        The input graph.
 
-    Returns:
-        int: The clique number of the graph `G`.
-
-    Examples
-    --------
-
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = nx.complete_graph(4)
-    >>> gc.clique_number(G)
-    4
+    Returns
+    -------
+    int
+        The clique number of the graph.
     """
-    return independence_number(nx.complement(G))
+    complement_graph = G.complement() if hasattr(G, "complement") else nx.complement(G)
+    return independence_number(complement_graph)
 
 
 def optimal_proper_coloring(G):

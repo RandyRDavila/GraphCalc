@@ -1,7 +1,22 @@
 import networkx as nx
+import graphcalc as gc
+import matplotlib.pyplot as plt
 # import numpy as np
 
-__all__ = ['p_vector', 'p_gons', 'fullerene']
+__all__ = [
+    'p_vector',
+    'p_gons',
+    'fullerene',
+    'simple_graph',
+    'polytope_graph',
+    'simple_polytope_graph',
+    'polytope_graph_with_p6_zero',
+    'simple_polytope_graph_with_p6_zero',
+    'polytope_graph_with_p6_greater_than_zero',
+    'simple_polytope_graph_with_p6_greater_than_zero',
+    'PolytopeGraph',
+    'SimplePolytopeGraph',
+]
 
 def p_vector(G_nx):
     r"""
@@ -50,6 +65,7 @@ def p_vector(G_nx):
     # Ensure the graph is labeled with consecutive integers
     G_nx = nx.convert_node_labels_to_integers(G_nx)
     graph = nx.to_numpy_array(G_nx, dtype=int)
+
 
     # Dictionary to store the count of faces by their number of sides
     num_i_sides = {}
@@ -104,7 +120,7 @@ def p_vector(G_nx):
     return p_k_vec
 
 
-def p_gons(graph, p=3):
+def p_gons(G, p=3):
     r"""
     Compute the number of p-sided faces in a planar graph.
 
@@ -113,7 +129,7 @@ def p_gons(graph, p=3):
 
     Parameters
     ----------
-    graph : networkx.Graph
+    G : networkx.Graph
         A planar graph for which the count of p-sided faces is computed.
     p : int, optional
         The number of sides of the faces to count. Defaults to 3 (triangular faces).
@@ -154,7 +170,7 @@ def p_gons(graph, p=3):
     >>> gc.p_gons(G, p=5)
     0  # The graph has no pentagonal faces
     """
-    p_vector = p_vector(graph)
+    p_vector = p_vector(G)
     return p_vector[p - 3] if p - 3 < len(p_vector) else 0
 
 def fullerene(G):
@@ -206,3 +222,584 @@ def fullerene(G):
         return False
 
     return True
+
+def simple_graph(G):
+    r"""
+    Check if a graph is simple.
+
+    A graph is simple if:
+    1. It has no self-loops.
+    2. It has no multiple edges.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is simple, False otherwise.
+    """
+    # Check for self-loops
+    if any(G.has_edge(u, u) for u in G.nodes):
+        return False
+
+    # Check for multiple edges (only relevant for MultiGraph)
+    if isinstance(G, nx.MultiGraph):
+        for u, v, count in G.edges(keys=True):
+            if G.number_of_edges(u, v) > 1:
+                return False
+
+    return True
+
+
+def polytope_graph(G):
+    r"""
+    Check if a graph is the graph of a polyhedron.
+
+    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
+    1. Simple: The graph has no self-loops or multiple edges.
+    2. Planar: The graph can be embedded in the plane without edge crossings.
+    3. 3-Connected: The graph remains connected after removing any two vertices.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a polytope graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.octahedral_graph()  # Octahedral graph is a polytope graph
+    >>> polytope_graph(G)
+    True
+
+    >>> G = nx.path_graph(5)  # Path graph is not a polytope graph
+    >>> polytope_graph(G)
+    False
+    """
+    # 1. Check if the graph is simple
+    if not simple_graph(G):
+        return False
+
+    # 2. Check if the graph is planar
+    is_planar, _ = nx.check_planarity(G)
+    if not is_planar:
+        return False
+
+    # 3. Check if the graph is 3-connected
+    if not nx.is_connected(G) or not nx.node_connectivity(G) >= 3:
+        return False
+
+    return True
+
+def simple_polytope_graph(G):
+    r"""
+    Check if a graph is the graph of a simple polyhedron.
+
+    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
+    1. Simple: The graph has no self-loops or multiple edges.
+    2. Planar: The graph can be embedded in the plane without edge crossings.
+    3. 3-Connected: The graph remains connected after removing any two vertices.
+    4. 3-Regular: Each vertex has degree 3.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a polytope graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.cubical_graph()  # Octahedral graph is a simple polytope graph
+    >>> simple_polytope_graph(G)
+    True
+
+    >>> G = nx.path_graph(5)  # Path graph is not a simple polytope graph
+    >>> simple_polytope_graph(G)
+    False
+    """
+    return simple_graph(G) and polytope_graph(G) and gc.connected_and_cubic(G)
+
+def polytope_graph_with_p6_zero(G):
+    r"""
+    Check if a graph is the graph of a polyhedron with no hexagonal faces.
+
+    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
+    1. Simple: The graph has no self-loops or multiple edges.
+    2. Planar: The graph can be embedded in the plane without edge crossings.
+    3. 3-Connected: The graph remains connected after removing any two vertices.
+    4. No hexagonal faces: The graph has no hexagonal faces.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a polytope graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.octahedral_graph()  # Octahedral graph is a polytope graph with no hexagonal faces
+    >>> polytope_graph_with_p6_zero(G)
+    True
+
+    >>> G = nx.cubical_graph()  # Cubical graph is a polytope graph with hexagonal faces
+    >>> polytope_graph_with_p6_zero(G)
+    False
+    """
+    return polytope_graph(G) and gc.p_gons(G, p=6) == 0
+
+
+def simple_polytope_graph_with_p6_zero(G):
+    r"""
+    Check if a graph is the graph of a simple polyhedron with no hexagonal faces.
+
+    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
+    1. Simple: The graph has no self-loops or multiple edges.
+    2. Planar: The graph can be embedded in the plane without edge crossings.
+    3. 3-Connected: The graph remains connected after removing any two vertices.
+    4. 3-Regular: Each vertex has degree 3.
+    5. No hexagonal faces: The graph has no hexagonal faces.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a polytope graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.octahedral_graph()  # Octahedral graph is a simple polytope graph with no hexagonal faces
+    >>> simple_polytope_graph_with_p6_zero(G)
+    True
+
+    >>> G = nx.cubical_graph()  # Cubical graph is a simple polytope graph with hexagonal faces
+    >>> simple_polytope_graph_with_p6_zero(G)
+    False
+    """
+    return simple_polytope_graph(G) and gc.p_gons(G, p=6) == 0
+
+def polytope_graph_with_p6_greater_than_zero(G):
+    r"""
+    Check if a graph is the graph of a polyhedron with at least one hexagonal face.
+
+    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
+    1. Simple: The graph has no self-loops or multiple edges.
+    2. Planar: The graph can be embedded in the plane without edge crossings.
+    3. 3-Connected: The graph remains connected after removing any two vertices.
+    4. At least one hexagonal face: The graph has at least one hexagonal face.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a polytope graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.cubical_graph()  # Cubical graph is a polytope graph with hexagonal faces
+    >>> polytope_graph_with_p6_greater_than_zero(G)
+    True
+
+    >>> G = nx.octahedral_graph()  # Octahedral graph is a polytope graph with no hexagonal faces
+    >>> polytope_graph_with_p6_greater_than_zero(G)
+    False
+    """
+    return polytope_graph(G) and gc.p_gons(G, p=6) > 0
+
+def simple_polytope_graph_with_p6_greater_than_zero(G):
+    r"""
+    Check if a graph is the graph of a simple polyhedron with at least one hexagonal face.
+
+    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
+    1. Simple: The graph has no self-loops or multiple edges.
+    2. Planar: The graph can be embedded in the plane without edge crossings.
+    3. 3-Connected: The graph remains connected after removing any two vertices.
+    4. 3-Regular: Each vertex has degree 3.
+    5. At least one hexagonal face: The graph has at least one hexagonal face.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a polytope graph, False otherwise.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.cubical_graph()  # Cubical graph is a simple polytope graph with hexagonal faces
+    >>> simple_polytope_graph_with_p6_greater_than_zero(G)
+    True
+
+    >>> G = nx.octahedral_graph()  # Octahedral graph is a simple polytope graph with no hexagonal faces
+    >>> simple_polytope_graph_with_p6_greater_than_zero(G)
+    False
+    """
+    return simple_polytope_graph(G) and gc.p_gons(G, p=6) > 0
+
+
+class PolytopeGraph(gc.SimpleGraph):
+    r"""
+    A subclass of SimpleGraph that ensures the graph satisfies polytope graph conditions.
+
+    A polytope graph is defined as a graph that is:
+    1. Simple: No self-loops or multiple edges.
+    2. Planar: Can be embedded in the plane without edge crossings.
+    3. 3-Connected: Remains connected after the removal of any two vertices.
+
+    Methods
+    -------
+    is_polytope_graph()
+        Checks if the graph satisfies the polytope graph conditions.
+    """
+
+    def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
+        """
+        Initialize a PolytopeGraph instance.
+
+        Parameters
+        ----------
+        edges : list of tuple, optional
+            A list of edges to initialize the graph.
+        nodes : list, optional
+            A list of nodes to initialize the graph.
+        name : str, optional
+            An optional name for the graph.
+        info : str, optional
+            Additional information about the graph.
+        *args, **kwargs : arguments
+            Arguments passed to the base `SimpleGraph` class.
+
+        Raises
+        ------
+        ValueError
+            If the initialized graph is not a valid polytope graph and is not empty.
+        """
+        super().__init__(edges=edges, nodes=nodes, name=name, info=info, *args, **kwargs)
+
+        # Skip validation if the graph is empty
+        if len(self.edges) == 0:
+            return
+
+        # Validate the graph
+        if not self.is_polytope_graph():
+            raise ValueError("The graph is not a valid polytope graph (simple, planar, and 3-connected).")
+
+    def is_simple(self):
+        """
+        Check if the graph is simple.
+
+        Returns
+        -------
+        bool
+            True if the graph is simple, False otherwise.
+        """
+        if any(self.has_edge(u, u) for u in self.nodes):  # Check for self-loops
+            return False
+        if isinstance(self, nx.MultiGraph):
+            for u, v in self.edges:
+                if self.number_of_edges(u, v) > 1:  # Check for multiple edges
+                    return False
+        return True
+
+    def is_planar(self):
+        """
+        Check if the graph is planar.
+
+        Returns
+        -------
+        bool
+            True if the graph is planar, False otherwise.
+        """
+        is_planar, _ = nx.check_planarity(self)
+        return is_planar
+
+    def is_3_connected(self):
+        """
+        Check if the graph is 3-connected.
+
+        Returns
+        -------
+        bool
+            True if the graph is 3-connected, False otherwise.
+        """
+        return nx.is_connected(self) and nx.node_connectivity(self) >= 3
+
+    def is_polytope_graph(self):
+        """
+        Check if the graph satisfies the polytope graph conditions.
+
+        Returns
+        -------
+        bool
+            True if the graph is a valid polytope graph, False otherwise.
+        """
+        return self.is_simple() and self.is_planar() and self.is_3_connected()
+
+    def draw(self, with_labels=True, node_color="lightblue", node_size=500, font_size=10):
+        """
+        Draw the graph using a planar layout with Matplotlib.
+
+        Parameters
+        ----------
+        with_labels : bool, optional
+            Whether to display node labels (default is True).
+        node_color : str or list, optional
+            The color of the nodes (default is "lightblue").
+        node_size : int, optional
+            The size of the nodes (default is 500).
+        font_size : int, optional
+            The font size of the labels (default is 10).
+
+        Notes
+        -----
+        This method always uses a planar layout to ensure no edge crossings.
+
+        Examples
+        --------
+        >>> G = nx.cubical_graph()
+        >>> polytope = PolytopeGraph(edges=G.edges, nodes=G.nodes, name="Cube Graph")
+        >>> polytope.draw()
+        """
+        if not self.is_planar():
+            raise ValueError("The graph is not planar and cannot be drawn using a planar layout.")
+
+        # Generate the planar layout
+        pos = nx.planar_layout(self)
+
+        # Draw the graph
+        plt.figure(figsize=(8, 6))
+        nx.draw(
+            self,
+            pos,
+            with_labels=with_labels,
+            node_color=node_color,
+            node_size=node_size,
+            font_size=font_size,
+            edge_color="gray"
+        )
+        if self.name:
+            plt.title(self.name, fontsize=14)
+        plt.show()
+
+    def __repr__(self):
+        """
+        String representation of the PolytopeGraph.
+
+        Returns
+        -------
+        str
+            A string summarizing the graph's name, information, and polytope validity.
+        """
+        description = super().__repr__()
+        validity = "Valid Polytope Graph" if self.is_polytope_graph() else "Invalid Polytope Graph"
+        return f"{description}\n{validity}"
+
+    def read_edge_list(self, filepath, delimiter=None):
+        """
+        Read an edge list from a file (CSV or TXT), add edges to the graph,
+        and validate that the graph remains a valid polytope graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the edge list.
+        delimiter : str, optional
+            The delimiter used in the file.
+
+        Raises
+        ------
+        ValueError
+            If the graph is not a valid polytope graph after reading the edge list.
+        """
+        super().read_edge_list(filepath, delimiter)
+        if not self.is_polytope_graph():
+            raise ValueError("The graph read from the file is not a valid polytope graph.")
+
+    def read_adjacency_matrix(self, filepath, delimiter=None):
+        """
+        Read an adjacency matrix from a file, create the graph,
+        and validate that it remains a valid polytope graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the adjacency matrix.
+        delimiter : str, optional
+            The delimiter used in the file.
+
+        Raises
+        ------
+        ValueError
+            If the graph is not a valid polytope graph after reading the adjacency matrix.
+        """
+        super().read_adjacency_matrix(filepath, delimiter)
+        if not self.is_polytope_graph():
+            raise ValueError("The graph read from the adjacency matrix is not a valid polytope graph.")
+
+
+class SimplePolytopeGraph(PolytopeGraph):
+    def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
+        """
+        Initialize a SimplePolytopeGraph instance.
+
+        Parameters
+        ----------
+        edges : list of tuple, optional
+            A list of edges to initialize the graph.
+        nodes : list, optional
+            A list of nodes to initialize the graph.
+        name : str, optional
+            An optional name for the graph.
+        info : str, optional
+            Additional information about the graph.
+        *args, **kwargs : arguments
+            Arguments passed to the base `PolytopeGraph` class.
+
+        Raises
+        ------
+        ValueError
+            If the initialized graph is not a valid simple polytope graph.
+        """
+        self._bypass_validation = True  # Temporarily bypass validation
+        super().__init__(edges=edges, nodes=nodes, name=name, info=info, *args, **kwargs)
+        self._bypass_validation = False
+
+        if not self.is_3_regular():
+            raise ValueError("The graph is not 3-regular, hence not a valid SimplePolytopeGraph.")
+
+    def is_3_regular(self):
+        """
+        Check if the graph is 3-regular.
+
+        Returns
+        -------
+        bool
+            True if the graph is 3-regular, False otherwise.
+        """
+        degrees = [degree for _, degree in self.degree()]
+        return all(degree == 3 for degree in degrees)
+
+    def add_edge(self, u_of_edge, v_of_edge, **attr):
+        """
+        Add an edge and validate the graph remains a valid simple polytope graph.
+
+        Raises
+        ------
+        ValueError
+            If adding the edge makes the graph invalid as a simple polytope graph.
+        """
+        super().add_edge(u_of_edge, v_of_edge, **attr)
+        if not self._bypass_validation and not self.is_3_regular():
+            self.remove_edge(u_of_edge, v_of_edge)  # Revert the addition
+            raise ValueError(f"Adding edge ({u_of_edge}, {v_of_edge}) makes the graph invalid as a SimplePolytopeGraph.")
+
+    def add_edges_from(self, ebunch_to_add, **attr):
+        """
+        Add multiple edges and validate the graph remains a valid simple polytope graph.
+
+        Parameters
+        ----------
+        ebunch_to_add : iterable of edges
+            An iterable of edges to add.
+        **attr : keyword arguments
+            Additional edge attributes.
+
+        Raises
+        ------
+        ValueError
+            If the graph is not valid after all edges are added.
+        """
+        self._bypass_validation = True  # Temporarily bypass validation
+        super().add_edges_from(ebunch_to_add, **attr)
+        self._bypass_validation = False
+
+        if not self.is_3_regular():
+            raise ValueError("The graph is not 3-regular, hence not a valid SimplePolytopeGraph.")
+
+
+    def __repr__(self):
+        """
+        String representation of the SimplePolytopeGraph.
+
+        Returns
+        -------
+        str
+            A string summarizing the graph's name, information, and validity.
+        """
+        description = super().__repr__()
+        validity = "Valid Simple Polytope Graph" if self.is_3_regular() else "Invalid Simple Polytope Graph"
+        return f"{description}\n{validity}"
+
+    def read_edge_list(self, filepath, delimiter=None):
+        """
+        Read an edge list from a file (CSV or TXT), add edges to the graph,
+        and validate that the graph remains a valid simple polytope graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the edge list.
+        delimiter : str, optional
+            The delimiter used in the file.
+
+        Raises
+        ------
+        ValueError
+            If the graph is not a valid simple polytope graph after reading the edge list.
+        """
+        super().read_edge_list(filepath, delimiter)
+        if not self.is_3_regular():
+            raise ValueError("The graph read from the file is not a valid simple polytope graph (3-regular).")
+
+
+    def read_adjacency_matrix(self, filepath, delimiter=None):
+        """
+        Read an adjacency matrix from a file, create the graph,
+        and validate that it remains a valid simple polytope graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the adjacency matrix.
+        delimiter : str, optional
+            The delimiter used in the file.
+
+        Raises
+        ------
+        ValueError
+            If the graph is not a valid simple polytope graph after reading the adjacency matrix.
+        """
+        super().read_adjacency_matrix(filepath, delimiter)
+        if not self.is_3_regular():
+            raise ValueError("The graph read from the adjacency matrix is not a valid simple polytope graph (3-regular).")

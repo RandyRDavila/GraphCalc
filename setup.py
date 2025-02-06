@@ -19,6 +19,7 @@ setup(
         "matplotlib",        # Plotting (if visualization is part of the package)
         "python-dateutil",   # Date handling (if required by your package)
         "pandas",           # Data manipulation
+        "matplotlib",       # Plotting
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
