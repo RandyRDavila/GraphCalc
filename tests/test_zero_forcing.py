@@ -1,4 +1,10 @@
 import networkx as nx
+from graphcalc.generators.general import (
+    complete_graph,
+    cycle_graph,
+    path_graph,
+    star_graph,
+)
 from graphcalc.zero_forcing import (
     is_zero_forcing_set,
     minimum_zero_forcing_set,
@@ -15,64 +21,64 @@ from graphcalc.zero_forcing import (
 
 def test_is_zero_forcing_set():
     test_cases = [
-        (nx.star_graph(4), {1, 2, 3}, True),
-        (nx.path_graph(4), {1}, False),
-        (nx.cycle_graph(4), {0, 1}, True),
-        (nx.cycle_graph(4), {0, 2}, False),
+        (star_graph(4), {1, 2, 3}, True),
+        (path_graph(4), {1}, False),
+        (cycle_graph(4), {0, 1}, True),
+        (cycle_graph(4), {0, 2}, False),
     ]
     for G, forcing_set, expected in test_cases:
         assert is_zero_forcing_set(G, forcing_set) == expected
 
 def test_minimum_zero_forcing_set():
-    G = nx.path_graph(4)
+    G = path_graph(4)
     result = minimum_zero_forcing_set(G)
     assert result == {0}
 
 def test_zero_forcing_number():
     test_cases = [
-        (nx.path_graph(4), 1),
-        (nx.star_graph(4), 3),
-        (nx.complete_graph(4), 3),
+        (path_graph(4), 1),
+        (star_graph(4), 3),
+        (complete_graph(4), 3),
     ]
     for G, expected in test_cases:
         assert zero_forcing_number(G) == expected
 
 def test_minimum_k_forcing_set():
-    G = nx.path_graph(4)
+    G = path_graph(4)
     result = minimum_k_forcing_set(G, 1)
     assert result == {0}
 
 def test_k_forcing_number():
     test_cases = [
-        (nx.path_graph(4), 1, 1),
-        (nx.cycle_graph(4), 1, 2),
-        (nx.complete_graph(3), 2, 1),
-        (nx.cycle_graph(4), 2, 1),
-        (nx.complete_graph(4), 3, 1),
-        (nx.cycle_graph(4), 3, 1),
+        (path_graph(4), 1, 1),
+        (cycle_graph(4), 1, 2),
+        (complete_graph(3), 2, 1),
+        (cycle_graph(4), 2, 1),
+        (complete_graph(4), 3, 1),
+        (cycle_graph(4), 3, 1),
     ]
     for G, k, expected in test_cases:
         assert k_forcing_number(G, k) == expected
 
 def test_is_power_dominating_set():
     test_cases = [
-        (nx.star_graph(4), {0}, True),
-        (nx.path_graph(4), {2}, True),
-        (nx.complete_graph(4), {0}, True),
+        (star_graph(4), {0}, True),
+        (path_graph(4), {2}, True),
+        (complete_graph(4), {0}, True),
     ]
     for G, dominating_set, expected in test_cases:
         assert is_power_dominating_set(G, dominating_set) == expected
 
 def test_minimum_power_dominating_set():
-    G = nx.star_graph(4)
+    G = star_graph(4)
     result = minimum_power_dominating_set(G)
     assert result == {0}
 
 def test_power_domination_number():
     test_cases = [
-        (nx.star_graph(4), 1),
-        (nx.path_graph(4), 1),
-        (nx.complete_graph(4), 1),
+        (star_graph(4), 1),
+        (path_graph(4), 1),
+        (complete_graph(4), 1),
     ]
     for G, expected in test_cases:
         result = power_domination_number(G)

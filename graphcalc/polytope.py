@@ -170,8 +170,8 @@ def p_gons(G, p=3):
     >>> gc.p_gons(G, p=5)
     0  # The graph has no pentagonal faces
     """
-    p_vector = p_vector(G)
-    return p_vector[p - 3] if p - 3 < len(p_vector) else 0
+    vector = p_vector(G)
+    return vector[p - 3] if p - 3 < len(vector) else 0
 
 def fullerene(G):
     r"""

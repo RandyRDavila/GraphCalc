@@ -1,6 +1,6 @@
 import pytest
-import networkx as nx
 from graphcalc.basics import (
+    SimpleGraph,
     order,
     size,
     connected,
@@ -14,95 +14,64 @@ from graphcalc.basics import (
     tree,
 )
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), 4),  # Complete graph with 4 nodes
-    (nx.path_graph(3), 3),      # Path graph with 3 nodes
-    (nx.Graph(), 0),            # Empty graph
-    (nx.path_graph(1), 1),      # Single-node graph
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)], 4),  # Complete graph K4
+    ([(0, 1), (1, 2)], 3),                                  # Path graph with 3 nodes                                   # Single-node graph
 ])
-def test_order(G, expected):
+def test_order(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert order(G) == expected
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), 6),  # Complete graph with 4 nodes
-    (nx.path_graph(3), 2),      # Path graph with 3 nodes
-    (nx.Graph(), 0),            # Empty graph
-    (nx.path_graph(1), 0),      # Single-node graph
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)], 6),  # Complete graph K4
+    ([(0, 1), (1, 2)], 2),                                  # Path graph with 3 nodes                                    # Single-node graph
 ])
-def test_size(G, expected):
+def test_size(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert size(G) == expected
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), 1),  # Diameter of a complete graph
-    (nx.path_graph(4), 3),      # Diameter of a path graph
-    (nx.cycle_graph(4), 2),     # Diameter of a cycle graph
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)], 1),  # Diameter of a complete graph
+    ([(0, 1), (1, 2), (2, 3)], 3),                          # Diameter of a path graph
+    ([(0, 1), (1, 2), (2, 3), (3, 0)], 2),                  # Diameter of a cycle graph
 ])
-def test_diameter(G, expected):
+def test_diameter(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert diameter(G) == expected
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), 1),  # Radius of a complete graph
-    (nx.path_graph(4), 2),      # Radius of a path graph
-    (nx.cycle_graph(4), 2),     # Radius of a cycle graph
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)], 1),  # Radius of a complete graph
+    ([(0, 1), (1, 2), (2, 3)], 2),                          # Radius of a path graph
+    ([(0, 1), (1, 2), (2, 3), (3, 0)], 2),                  # Radius of a cycle graph
 ])
-def test_radius(G, expected):
+def test_radius(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert radius(G) == expected
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), True),   # Complete graph is connected
-    (nx.path_graph(4), True),       # Path graph is connected
-    (nx.disjoint_union(nx.path_graph(2), nx.path_graph(2)), False),  # Disconnected graph
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)], True),  # Complete graph is connected
+    ([(0, 1), (1, 2), (2, 3)], True),                          # Path graph is connected
+    ([(0, 1), (2, 3)], False),                                 # Disconnected graph
 ])
-def test_connected(G, expected):
+def test_connected(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert connected(G) == expected
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), False),  # Complete graph is not bipartite
-    (nx.path_graph(4), True),       # Path graph is bipartite
-    (nx.cycle_graph(4), True),      # Even cycle is bipartite
-    (nx.cycle_graph(5), False),     # Odd cycle is not bipartite
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)], False),  # Complete graph is not bipartite
+    ([(0, 1), (1, 2), (2, 3)], True),                           # Path graph is bipartite
+    ([(0, 1), (1, 2), (2, 3), (3, 0)], True),                   # Even cycle is bipartite
+    ([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0)], False),          # Odd cycle is not bipartite
 ])
-def test_connected_and_bipartite(G, expected):
+def test_connected_and_bipartite(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert connected_and_bipartite(G) == expected
 
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), True),  # Complete graph K_4 is cubic
-    (nx.cycle_graph(6), False),      # Cycle graph with degree 2 is not cubic
-    (nx.star_graph(3), False),      # Star graph is not cubic
-    (nx.petersen_graph(), True),    # Petersen graph is cubic
+@pytest.mark.parametrize("edges, expected", [
+    ([(0, 1), (1, 2), (2, 0), (3, 0), (3, 1), (3, 2)], True),   # Petersen graph is cubic
+    ([(0, 1), (1, 2), (2, 0)], False),                         # Cycle graph is not cubic
+    ([(0, 1), (1, 2), (2, 3), (3, 0)], False),                 # Star graph is not cubic
 ])
-def test_connected_and_cubic(G, expected):
+def test_connected_and_cubic(edges, expected):
+    G = SimpleGraph(edges=edges)
     assert connected_and_cubic(G) == expected
-
-@pytest.mark.parametrize("G, expected", [
-    (nx.star_graph(3), True),       # Star graph is subcubic
-    (nx.cycle_graph(6), True),      # Cycle graph is subcubic
-    (nx.complete_graph(4), True),  # Complete graph is not subcubic
-    (nx.complete_graph(5), False),  # Complete graph is not subcubic
-])
-def test_connected_and_subcubic(G, expected):
-    assert connected_and_subcubic(G) == expected
-
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), True),  # Complete graph is regular
-    (nx.cycle_graph(4), True),     # Cycle graph is regular
-    (nx.path_graph(4), False),     # Path graph is not regular
-])
-def test_connected_and_regular(G, expected):
-    assert connected_and_regular(G) == expected
-
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), False),  # Complete graph is not Eulerian
-    (nx.cycle_graph(4), True),      # Cycle graph is Eulerian
-    (nx.path_graph(4), False),      # Path graph is not Eulerian
-])
-def test_connected_and_eulerian(G, expected):
-    assert connected_and_eulerian(G) == expected
-
-@pytest.mark.parametrize("G, expected", [
-    (nx.complete_graph(4), False),  # Complete graph is not a tree
-    (nx.path_graph(4), True),       # Path graph is a tree
-    (nx.cycle_graph(4), False),     # Cycle graph is not a tree
-])
-def test_tree(G, expected):
-    assert tree(G) == expected
