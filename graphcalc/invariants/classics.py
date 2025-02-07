@@ -45,10 +45,10 @@ def maximum_independent_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
 
-    >>> G = nx.complete_graph(4)
+    >>> G = complete_graph(4)
     >>> gc.maximum_independent_set(G)
     {0}
     """
@@ -85,11 +85,9 @@ def independence_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.complete_graph(4)
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
     >>> gc.independence_number(G)
     1
 
@@ -110,15 +108,16 @@ def maximum_clique(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.complete_graph(4)
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
     >>> gc.maximum_clique(G)
     {0, 1, 2, 3}
     """
-    return maximum_independent_set(nx.complement(G))
+    if hasattr(G, "complement"):
+        return maximum_independent_set(G.complement())
+    else:
+        return maximum_independent_set(nx.complement(G))
 
 
 def clique_number(G):
@@ -136,6 +135,14 @@ def clique_number(G):
     -------
     int
         The clique number of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
+    >>> gc.clique_number(G)
+    4
     """
     complement_graph = G.complement() if hasattr(G, "complement") else nx.complement(G)
     return independence_number(complement_graph)
@@ -157,11 +164,10 @@ def optimal_proper_coloring(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
 
-    >>> G = nx.complete_graph(4)
+    >>> G = complete_graph(4)
     >>> gc.optimal_proper_coloring(G)
     {0: [0], 1: [1], 2: [2], 3: [3]}
     """
@@ -208,14 +214,11 @@ def chromatic_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.complete_graph(4)
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
     >>> gc.chromatic_number(G)
     4
-
     """
     coloring = optimal_proper_coloring(G)
     colors = [color for color in coloring if len(coloring[color]) > 0]
@@ -223,10 +226,12 @@ def chromatic_number(G):
 
 def minimum_vertex_cover(G):
     r"""Return a smallest vertex cover of the graph G.
+
     Parameters
     ----------
     G : NetworkX graph
         An undirected graph.
+
     Returns
     -------
     set
@@ -234,10 +239,9 @@ def minimum_vertex_cover(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.complete_graph(4)
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
     >>> gc.minimum_vertex_cover(G)
     {1, 2, 3}
     """
@@ -246,10 +250,12 @@ def minimum_vertex_cover(G):
 
 def vertex_cover_number(G):
     r"""Return a the size of smallest vertex cover in the graph G.
+
     Parameters
     ----------
     G : NetworkX graph
         An undirected graph.
+
     Returns
     -------
     number
@@ -257,11 +263,9 @@ def vertex_cover_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.complete_graph(4)
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
     >>> gc.vertex_cover_number(G)
     3
     """
@@ -269,36 +273,72 @@ def vertex_cover_number(G):
 
 def minimum_edge_cover(G):
     r"""Return a smallest edge cover of the graph G.
+
     Parameters
     ----------
     G : NetworkX graph
         An undirected graph.
+
     Returns
     -------
     set
         A smallest edge cover of G.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
+    >>> gc.minimum_edge_cover(G)
     """
     return nx.min_edge_cover(G)
 
 def edge_cover_number(G):
     r"""Return the size of a smallest edge cover in the graph G.
+
     Parameters
     ----------
     G : NetworkX graph
         An undirected graph.
+
     Returns
     -------
     number
         The size of a smallest edge cover of G.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
+    >>> gc.edge_cover_number(G)
     """
     return len(nx.min_edge_cover(G))
 
 def maximum_matching(G):
     r"""Return a maximum matching in the graph G.
+
+    A matching in a graph is a set of edges with no shared endpoint. This function uses
+    integer programming to solve for a maximum matching in the graph G. It solves the following
+    integer program:
+
+    .. math::
+        \max \sum_{e \in E} x_e \text{ where } x_e \in \{0, 1\} \text{ for all } e \in E
+
+    subject to
+
+    .. math::
+        \sum_{e \in \delta(v)} x_e \leq 1 \text{ for all } v \in V
+
+    where $\delta(v)$ is the set of edges incident to node v, and
+    *E* and *V* are the set of edges and nodes of G, respectively.
+
+
     Parameters
     ----------
     G : NetworkX graph
         An undirected graph.
+
     Returns
     -------
     set
@@ -306,11 +346,9 @@ def maximum_matching(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.path_graph(4)
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
     >>> gc.maximum_matching(G)
     {(0, 1), (2, 3)}
     """
@@ -332,6 +370,7 @@ def maximum_matching(G):
 
 def matching_number(G):
     r"""Return the size of a maximum matching in the graph G.
+
     Parameters
     ----------
     G : NetworkX graph
@@ -344,10 +383,10 @@ def matching_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
 
-    >>> G = nx.complete_graph(4)
+    >>> G = complete_graph(4)
     >>> gc.matching_number(G)
     2
 

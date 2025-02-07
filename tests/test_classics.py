@@ -1,12 +1,12 @@
 import pytest
 import networkx as nx
-from graphcalc.generators.general import (
+from graphcalc.generators.simple_graphs import (
     complete_graph,
     cycle_graph,
     path_graph,
     star_graph,
 )
-from graphcalc.classics import (
+from graphcalc.invariants.classics import (
     maximum_clique,
     clique_number,
     maximum_independent_set,

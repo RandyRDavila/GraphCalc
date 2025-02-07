@@ -11,7 +11,7 @@ Examples
 >>> H = octahedron_graph()
 """
 
-from graphcalc import PolytopeGraph, SimplePolytopeGraph
+import graphcalc as gc
 import networkx as nx
 
 __all__ = [
@@ -33,7 +33,7 @@ def cube_graph():
         The graph of a cube (3-regular polytope).
     """
     edges = nx.cubical_graph().edges
-    return SimplePolytopeGraph(edges=edges, name="Cube Graph")
+    return gc.SimplePolytopeGraph(edges=edges, name="Cube Graph")
 
 
 def octahedron_graph():
@@ -45,7 +45,7 @@ def octahedron_graph():
     PolytopeGraph
         The graph of an octahedron (planar, simple, and 3-connected).
     """
-    return PolytopeGraph(edges=nx.octahedral_graph().edges, name="Octahedron Graph")
+    return gc.PolytopeGraph(edges=nx.octahedral_graph().edges, name="Octahedron Graph")
 
 
 def dodecahedron_graph():
@@ -57,7 +57,7 @@ def dodecahedron_graph():
     SimplePolytopeGraph
         The graph of a dodecahedron (3-regular polytope).
     """
-    return SimplePolytopeGraph(edges=nx.dodecahedral_graph().edges, name="Dodecahedron Graph")
+    return gc.SimplePolytopeGraph(edges=nx.dodecahedral_graph().edges, name="Dodecahedron Graph")
 
 
 def tetrahedron_graph():
@@ -69,7 +69,7 @@ def tetrahedron_graph():
     PolytopeGraph
         The graph of a tetrahedron (planar, simple, and 3-connected).
     """
-    return PolytopeGraph(edges=nx.tetrahedral_graph().edges, name="Tetrahedron Graph")
+    return gc.PolytopeGraph(edges=nx.tetrahedral_graph().edges, name="Tetrahedron Graph")
 
 
 def icosahedron_graph():
@@ -81,7 +81,7 @@ def icosahedron_graph():
     PolytopeGraph
         The graph of an icosahedron (planar, simple, and 3-connected).
     """
-    return PolytopeGraph(edges=nx.icosahedral_graph().edges, name="Icosahedron Graph")
+    return gc.PolytopeGraph(edges=nx.icosahedral_graph().edges, name="Icosahedron Graph")
 
 
 def convex_polytopes_text_example(n=1):
@@ -128,4 +128,4 @@ def convex_polytopes_text_example(n=1):
         (10, 11),
         (12, 13)
     ]
-    return PolytopeGraph(edges=edge_list, name="Polytope from Edge List 1")
+    return gc.PolytopeGraph(edges=edge_list, name="Polytope from Edge List 1")

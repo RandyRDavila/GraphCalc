@@ -1,4 +1,4 @@
-import networkx as nx
+
 
 __all__= [
     'neighborhood',
@@ -28,10 +28,10 @@ def neighborhood(G, v):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.neighborhood(G, 1)
     {0, 2}
     """
@@ -58,10 +58,10 @@ def closed_neighborhood(G, v):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.closed_neighborhood(G, 1)
     {0, 1, 2}
     """
@@ -88,10 +88,10 @@ def set_neighbors(G, S):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.set_neighbors(G, {1, 2})
     {0, 3}
     """
@@ -118,8 +118,8 @@ def set_closed_neighbors(G, S):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
     >>> G = nx.path_graph(4)
     >>> gc.set_closed_neighbors(G, {1, 2})

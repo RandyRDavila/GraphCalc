@@ -6,7 +6,7 @@ from pulp import (
     PULP_CBC_CMD,
 )
 
-from .neighborhoods import neighborhood, closed_neighborhood
+from graphcalc.core.neighborhoods import neighborhood, closed_neighborhood
 
 __all__ = [
     "is_dominating_set",
@@ -51,11 +51,10 @@ def is_dominating_set(G, S):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> S = {0, 2}
     >>> print(gc.is_dominating_set(G, S))
     True
@@ -102,15 +101,14 @@ def minimum_dominating_set(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, complete_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.minimum_dominating_set(G))
     {1, 3}
 
-    >>> G = nx.complete_graph(3)
+    >>> G = complete_graph(3)
     >>> print(gc.minimum_dominating_set(G))
     {0}
     """
@@ -149,11 +147,10 @@ def domination_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.domination_number(G))
     2
     """
@@ -193,11 +190,10 @@ def minimum_total_domination_set(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> result = gc.minimum_total_domination_set(G)
     >>> print(result)
     {1, 2}
@@ -237,11 +233,10 @@ def total_domination_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.total_domination_number(G))
     2
     """
@@ -251,11 +246,23 @@ def minimum_independent_dominating_set(G):
     r"""
     Finds a minimum independent dominating set for the graph G using integer programming.
 
-    Parameters:
+    Parameters
+    ----------
     G (networkx.Graph): The graph to find the independent dominating set for.
 
-    Returns:
+    Returns
+    -------
     set: A minimum independent dominating set of nodes in G.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> result = gc.minimum_independent_dominating_set(G)
+    >>> print(result)
+    {1, 3}
     """
     prob = pulp.LpProblem("MinIndependentDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
@@ -295,14 +302,12 @@ def independent_domination_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
-    >>> result = gc.minimum_independent_dominating_set(G)
-    >>> print(result)
-    {1, 3}
+    >>> G = path_graph(4)
+    >>> gc.minimum_independent_dominating_set(G)
+    2
     """
     return len(minimum_independent_dominating_set(G))
 
@@ -328,10 +333,10 @@ def complement_is_connected(G, S):
     Examples
     --------
 
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> S = {0}
     >>> print(gc.complement_is_connected(G, S))
     True
@@ -365,10 +370,10 @@ def is_outer_connected_dominating_set(G, S):
     Examples
     --------
 
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> S = {0}
     >>> print(gc.is_outer_connected_dominating_set(G, S))
     True
@@ -383,14 +388,26 @@ def minimum_outer_connected_dominating_set(G):
     r"""
     Finds a minimum outer-connected dominating set for the graph G by trying all subset sizes.
 
-    Parameters:
-    G (networkx.Graph): The graph to find the outer-connected dominating set for.
+    Parameters
+    ----------
+    G : networkx.Graph
 
-    Returns:
-    set: A minimum outer-connected dominating set of nodes in G.
+    Returns
+    -------
+    set
+        A minimum outer-connected dominating set of nodes in G.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> result = gc.minimum_outer_connected_dominating_set(G)
+    >>> print(result)
+    {0, 3}
     """
     n = len(G.nodes())
-    min_set = None
 
     for r in range(1, n + 1):  # Try all subset sizes
         for S in combinations(G.nodes(), r):
@@ -420,14 +437,12 @@ def outer_connected_domination_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
-    >>> result = gc.minimum_outer_connected_dominating_set(G)
-    >>> print(result)
-    {0, 2}
+    >>> G = path_graph(4)
+    >>> gc.outer_connected_domination_number(G)
+    2
 
     Notes
     -----
@@ -457,11 +472,10 @@ def minimum_roman_dominating_function(graph):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> solution = gc.minimum_roman_dominating_function(G)
     >>> print(solution)
     {'x': {0: 1, 1: 0, 2: 1, 3: 0}, 'y': {0: 0, 1: 0, 2: 0, 3: 0}, 'objective': 2}
@@ -516,11 +530,10 @@ def roman_domination_number(graph):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.roman_domination_number(G))
     2
     """
@@ -547,11 +560,10 @@ def minimum_double_roman_dominating_function(graph):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> solution = gc.minimum_double_roman_dominating_function(G)
     >>> print(solution)
     {'x': {0: 0, 1: 1, 2: 0, 3: 0}, 'y': {0: 1, 1: 0, 2: 1, 3: 0}, 'z': {0: 0, 1: 0, 2: 0, 3: 0}, 'objective': 3}
@@ -613,16 +625,16 @@ def double_roman_domination_number(graph):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.double_roman_domination_number(G))
     3
     """
     solution = minimum_double_roman_dominating_function(graph)
     return solution["objective"]
+
 
 def minimum_rainbow_dominating_function(G, k):
     r"""
@@ -645,11 +657,10 @@ def minimum_rainbow_dominating_function(G, k):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> colored, uncolored = gc.minimum_rainbow_dominating_function(G, 2)
     >>> print(colored)
     [(0, 1), (1, 2)]
@@ -715,12 +726,11 @@ def rainbow_domination_number(G, k):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
-    >>> print(gc.rainbow_domination_number(G, 2))
+    >>> G = path_graph(4)
+    >>> gc.rainbow_domination_number(G, 2)
     2
     """
     colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, k)
@@ -744,12 +754,11 @@ def two_rainbow_domination_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
-    >>> print(gc.two_rainbow_domination_number(G))
+    >>> G = path_graph(4)
+    >>> gc.two_rainbow_domination_number(G)
     2
     """
     return rainbow_domination_number(G, 2)
@@ -772,12 +781,11 @@ def three_rainbow_domination_number(G):
 
     Examples
     --------
-
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
-    >>> print(gc.three_rainbow_domination_number(G))
+    >>> G = path_graph(4)
+    >>> gc.three_rainbow_domination_number(G)
     3
     """
     return rainbow_domination_number(G, 3)
@@ -803,10 +811,10 @@ def minimum_restrained_dominating_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(5)
+    >>> G = path_graph(5)
     >>> restrained_dom_set = gc.minimum_restrained_dominating_set(G)
     >>> print(restrained_dom_set)
     [0, 2, 4]
@@ -855,11 +863,11 @@ def restrained_domination_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(5)
-    >>> print(gc.restrained_domination_number(G))
+    >>> G = path_graph(5)
+    >>> gc.restrained_domination_number(G)
     3
     """
     restrained_dom_set = minimum_restrained_dominating_set(G)
@@ -884,11 +892,11 @@ def min_maximal_matching_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
-    >>> print(gc.min_maximal_matching_number(G))
+    >>> G = path_graph(4)
+    >>> gc.min_maximal_matching_number(G)
     2
     """
     return domination_number(nx.line_graph(G))

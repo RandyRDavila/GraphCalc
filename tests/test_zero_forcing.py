@@ -1,11 +1,11 @@
 import networkx as nx
-from graphcalc.generators.general import (
+from graphcalc.generators.simple_graphs import (
     complete_graph,
     cycle_graph,
     path_graph,
     star_graph,
 )
-from graphcalc.zero_forcing import (
+from graphcalc.invariants.zero_forcing import (
     is_zero_forcing_set,
     minimum_zero_forcing_set,
     zero_forcing_number,

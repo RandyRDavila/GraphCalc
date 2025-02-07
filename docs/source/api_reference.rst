@@ -3,90 +3,62 @@ API Reference
 
 This section provides a detailed overview of all modules, classes, and functions in `graphcalc`.
 
-.. .. toctree::
-..    :maxdepth: 1
+.. toctree::
+   :maxdepth: 4
 
-..    modules/basics
-..    modules/classics
-..    modules/degree
-..    modules/degree_sequence_invariants
-..    modules/domination
-..    modules/neighborhoods
-..    modules/zero_forcing
+   modules/core
+   modules/data
+   modules/generators
+   modules/invariants
+   modules/polytopes
 
 .. Modules
 .. -------
 
-.. The following modules are available in `graphcalc`:
+.. .. The following modules are available in `graphcalc`:
 
-Basics
-------
+.. Core
+.. ----
 
-.. automodule:: graphcalc.basics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: graphcalc.core.basics
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+..    :no-index:
 
-Classics
---------
 
-.. automodule:: graphcalc.classics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. Data
+.. ----
 
-Degree
-------
+.. .. automodule:: graphcalc.data
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+..    :no-index:
 
-.. automodule:: graphcalc.degree
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. Generators
+.. ----------
 
-Degree Sequence Invariants
---------------------------
+.. .. automodule:: graphcalc.generators
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+..    :no-index:
 
-.. automodule:: graphcalc.degree_sequence_invariants
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. Invariants
+.. ----------
 
-Domination
-----------
+.. .. automodule:: graphcalc.invariants
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+..    :no-index:
 
-.. automodule:: graphcalc.domination
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. Polytopes
+.. ---------
 
-Neighborhoods
--------------
-
-.. automodule:: graphcalc.neighborhoods
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Zero Forcing
-------------
-
-.. automodule:: graphcalc.zero_forcing
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Polytope
---------
-
-.. automodule:: graphcalc.polytope
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Spectral
---------
-
-.. automodule:: graphcalc.spectral
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: graphcalc.polytopes.core
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+..    :no-index:

@@ -1,9 +1,7 @@
 import networkx as nx
 from itertools import combinations
+import graphcalc as gc
 
-from .neighborhoods import neighborhood, closed_neighborhood, set_closed_neighbors
-from .basics import connected
-from .degree import minimum_degree
 
 __all__ = [
     "minimum_k_forcing_set",
@@ -59,10 +57,10 @@ def is_k_forcing_vertex(G, v, nodes, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0, 1}
     >>> print(gc.is_k_forcing_vertex(G, 0, nodes, 1))
     True
@@ -74,7 +72,7 @@ def is_k_forcing_vertex(G, v, nodes, k):
     if k < 1:
         raise ValueError("Expected k to be a positive integer.")
     S = set(n for n in nodes if n in G)
-    n = len(neighborhood(G, v).difference(S))
+    n = len(gc.neighborhood(G, v).difference(S))
     return v in S and n >= 1 and n <= k
 
 
@@ -98,10 +96,10 @@ def is_k_forcing_active_set(G, nodes, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0, 1}
     >>> print(gc.is_k_forcing_active_set(G, nodes, 1))
     True
@@ -136,10 +134,10 @@ def is_k_forcing_set(G, nodes, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0, 2}
     >>> print(gc.is_k_forcing_set(G, nodes, 1))
     True
@@ -149,7 +147,7 @@ def is_k_forcing_set(G, nodes, k):
         Z_temp = Z.copy()
         for v in Z:
             if is_k_forcing_vertex(G, v, Z, k):
-                Z_temp |= neighborhood(G, v)
+                Z_temp |= gc.neighborhood(G, v)
         Z = Z_temp
     return Z == set(G.nodes())
 
@@ -172,15 +170,15 @@ def minimum_k_forcing_set(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.minimum_k_forcing_set(G, 1))
     {0}
     """
     # use naive lower bound to compute a starting point for the search range
-    rangeMin = minimum_degree(G) if k == 1 else 1
+    rangeMin = gc.minimum_degree(G) if k == 1 else 1
     # loop through subsets of nodes of G in increasing order of size until a zero forcing set is found
     for i in range(rangeMin, G.order() + 1):
         for S in combinations(G.nodes(), i):
@@ -208,10 +206,10 @@ def k_forcing_number(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.k_forcing_number(G, 1))
     1
     """
@@ -240,10 +238,10 @@ def is_zero_forcing_vertex(G, v, S):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> S = {0, 1}
     >>> print(gc.is_zero_forcing_vertex(G, 0, S))
     True
@@ -271,10 +269,10 @@ def is_zero_forcing_active_set(G, S):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> S = {0, 3}
     >>> print(gc.is_zero_forcing_set(G, S))
     True
@@ -302,10 +300,10 @@ def is_zero_forcing_set(G, S):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> S = {0, 3}
     >>> print(gc.is_zero_forcing_set(G, S))
     True
@@ -329,10 +327,10 @@ def minimum_zero_forcing_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.minimum_zero_forcing_set(G, 1))
     {0}
     """
@@ -357,10 +355,10 @@ def zero_forcing_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.zero_forcing_number(G))
     1
     """
@@ -382,10 +380,10 @@ def two_forcing_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.two_forcing_number(G))
     1
     """
@@ -412,17 +410,17 @@ def is_total_zero_forcing_set(G, nodes):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0, 1}
     >>> print(gc.is_total_zero_forcing_set(G, nodes))
     True
     """
     S = set(n for n in nodes if n in G)
     for v in S:
-        if set(neighborhood(G, v)).intersection(S) == set():
+        if set(gc.neighborhood(G, v)).intersection(S) == set():
             return False
     return is_zero_forcing_set(G, S)
 
@@ -445,10 +443,10 @@ def minimum_total_zero_forcing_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> result = gc.minimum_total_zero_forcing_set(G)
     >>> print(result)
     {0, 3}
@@ -479,10 +477,10 @@ def total_zero_forcing_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.total_zero_forcing_number(G))
     2
     """
@@ -515,10 +513,10 @@ def is_connected_k_forcing_set(G, nodes, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0, 1}
     >>> print(gc.is_connected_k_forcing_set(G, nodes, 1))
     True
@@ -531,7 +529,7 @@ def is_connected_k_forcing_set(G, nodes, k):
         raise ValueError("Expected k to be a positive integer.")
     S = set(n for n in nodes if n in G)
     H = G.subgraph(S)
-    return connected(H) and is_k_forcing_set(G, S, k)
+    return gc.connected(H) and is_k_forcing_set(G, S, k)
 
 
 def is_connected_zero_forcing_set(G, nodes):
@@ -554,10 +552,10 @@ def is_connected_zero_forcing_set(G, nodes):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0, 1}
     >>> print(gc.is_connected_zero_forcing_set(G, nodes))
     True
@@ -583,10 +581,10 @@ def minimum_connected_k_forcing_set(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.minimum_connected_k_forcing_set(G, 1))
     {0}
     """
@@ -597,7 +595,7 @@ def minimum_connected_k_forcing_set(G, k):
     if k < 1:
         raise ValueError("Expected k to be a positive integer.")
     # only start search if graph is connected
-    if not connected(G):
+    if not gc.connected(G):
         return None
     for i in range(1, G.order() + 1):
         for S in combinations(G.nodes(), i):
@@ -621,10 +619,10 @@ def minimum_connected_zero_forcing_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.minimum_connected_zero_forcing_set(G))
     {0}
     """
@@ -651,10 +649,10 @@ def connected_k_forcing_number(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.connected_zero_forcing_number(G, 1))
     1
     """
@@ -689,10 +687,10 @@ def connected_zero_forcing_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.connected_zero_forcing_number(G))
     1
     """
@@ -724,16 +722,16 @@ def is_psd_forcing_vertex(G, v, black_set, component):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> black_set = {0, 1}
     >>> component = {2, 3}
     >>> print(gc.is_psd_forcing_vertex(G, 1, black_set, component))
     (True, 2)
     """
-    set_neighbors = set(neighborhood(G, v))
+    set_neighbors = set(gc.neighborhood(G, v))
     white_neighbors_in_component = set_neighbors.intersection(component)
 
     if len(white_neighbors_in_component) == 1:
@@ -817,10 +815,10 @@ def is_psd_zero_forcing_set(G, black_set):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> black_set = {0, 3}
     >>> print(gc.is_psd_zero_forcing_set(G, black_set))
     True
@@ -848,10 +846,10 @@ def minimum_psd_zero_forcing_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> result = gc.minimum_psd_zero_forcing_set(G)
     >>> print(result)
     [0, 3]
@@ -881,10 +879,10 @@ def positive_semidefinite_zero_forcing_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.positive_semidefinite_zero_forcing_number(G))
     1
     """
@@ -936,7 +934,7 @@ def is_k_power_dominating_set(G, nodes, k):
     >>> print(gc.is_k_power_dominating_set(G, nodes, 3))
     False
     """
-    return is_k_forcing_set(G, set_closed_neighbors(G, nodes), k)
+    return is_k_forcing_set(G, gc.set_closed_neighbors(G, nodes), k)
 
 
 def minimum_k_power_dominating_set(G, k):
@@ -963,10 +961,10 @@ def minimum_k_power_dominating_set(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0}
     >>> print(gc.is_k_power_dominating_set(G, nodes, 2))
     True
@@ -998,10 +996,10 @@ def k_power_domination_number(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> result = gc.minimum_k_power_dominating_set(G, 2)
     >>> print(result)
     {0}
@@ -1033,10 +1031,10 @@ def is_power_dominating_set(G, nodes):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> nodes = {0}
     >>> print(gc.is_power_dominating_set(G, nodes))
     True
@@ -1063,10 +1061,10 @@ def minimum_power_dominating_set(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> result = gc.minimum_power_dominating_set(G)
     >>> print(result)
     {0}
@@ -1092,10 +1090,10 @@ def power_domination_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> print(gc.power_domination_number(G))
     1
     """

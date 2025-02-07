@@ -25,6 +25,7 @@ __all__ = [
     "powerlaw_cluster_graph",
     "random_geometric_graph",
     "random_regular_graph",
+    "petersen_graph",
 ]
 
 
@@ -47,10 +48,8 @@ def complete_graph(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.complete_graph(4)
+    >>> from graphcalc.generators import complete_graph
+    >>> G = complete_graph(4)
     """
     return gc.SimpleGraph(nx.complete_graph(n).edges, name=f"Complete Graph K_{n}")
 
@@ -73,10 +72,8 @@ def cycle_graph(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.cycle_graph(4)
+    >>> from graphcalc.generators import cycle_graph
+    >>> G = cycle_graph(4)
     """
     return gc.SimpleGraph(nx.cycle_graph(n).edges, name=f"Cycle Graph C_{n}")
 
@@ -99,10 +96,8 @@ def path_graph(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.path_graph(4)
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
     """
     return gc.SimpleGraph(nx.path_graph(n).edges, name=f"Path Graph P_{n}")
 
@@ -125,10 +120,8 @@ def star_graph(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.star_graph(4)
+    >>> from graphcalc.generators import star_graph
+    >>> G = star_graph(4)
     """
     return gc.SimpleGraph(nx.star_graph(n).edges, name=f"Star Graph S_{n}")
 
@@ -151,10 +144,8 @@ def wheel_graph(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.wheel_graph(4)
+    >>> from graphcalc.generators import wheel_graph
+    >>> G = wheel_graph(4)
     """
     return gc.SimpleGraph(nx.wheel_graph(n).edges, name=f"Wheel Graph W_{n}")
 
@@ -180,10 +171,8 @@ def grid_2d_graph(m, n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.grid_2d_graph(2, 3)
+    >>> from graphcalc.generators import grid_2d_graph
+    >>> G = grid_2d_graph(2, 3)
     """
     return gc.SimpleGraph(nx.grid_2d_graph(m, n).edges, name=f"2D Grid Graph G_{{{m},{n}}}")
 
@@ -209,10 +198,8 @@ def barbell_graph(m, n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.barbell_graph(2, 3)
+    >>> from graphcalc.generators import barbell_graph
+    >>> G = barbell_graph(2, 3)
     """
     return gc.SimpleGraph(nx.barbell_graph(m, n).edges, name=f"Barbell Graph B_{{{m},{n}}}")
 
@@ -236,10 +223,8 @@ def ladder_graph(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.ladder_graph(3)
+    >>> from graphcalc.generators import ladder_graph
+    >>> G = ladder_graph(3)
     """
     return gc.SimpleGraph(nx.ladder_graph(n).edges, name=f"Ladder Graph L_{n}")
 
@@ -263,10 +248,8 @@ def binomial_tree(n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.binomial_tree(3)
+    >>> from graphcalc.generators import binomial_tree
+    >>> G = binomial_tree(3)
     """
     return gc.SimpleGraph(nx.binomial_tree(n).edges, name=f"Binomial Tree BT_{n}")
 
@@ -292,10 +275,8 @@ def balanced_tree(r, h):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.balanced_tree(2, 3)
+    >>> from graphcalc.generators import balanced_tree
+    >>> G = balanced_tree(2, 3)
     """
     return gc.SimpleGraph(nx.balanced_tree(r, h).edges, name=f"Balanced Tree BT_{{{r},{h}}}")
 
@@ -320,10 +301,8 @@ def erdos_renyi_graph(n, p):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.erdos_renyi_graph(4, 0.5)
+    >>> from graphcalc.generators import erdos_renyi_graph
+    >>> G = erdos_renyi_graph(4, 0.5)
     """
     return gc.SimpleGraph(nx.erdos_renyi_graph(n, p).edges, name=f"Erdos-Renyi Graph G_{{{n},{p}}}")
 
@@ -351,10 +330,8 @@ def watts_strogatz_graph(n, k, p):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.watts_strogatz_graph(4, 2, 0.5)
+    >>> from graphcalc.generators import watts_strogatz_graph
+    >>> G = watts_strogatz_graph(4, 2, 0.5)
     """
     return gc.SimpleGraph(nx.watts_strogatz_graph(n, k, p).edges, name=f"Watts-Strogatz Graph WS_{{{n},{k},{p}}}")
 
@@ -380,10 +357,8 @@ def barabasi_albert_graph(n, m):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.barabasi_albert_graph(4, 2)
+    >>> from graphcalc.generators import barabasi_albert_graph
+    >>> G = barabasi_albert_graph(4, 2)
     """
     return gc.SimpleGraph(nx.barabasi_albert_graph(n, m).edges, name=f"Barabasi-Albert Graph BA_{{{n},{m}}}")
 
@@ -411,10 +386,9 @@ def powerlaw_cluster_graph(n, m, p):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
+    >>> from graphcalc.generators import powerlaw_cluster_graph
 
-    >>> G = gc.powerlaw_cluster_graph(4, 2, 0.5)
+    >>> G = powerlaw_cluster_graph(4, 2, 0.5)
     """
     return gc.SimpleGraph(nx.powerlaw_cluster_graph(n, m, p).edges, name=f"Powerlaw Cluster Graph PLC_{{{n},{m},{p}}}")
 
@@ -440,10 +414,8 @@ def random_geometric_graph(n, radius):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.random_geometric_graph(4, 0.5)
+    >>> from graphcalc.generators import random_geometric_graph
+    >>> G = random_geometric_graph(4, 0.5)
     """
     return gc.SimpleGraph(nx.random_geometric_graph(n, radius).edges, name=f"Random Geometric Graph RGG_{{{n},{radius}}}")
 
@@ -468,9 +440,26 @@ def random_regular_graph(d, n):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gc
-
-    >>> G = gc.random_regular_graph(3, 4)
+    >>> from graphcalc.generators import random_regular_graph
+    >>> G = random_regular_graph(3, 4)
     """
     return gc.SimpleGraph(nx.random_regular_graph(d, n).edges, name=f"Random Regular Graph RRG_{{{d},{n}}}")
+
+def petersen_graph():
+    r"""
+    Return the Petersen graph `P`.
+
+    The Petersen graph `P` is the simple undirected graph with 10 nodes and 15 edges,
+    where nodes are arranged in a pentagon with a star-like pattern inside.
+
+    Returns
+    -------
+    networkx.Graph
+        The Petersen graph `P`.
+
+    Examples
+    --------
+    >>> from graphcalc.generators import petersen_graph
+    >>> G = petersen_graph()
+    """
+    return gc.SimpleGraph(nx.petersen_graph().edges, name="Petersen Graph P")

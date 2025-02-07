@@ -1,12 +1,12 @@
 import pytest
 import networkx as nx
-from graphcalc.generators.general import (
+from graphcalc.generators.simple_graphs import (
     complete_graph,
     cycle_graph,
     path_graph,
     star_graph,
 )
-from graphcalc.domination import (
+from graphcalc.invariants.domination import (
     is_dominating_set,
     minimum_dominating_set,
     domination_number,

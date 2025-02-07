@@ -1,12 +1,14 @@
 import pytest
 import graphcalc as gc
-from graphcalc.polytope import (
-    p_vector,
-    p_gons,
+from graphcalc.polytopes import (
     PolytopeGraph,
     SimplePolytopeGraph,
 )
-from graphcalc.generators.polytopes import (
+from graphcalc.polytopes.invariants import (
+    p_vector,
+    p_gons,
+)
+from graphcalc.polytopes.generators import (
     cube_graph,
     octahedron_graph,
     dodecahedron_graph,

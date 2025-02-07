@@ -1,12 +1,12 @@
 import pytest
 import networkx as nx
-from graphcalc.generators.general import (
+from graphcalc.generators.simple_graphs import (
     complete_graph,
     cycle_graph,
     path_graph,
     star_graph,
 )
-from graphcalc.neighborhoods import (
+from graphcalc.core.neighborhoods import (
     neighborhood,
     closed_neighborhood,
     set_neighbors,

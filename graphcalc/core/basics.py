@@ -1,10 +1,10 @@
 import networkx as nx
-import itertools
-from .degree import *
-from .neighborhoods import neighborhood
-import matplotlib.pyplot as plt
+import graphcalc as gc
+
 import csv
+import itertools
 import numpy as np
+import matplotlib.pyplot as plt
 
 __all__= [
     'order',
@@ -33,6 +33,41 @@ class SimpleGraph(nx.Graph):
     - Default integer labels for nodes.
     - Methods to read and write edge lists to/from CSV files.
     - Method to draw the graph using Matplotlib.
+
+    Parameters
+    ----------
+    edges : list of tuple, optional
+        A list of edges to initialize the graph.
+    nodes : list, optional
+        A list of nodes to initialize the graph.
+    name : str, optional
+        An optional name for the graph.
+    info : str, optional
+        Additional information about the graph.
+    *args, **kwargs : arguments
+        Arguments passed to the base `networkx.Graph` class.
+
+    Methods
+    -------
+    write_edgelist_to_csv(filepath)
+        Write the edge list of the graph to a CSV file.
+    read_edge_list(filepath, delimiter=None)
+        Read an edge list from a file (CSV or TXT) and add edges to the graph.
+    read_adjacency_matrix(filepath, delimiter=None)
+        Read an adjacency matrix from a file (CSV or TXT) and create the graph.
+    get_adjacency_matrix(as_numpy_array=True)
+        Returns the adjacency matrix of the graph.
+    draw(with_labels=True, node_color="lightblue", node_size=500, font_size=10)
+        Draw the graph using Matplotlib.
+    complement()
+        Returns the complement of the graph as a SimpleGraph instance.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> G = gc.SimpleGraph(name="Example Graph")
+    >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+    >>> G.draw()
     """
 
     def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
@@ -51,6 +86,7 @@ class SimpleGraph(nx.Graph):
             Additional information about the graph.
         *args, **kwargs : arguments
             Arguments passed to the base `networkx.Graph` class.
+
         """
         super().__init__(*args, **kwargs)
         self.name = name
@@ -64,7 +100,7 @@ class SimpleGraph(nx.Graph):
             self.add_edges_from(edges)
 
     def write_edgelist_to_csv(self, filepath):
-        """
+        r"""
         Write the edge list of the graph to a CSV file.
 
         Parameters
@@ -74,7 +110,8 @@ class SimpleGraph(nx.Graph):
 
         Examples
         --------
-        >>> G = SimpleGraph(name="Example Graph")
+        >>> import graphcalc as gc
+        >>> G = gc.SimpleGraph(name="Example Graph")
         >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
         >>> G.write_edgelist_to_csv("edgelist.csv")
         """
@@ -85,7 +122,7 @@ class SimpleGraph(nx.Graph):
                 writer.writerow(edge)
 
     def read_edge_list(self, filepath, delimiter=None):
-        """
+        r"""
         Read an edge list from a file (CSV or TXT) and add edges to the graph.
 
         Parameters
@@ -94,6 +131,10 @@ class SimpleGraph(nx.Graph):
             The path to the file containing the edge list.
         delimiter : str, optional
             The delimiter used in the file (default is ',' for CSV and whitespace for TXT).
+
+        Returns
+        -------
+        None
 
         Raises
         ------
@@ -106,6 +147,12 @@ class SimpleGraph(nx.Graph):
         -----
         - For CSV files, the file must have a header with "Source" and "Target".
         - For TXT files, the file should contain one edge per line with node pairs separated by whitespace.
+
+        Examples
+        --------
+        >>> import graphcalc as gc
+        >>> G = gc.SimpleGraph()
+        >>> G.read_edge_list("edgelist.csv")
         """
         import os
 
@@ -161,7 +208,7 @@ class SimpleGraph(nx.Graph):
             raise Exception(f"Error reading edge list from '{filepath}': {e}")
 
     def read_adjacency_matrix(self, filepath, delimiter=None):
-        """
+        r"""
         Read an adjacency matrix from a file (CSV or TXT) and create the graph.
 
         Parameters
@@ -180,7 +227,8 @@ class SimpleGraph(nx.Graph):
 
         Examples
         --------
-        >>> G = SimpleGraph()
+        >>> import graphcalc as gc
+        >>> G = gc.SimpleGraph()
         >>> G.read_adjacency_matrix("adjacency_matrix.csv")
         """
         import os
@@ -216,7 +264,7 @@ class SimpleGraph(nx.Graph):
             raise Exception(f"Error reading adjacency matrix from '{filepath}': {e}")
 
     def get_adjacency_matrix(self, as_numpy_array=True):
-        """
+        r"""
         Returns the adjacency matrix of the graph.
 
         Parameters
@@ -232,7 +280,8 @@ class SimpleGraph(nx.Graph):
 
         Examples
         --------
-        >>> G = SimpleGraph()
+        >>> import graphcalc as gc
+        >>> G = gc.SimpleGraph()
         >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
         >>> adjacency_matrix = G.get_adjacency_matrix()
         >>> print(adjacency_matrix)
@@ -247,7 +296,7 @@ class SimpleGraph(nx.Graph):
             return nx.to_scipy_sparse_matrix(self)
 
     def draw(self, with_labels=True, node_color="lightblue", node_size=500, font_size=10):
-        """
+        r"""
         Draw the graph using Matplotlib.
 
         Parameters
@@ -263,7 +312,8 @@ class SimpleGraph(nx.Graph):
 
         Examples
         --------
-        >>> G = SimpleGraph(name="Example Graph")
+        >>> import graphcalc as gc
+        >>> G = gc.SimpleGraph(name="Example Graph")
         >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
         >>> G.draw()
         """
@@ -295,18 +345,26 @@ class SimpleGraph(nx.Graph):
         return f"{description}\n{metadata}\n{info}"
 
     def complement(self):
-        """
-        Returns the complement of the graph as a standard NetworkX graph.
+        r"""
+        Returns the complement of the graph as a GraphCalc SimpleGraph.
 
         This ensures that constraints specific to SimpleGraph or its subclasses
         are not applied to the complement graph.
 
         Returns
         -------
-        networkx.Graph
+        graphcalc.core.basics.SimpleGraph
             The complement of the graph.
+
+        Examples
+        --------
+        >>> import graphcalc as gc
+        >>> G = gc.SimpleGraph()
+        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+        >>> H = G.complement()
         """
-        return nx.complement(nx.Graph(self))
+        H = nx.complement(nx.Graph(self))
+        return SimpleGraph(edges=H.edges, nodes=H.nodes, name=f"{self.name} Complement")
 
 def order(G):
     r"""
@@ -324,9 +382,9 @@ def order(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
-    >>> G = nx.path_graph(4)
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
     >>> gc.order(G)
     4
     """
@@ -349,9 +407,9 @@ def size(G):
     Examples
     --------
     >>> import networkx as nx
-    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.size(G)
     3
     """
@@ -373,10 +431,10 @@ def connected(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.connected(G)
     True
     """
@@ -398,8 +456,8 @@ def connected_and_bipartite(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
     >>> G = nx.path_graph(4)
     >>> gc.connected_and_bipartite(G)
@@ -423,8 +481,8 @@ def tree(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
     >>> G = nx.path_graph(4)
     >>> gc.tree(G)
@@ -448,10 +506,10 @@ def connected_and_regular(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
 
-    >>> G = nx.cycle_graph(4)
+    >>> G = cycle_graph(4)
     >>> gc.connected_and_regular(G)
     True
     """
@@ -473,10 +531,10 @@ def connected_and_eulerian(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
 
-    >>> G = nx.cycle_graph(4)
+    >>> G = cycle_graph(4)
     >>> gc.connected_and_eulerian(G)
     True
     """
@@ -498,10 +556,10 @@ def connected_and_planar(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = cycle_graph(4)
     >>> gc.connected_and_planar(G)
     True
     """
@@ -527,16 +585,16 @@ def connected_and_bipartite(G):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> G = nx.path_graph(4)
+    >>> from graphcalc.generators import path_graph, cycle_graph
+    >>> G = path_graph(4)
     >>> connected_and_bipartite(G)
     True
 
-    >>> H = nx.cycle_graph(5)  # Odd-length cycle is not bipartite
+    >>> H = cycle_graph(5)  # Odd-length cycle is not bipartite
     >>> connected_and_bipartite(H)
     False
 
-    >>> I = nx.Graph()
+    >>> I = gc.SimpleGraph()
     >>> I.add_edges_from([(1, 2), (3, 4)])  # Disconnected graph
     >>> connected_and_bipartite(I)
     False
@@ -559,10 +617,10 @@ def connected_and_chordal(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
 
-    >>> G = nx.complete_graph(4)
+    >>> G = complete_graph(4)
     >>> gc.connected_and_chordal(G)
     True
     """
@@ -584,14 +642,14 @@ def connected_and_cubic(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import petersen_graph
 
-    >>> G = nx.petersen_graph()
+    >>> G = petersen_graph()
     >>> gc.connected_and_cubic(G)
     True
     """
-    return nx.is_connected(G) and maximum_degree(G) == minimum_degree(G) == 3
+    return nx.is_connected(G) and gc.maximum_degree(G) == gc.minimum_degree(G) == 3
 
 def subcubic(G):
     r"""
@@ -611,13 +669,14 @@ def subcubic(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
 
     >>> G = nx.cycle_graph(4)  # Degree of all nodes is 2
     >>> gc.subcubic(G)
     True
     """
+    return gc.maximum_degree(G) <= 3
 
 def connected_and_subcubic(G):
     r"""
@@ -638,27 +697,31 @@ def connected_and_subcubic(G):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> from graphcalc import connected_and_subcubic
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import (
+        cycle_graph,
+        path_graph,
+        star_graph,
+    )
 
-    >>> G = nx.cycle_graph(4)  # Degree of all nodes is 2, connected
-    >>> connected_and_subcubic(G)
+    >>> G = cycle_graph(4)  # Degree of all nodes is 2, connected
+    >>> gc.connected_and_subcubic(G)
     True
 
-    >>> H = nx.path_graph(5)  # Maximum degree is 2, connected
-    >>> connected_and_subcubic(H)
+    >>> H = path_graph(5)  # Maximum degree is 2, connected
+    >>> gc.connected_and_subcubic(H)
     True
 
-    >>> I = nx.star_graph(4)  # Maximum degree is 4, not subcubic
-    >>> connected_and_subcubic(I)
+    >>> I = star_graph(4)  # Maximum degree is 4, not subcubic
+    >>> gc.connected_and_subcubic(I)
     False
 
-    >>> J = nx.Graph()
+    >>> J = gc.SimpleGraph()
     >>> J.add_edges_from([(1, 2), (3, 4)])  # Disconnected graph
     >>> connected_and_subcubic(J)
     False
     """
-    return nx.is_connected(G) and maximum_degree(G) <= 3
+    return nx.is_connected(G) and gc.maximum_degree(G) <= 3
 
 def claw_free(G):
     r"""
@@ -676,14 +739,14 @@ def claw_free(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.claw_free(G)
     True
     """
-    claw = nx.star_graph(3)
+    claw = gc.generators.general.star_graph(3)
     for S in set(itertools.combinations(G.nodes(), 3)):
         H = G.subgraph(list(S))
         if nx.is_isomorphic(H, claw):
@@ -706,14 +769,14 @@ def K_4_free(G):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> import graphcalc as gp
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
 
-    >>> G = nx.complete_graph(4)
-    >>> gc.K_n(G)
+    >>> G = complete_graph(4)
+    >>> gc.K_4_free(G)
     True
     """
-    K_4 = nx.complete_graph(4)
+    K_4 = gc.generators.general.complete_graph(4)
     for S in set(itertools.combinations(G.nodes(), 4)):
         H = G.subgraph(list(S))
         if nx.is_isomorphic(H, K_4):
@@ -739,15 +802,15 @@ def triangle_free(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gp
+    >>> from graphcalc.generators import complete_graph
 
-    >>> G = nx.complete_graph(4)
-    >>> gp.is_triangle_free(G)
+    >>> G = complete_graph(4)
+    >>> gc.triangle_free(G)
     False
     """
     # define a triangle graph, also known as the complete graph K_3
-    triangle = nx.complete_graph(3)
+    triangle = gc.generators.simple_graphs.complete_graph(3)
 
     # enumerate over all possible combinations of 3 vertices contained in G
     for S in set(itertools.combinations(G.nodes(), 3)):
@@ -777,10 +840,10 @@ def diameter(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.diameter(G)
     3
     """
@@ -804,10 +867,10 @@ def radius(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.radius(G)
     2
     """
@@ -829,10 +892,10 @@ def average_shortest_path_length(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
 
-    >>> G = nx.path_graph(4)
+    >>> G = path_graph(4)
     >>> gc.average_shortest_path_length(G)
     1.5
     """

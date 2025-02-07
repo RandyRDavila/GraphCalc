@@ -41,14 +41,14 @@ def compute_graph_properties(function_names, graph, return_as_dict=True):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> from graphcalc import spectral_radius, algebraic_connectivity
-    >>> G = nx.cycle_graph(6)  # A cycle graph with 6 nodes
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
+    >>> G = cycle_graph(6)  # A cycle graph with 6 nodes
     >>> function_names = ["spectral_radius", "number_of_nodes"]
-    >>> compute_graph_properties(function_names, G)
+    >>> gc.compute_graph_properties(function_names, G)
     {'spectral_radius': 2.0, 'number_of_nodes': 6}
 
-    >>> compute_graph_properties(function_names, G, return_as_dict=False)
+    >>> gc.compute_graph_properties(function_names, G, return_as_dict=False)
     [2.0, 6]
     """
 
@@ -162,13 +162,13 @@ def compute_graph_properties_dataframe(function_names, graphs):
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> from graphcalc import laplacian_matrix, spectral_radius, algebraic_connectivity
-    >>> G1 = nx.cycle_graph(6)
-    >>> G2 = nx.path_graph(5)
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, cycle_graph
+    >>> G1 = cycle_graph(6)
+    >>> G2 = path_graph(5)
     >>> function_names = ["spectral_radius", "algebraic_connectivity"]
     >>> graphs = [G1, G2]
-    >>> compute_graph_properties_dataframe(function_names, graphs)
+    >>> gc.compute_graph_properties_dataframe(function_names, graphs)
        spectral_radius  algebraic_connectivity
     0             2.0                    2.0
     1             1.618033988749895         0.3819660112501051

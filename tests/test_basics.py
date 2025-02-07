@@ -1,5 +1,5 @@
 import pytest
-from graphcalc.basics import (
+from graphcalc.core.basics import (
     SimpleGraph,
     order,
     size,
@@ -8,10 +8,6 @@ from graphcalc.basics import (
     radius,
     connected_and_bipartite,
     connected_and_cubic,
-    connected_and_subcubic,
-    connected_and_regular,
-    connected_and_eulerian,
-    tree,
 )
 
 @pytest.mark.parametrize("edges, expected", [

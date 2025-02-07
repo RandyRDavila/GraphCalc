@@ -1,28 +1,28 @@
-GraphCalc Documentation
-=======================
+GraphCalc
+=========
 
 Welcome to GraphCalc, a Python package designed for computing complex graph
-invariants on NetworkX graph objects. GraphCalc leverages mixed-integer programming (MIP) to
-provide exact solutions for these invariants, making it especially useful for researchers
-in graph theory, network science, and combinatorial optimization.
+invariants. This package is designed to be user-friendly and easy to use, with
+a focus on providing a wide range of graph invariants for users to compute.
+
+Contents
+========
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Introduction
+   :maxdepth: 3
+   :caption: Contents
 
    introduction
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Installation and Usage
-
    installation
    usage
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Additional Information
-
    api_reference
    examples
    contributing
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

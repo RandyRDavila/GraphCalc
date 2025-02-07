@@ -1,9 +1,12 @@
-import networkx as nx
+import graphcalc as gc
 
-from .degree import degree, degree_sequence
-from .basics import size
 
-__all__ = [
+__all__= [
+    'degree',
+    'degree_sequence',
+    'average_degree',
+    'maximum_degree',
+    'minimum_degree',
     "sub_k_domination_number",
     "slater",
     "sub_total_domination_number",
@@ -11,6 +14,153 @@ __all__ = [
     "residue",
     "harmonic_index",
 ]
+
+def degree(G, v):
+    r"""
+    Returns the degree of a vertex in a graph.
+
+    The degree of a vertex is the number of edges connected to it.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+    v : int
+        The vertex whose degree is to be calculated.
+
+    Returns
+    -------
+    int
+        The degree of the vertex.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
+    >>> gc.degree(G, 1)
+    2
+    >>> gc.degree(G, 0)
+    1
+    """
+    return G.degree(v)
+
+def degree_sequence(G, nonincreasing=True):
+    r"""
+    Returns the degree sequence of a graph.
+
+    The degree sequence is the list of vertex degrees in the graph, optionally
+    sorted in nonincreasing order.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+    nonincreasing : bool, optional (default=True)
+        If True, the degree sequence is sorted in nonincreasing order.
+
+    Returns
+    -------
+    list
+        The degree sequence of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
+    >>> gc.degree_sequence(G)
+    [2, 2, 1, 1]
+    >>> gc.degree_sequence(G, nonincreasing=False)
+    [1, 1, 2, 2]
+    """
+    degrees = [degree(G, v) for v in G.nodes]
+    if nonincreasing:
+        degrees.sort(reverse=True)
+    return degrees
+
+def average_degree(G):
+    r"""
+    Returns the average degree of a graph.
+
+    The average degree of a graph is the sum of vertex degrees divided by the
+    number of vertices.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+
+    Returns
+    -------
+    float
+        The average degree of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
+    >>> gc.average_degree(G)
+    1.5
+    """
+    degrees = degree_sequence(G)
+    return sum(degrees) / len(degrees)
+
+def maximum_degree(G):
+    r"""
+    Returns the maximum degree of a graph.
+
+    The maximum degree of a graph is the highest vertex degree in the graph.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+
+    Returns
+    -------
+    int
+        The maximum degree of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
+    >>> gc.maximum_degree(G)
+    2
+    """
+    degrees = degree_sequence(G)
+    return max(degrees)
+
+def minimum_degree(G):
+    r"""
+    Returns the minimum degree of a graph.
+
+    The minimum degree of a graph is the smallest vertex degree in the graph.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        The input graph.
+
+    Returns
+    -------
+    int
+        The minimum degree of the graph.
+
+    Examples
+    --------
+   >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+    >>> G = path_graph(4)
+    >>> gc.minimum_degree(G)
+    1
+    """
+    degrees = degree_sequence(G)
+    return min(degrees)
+
 
 
 def sub_k_domination_number(G, k):
@@ -48,10 +198,9 @@ def sub_k_domination_number(G, k):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
-
-    >>> G = nx.cycle_graph(4)
+    >>> from graphcalc.generators import cycle_graph
+    >>> G = cycle_graph(4)
     >>> gc.sub_k_domination_number(G, 1)
     True
 
@@ -114,18 +263,18 @@ def slater(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, cycle_graph, complete_graph
 
-    >>> G = nx.cycle_graph(4)  # A 4-cycle
+    >>> G = cycle_graph(4)  # A 4-cycle
     >>> gc.slater(G)
     2
 
-    >>> H = nx.path_graph(5)  # A path graph with 5 vertices
+    >>> H = path_graph(5)  # A path graph with 5 vertices
     >>> gc.slater(H)
     2
 
-    >>> K = nx.complete_graph(5)  # A complete graph with 5 vertices
+    >>> K = complete_graph(5)  # A complete graph with 5 vertices
     >>> gc.slater(K)
     1
 
@@ -174,18 +323,18 @@ def sub_total_domination_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, cycle_graph, complete_graph
 
-    >>> G = nx.cycle_graph(6)  # A cycle graph with 6 vertices
+    >>> G = cycle_graph(6)  # A cycle graph with 6 vertices
     >>> gc.sub_total_domination_number(G)
     3
 
-    >>> H = nx.path_graph(4)  # A path graph with 4 vertices
+    >>> H = path_graph(4)  # A path graph with 4 vertices
     >>> gc.sub_total_domination_number(H)
     2
 
-    >>> K = nx.complete_graph(5)  # A complete graph with 5 vertices
+    >>> K = complete_graph(5)  # A complete graph with 5 vertices
     >>> gc.sub_total_domination_number(K)
     1
 
@@ -233,18 +382,18 @@ def annihilation_number(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, cycle_graph, complete_graph
 
-    >>> G = nx.cycle_graph(6)  # A cycle graph with 6 vertices
+    >>> G = cycle_graph(6)  # A cycle graph with 6 vertices
     >>> gc.annihilation_number(G)
     3
 
-    >>> H = nx.path_graph(5)  # A path graph with 5 vertices
+    >>> H = path_graph(5)  # A path graph with 5 vertices
     >>> gc.annihilation_number(H)
     2
 
-    >>> K = nx.complete_graph(5)  # A complete graph with 5 vertices
+    >>> K = complete_graph(5)  # A complete graph with 5 vertices
     >>> gc.annihilation_number(K)
     1
 
@@ -253,10 +402,11 @@ def annihilation_number(G):
     - P. Dankelmann, S. Mukwembi, and H.C. Swart, The annihilation number of a
       graph, *Utilitas Mathematica*, 72:91–108, (2007).
     """
+
     D = degree_sequence(G)
     D.sort()  # sort in non-decreasing order
     n = len(D)
-    m = size(G)
+    m = gc.size(G)
     # sum over degrees in the sequence until the sum is larger than the number of edges in the graph
     for i in reversed(range(n + 1)):
         if sum(D[:i]) <= m:
@@ -291,18 +441,18 @@ def residue(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, complete_graph, cycle_graph
 
-    >>> G = nx.path_graph(4)  # Path graph with 4 vertices
+    >>> G = path_graph(4)  # Path graph with 4 vertices
     >>> gc.residue(G)
     4
 
-    >>> H = nx.complete_graph(4)  # Complete graph with 4 vertices
+    >>> H = complete_graph(4)  # Complete graph with 4 vertices
     >>> gc.residue(H)
     0
 
-    >>> K = nx.cycle_graph(5)  # Cycle graph with 5 vertices
+    >>> K = cycle_graph(5)  # Cycle graph with 5 vertices
     >>> gc.residue(K)
     5
 
@@ -317,7 +467,7 @@ def residue(G):
     The Havel-Hakimi process ensures the degree sequence remains graphical
     throughout the steps, making it a key concept in graph theory.
     """
-    degrees = degree_sequence(G)
+    degrees = gc.degree_sequence(G)
     degrees.sort(reverse=True)
     while degrees[0] > 0:
         max_degree = degrees.pop(0)
@@ -356,14 +506,14 @@ def harmonic_index(G):
 
     Examples
     --------
-    >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, complete_graph
 
-    >>> G = nx.path_graph(4)  # Path graph with 4 vertices
+    >>> G = path_graph(4)  # Path graph with 4 vertices
     >>> gc.harmonic_index(G)
     1.8333333333333333
 
-    >>> H = nx.complete_graph(3)  # Complete graph with 3 vertices
+    >>> H = complete_graph(3)  # Complete graph with 3 vertices
     >>> gc.harmonic_index(H)
     2.0
 
