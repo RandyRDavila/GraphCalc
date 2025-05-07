@@ -27,9 +27,9 @@ authors:
 
 # Statement of Need
 
-Modern research in graph theory and network science often requires the rapid computation of multiple graph invariants across large collections of graphs. While libraries such as NetworkX \[@hagberg2008exploring] and igraph provide graph traversal and manipulation utilities, they often lack built-in support for specialized invariants central to theoretical graph research — such as total domination number or zero forcing number.
+Modern research in graph theory and network science often requires the rapid computation of multiple graph invariants across large collections of graphs. While libraries such as NetworkX [@hagberg2008exploring] and igraph provide graph traversal and manipulation utilities, they often lack built-in support for specialized invariants central to theoretical graph research — such as total domination number or zero forcing number.
 
-`GraphCalc` fills this gap by offering a unified interface for computing classical and specialized invariants. It is **purpose-built for use in automated conjecturing frameworks**, particularly **TxGraffiti** and its variants (The `Optimist` \[@optimist], etc.), which rely on precise invariant computations across thousands of graphs for conjecture generation and evaluation.
+`GraphCalc` fills this gap by offering a unified interface for computing classical and specialized invariants. It is **purpose-built for use in automated conjecturing frameworks**, particularly **TxGraffiti** [@TxGraffiti] and its variants (The `Optimist` [@optimist], etc.), which rely on precise invariant computations across thousands of graphs for conjecture generation and evaluation.
 
 # Features
 
@@ -52,7 +52,7 @@ gc.connected(G)           # Output: True
 
 # Relevance to Automated Discovery
 
-`GraphCalc` is not merely a utility—it is an **enabling technology** in the development of AI systems that perform **automated mathematical reasoning**. In systems like `TxGraffiti`\[@TxGraffiti2023, @TxGraffiti, @optimist], conjectures are derived from numerical relationships among invariants computed by GraphCalc. The effectiveness of these conjecturing agents hinges directly on the reliability and breadth of invariant computations provided by this package.
+`GraphCalc` is not merely a utility—it is an **enabling technology** in the development of AI systems that perform **automated mathematical reasoning**. In systems like `TxGraffiti`[@TxGraffiti2023], conjectures are derived from numerical relationships among invariants computed by GraphCalc. The effectiveness of these conjecturing agents hinges directly on the reliability and breadth of invariant computations provided by this package.
 
 # Acknowledgements
 
