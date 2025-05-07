@@ -5,10 +5,10 @@ date: 7 May 2025
 authors:
 
 * name: Randy Davila
-  orcid: 0000-0002-3663-5257
+  orcid: 0000-0002-9908-3760
   affiliation: "1"
   affiliations:
-* name: Department of Computational and Applied Mathematics, Rice University, United States
+* name: Department of Computational & Applied Mathematics, Rice University, United States
   index: 1
   ror: 00pjdza24
   keywords:
