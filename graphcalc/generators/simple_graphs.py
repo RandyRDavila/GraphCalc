@@ -26,6 +26,7 @@ __all__ = [
     "random_geometric_graph",
     "random_regular_graph",
     "petersen_graph",
+    "diamond_necklace",
 ]
 
 
@@ -463,3 +464,40 @@ def petersen_graph():
     >>> G = petersen_graph()
     """
     return gc.SimpleGraph(nx.petersen_graph().edges, name="Petersen Graph P")
+
+def diamond_necklace(k: int) -> nx.Graph:
+    r"""
+    Build the diamond‐necklace graph N_k:
+      - A "diamond" is K4 with the edge between nodes 0 and 3 removed.
+        This makes nodes 0 and 3 become the degree‐2 vertices.
+      - N_k consists of k disjoint diamonds whose degree‐2 vertices
+        are then joined in a cycle:
+          for i=0…k−1, join diamond i’s node (base+3)
+                         to diamond (i+1 mod k)’s node (base_next+0)
+    Nodes are labeled 0…4k−1, with diamond i using [4i,4i+1,4i+2,4i+3].
+    """
+    G = nx.Graph()
+    deg2_verts = []
+
+    # 1) Build k disjoint diamonds
+    for i in range(k):
+        base = 4 * i
+        # add the 4 nodes of this diamond
+        G.add_nodes_from(range(base, base + 4))
+        # add all edges of K4 except the one between base and base+3
+        for u in range(base, base+4):
+            for v in range(u+1, base+4):
+                if not (u == base and v == base+3):
+                    G.add_edge(u, v)
+        # record the two degree-2 vertices for linking
+        deg2_verts.append((base, base+3))
+
+    # 2) Link them in a cycle at those degree-2 vertices
+    for i in range(k):
+        j = (i + 1) % k
+        # connect the "upper" deg-2 of diamond i to the "lower" deg-2 of diamond j
+        _, high_i = deg2_verts[i]
+        low_j, _ = deg2_verts[j]
+        G.add_edge(high_i, low_j)
+
+    return G

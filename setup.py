@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="graphcalc",
-    version="1.0.1",
+    version="1.0.5",
     author="Randy Davila",
     author_email="rrd6@rice.edu",
     description="A Python package for graph computation functions",

@@ -22,6 +22,9 @@ __all__ = [
     "k_power_domination_number",
     "minimum_power_dominating_set",
     "power_domination_number",
+    "is_well_splitting_set",
+    "compute_well_splitting_number",
+    "well_splitting_number",
 ]
 
 
