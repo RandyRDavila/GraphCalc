@@ -1098,3 +1098,104 @@ def power_domination_number(G):
     1
     """
     return k_power_domination_number(G, 1)
+
+import networkx as nx
+from itertools import combinations
+from math import ceil
+
+def is_well_splitting_set(G, S):
+    r"""
+    Check if S is a well-splitting set of G.
+
+    For a graph G with |V(G)| = n, a set S is well-splitting if
+    every connected component of G-S has at most ceil((n - |S|) / 2) vertices.
+
+    Parameters
+    ----------
+    G : NetworkX Graph.
+    S : Iterable of vertices to remove.
+
+    Returns
+    --------
+    bool
+        True if S is a well-splitting set, otherwise False.
+
+    """
+    n = len(G.nodes())
+    S_size = len(S)
+    allowed_size = ceil((n - S_size) / 2)
+
+    # Remove S to get the residual graph.
+    G_minus_S = G.copy()
+    G_minus_S.remove_nodes_from(S)
+
+    # Check each connected component.
+    for component in nx.connected_components(G_minus_S):
+        if len(component) > allowed_size:
+            return False
+    return True
+
+def compute_well_splitting_number(G):
+    r"""
+    Compute the well-splitting number S_w(G) of the graph G.
+
+    It searches over all subsets S ⊆ V(G) in increasing size and returns
+    the minimum size r and all candidate sets of that size that are well-splitting.
+
+    Parameters
+    ----------
+    G : NetworkX Graph.
+
+    Returns
+    -------
+    tuple
+        A tuple (r, valid_sets) where r is the minimum size of a well-splitting set
+        and valid_sets is a list of candidate sets (each given as a tuple of vertices).
+    """
+    nodes = list(G.nodes())
+    n = len(nodes)
+
+    # Check subsets of increasing size.
+    for r in range(n + 1):
+        valid_sets = []
+        for S in combinations(nodes, r):
+            if is_well_splitting_set(G, S):
+                valid_sets.append(S)
+        if valid_sets:
+            return r, valid_sets
+
+    # In worst-case the entire vertex set is needed.
+    return n, []
+
+def well_splitting_number(G):
+    r"""
+    Compute the well-splitting number S_w(G) of the graph G. The well-splitting number
+    of a graph is the minimum size of a well-splitting set, defined as a set S of vertices
+    such that every connected component of G-S has at most ceil((|V(G)| - |S|) / 2) vertices.
+    A well-splitting set is a set of vertices whose removal results in a graph where
+    every connected component has a size that is at most half of the remaining vertices.
+
+    Parameters
+    ----------
+    G : NetworkX Graph.
+        The input graph for which the well-splitting number is to be computed.
+
+    Returns
+    -------
+    int
+        The well-splitting number S_w(G), which is the minimum size of a well-splitting set.
+        If no such set exists, it returns the size of the entire vertex set.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from graphcalc.invariants.zero_forcing import well_splitting_number
+    >>> G = nx.petersen_graph()
+    >>> print(well_splitting_number(G))
+    4
+    >>> G = nx.complete_graph(5)
+    >>> print(well_splitting_number(G))
+    4
+    """
+    r, _ = compute_well_splitting_number(G)
+    return r
