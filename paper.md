@@ -21,17 +21,17 @@ bibliography: paper.bib
 
 # Summary
 
-`GraphCalc` is a lightweight Python library for efficiently computing a wide range of graph invariants. It plays a central role in the **TxGraffiti** family of automated conjecturing systems, where it serves as the primary computational engine for generating data-driven mathematical conjectures in graph theory. The package provides accessible tools for calculating over 50 graph invariants, including many NP-hard invariants, such as the chromatic number, the independence number, and domination numbers.
+`GraphCalc` is a lightweight Python library for efficiently computing a wide range of graph invariants using linear and integer programming optimization models. It plays a central role in the **TxGraffiti** family of automated conjecturing systems, where it serves as the primary computational engine for generating data-driven mathematical conjectures in graph theory. The package provides accessible tools for calculating over 50 graph invariants, including many NP-hard parameters—such as the chromatic number, the independence number, and various domination numbers—through optimized formulations that leverage modern solver technology.
 
 # Statement of Need
 
-Modern research in graph theory and network science often requires the rapid computation of multiple graph invariants across large collections of graphs. While libraries such as NetworkX [@hagberg2008exploring] and igraph provide graph traversal and manipulation utilities, they often lack built-in support for specialized invariants central to theoretical graph research — such as NP-hard invariants like the independence number or chromatic number.
+Modern research in graph theory and network science often requires the rapid and accurate computation of multiple graph invariants across large datasets of graphs. While general-purpose libraries such as NetworkX [@hagberg2008exploring] and igraph provide essential tools for graph traversal and manipulation, they typically lack built-in support for computing structurally significant and computationally difficult invariants—especially NP-hard parameters like the independence number, chromatic number, or various domination numbers.
 
-`GraphCalc` fills this gap by offering a unified interface for computing classical and specialized invariants. It is **purpose-built for use in automated conjecturing frameworks**, particularly **TxGraffiti** [@TxGraffiti] and its variants (The `Optimist` [@optimist], etc.), which rely on precise invariant computations across thousands of graphs for conjecture generation and evaluation.
+`GraphCalc` addresses this gap by providing a unified, research-oriented interface for computing both classical and advanced graph invariants. Many of these quantities are computed using carefully designed linear and integer programming models, enabling exact solutions where possible and practical approximations where needed. The package is purpose-built for integration into automated conjecturing frameworks, including TxGraffiti [@TxGraffiti] and its successors (such as the Optimist [@optimist]), which rely on accurate and reproducible invariant computations across thousands of graphs to generate and evaluate mathematical conjectures.
 
 # Features
 
-`GraphCalc` supports both `networkx` graph objects and its own built-in graph types. This dual compatibility allows users to take advantage of familiar graph creation tools while benefiting from specialized features and optimizations specific to `GraphCalc`'s native graph representations.
+`GraphCalc` supports both `NetworkX` graph objects and its own built-in graph types. This dual compatibility allows users to take advantage of familiar graph creation tools while benefiting from specialized features and optimizations specific to `GraphCalc`'s native graph representations.
 
 * **Core invariants**: Computes over 50 classical and advanced graph invariants.
 * **Graph filters**: Boolean functions to test properties like planarity, connectivity, and claw-freeness among many others.
@@ -50,10 +50,14 @@ gc.connected(G)           # Output: True
 
 # Relevance to Automated Discovery
 
-`GraphCalc` is not merely a utility—it is an **enabling technology** in the development of AI systems that perform **automated mathematical reasoning**. In systems like `TxGraffiti`[@TxGraffiti2023], conjectures are derived from numerical relationships among invariants computed by GraphCalc, for example independence, domination, and matching related invariants[@caro2022txgraffiti]. The effectiveness of these conjecturing agents hinges directly on the reliability and breadth of invariant computations provided by this package.
+`GraphCalc` is not merely a utility—it is a foundational component in the emerging field of automated mathematical discovery. Systems like **TxGraffiti** [@TxGraffiti2023] depend on high-quality numerical data to identify potential relationships among graph invariants. These conjectures—often involving complex parameters such as independence number, domination number, or matching number—are generated by detecting patterns in the invariant data computed by `GraphCalc` [@caro2022txgraffiti].
+
+The accuracy, consistency, and scope of these computations are critical. An automated conjecturing agent is only as good as the data it learns from—and in this context, `GraphCalc` serves as the lens through which structural graph properties are measured, compared, and ultimately hypothesized upon. By supporting exact computations through integer programming and offering broad invariant coverage, `GraphCalc` makes data-driven mathematical reasoning possible at scale.
+
+As AI tools continue to play a growing role in formal mathematics, `GraphCalc` stands as a key enabler for systems that not only process graph data but also help generate new mathematical knowledge.
 
 # Acknowledgements
 
-The authors would like to acknowledge David Amos. Without his assistance this package would have not been possible.
+The authors would like to acknowledge David Amos and Boris Brimkov. Without their assistance this package would have not been possible.
 
 # References
