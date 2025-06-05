@@ -50,12 +50,10 @@ gc.connected(G)           # Output: True
 
 # Relevance to Automated Discovery
 
-`GraphCalc` is not merely a utility—it is an **enabling technology** in the development of AI systems that perform **automated mathematical reasoning**. In systems like `TxGraffiti`[@TxGraffiti2023], conjectures are derived from numerical relationships among invariants computed by GraphCalc. The effectiveness of these conjecturing agents hinges directly on the reliability and breadth of invariant computations provided by this package.
+`GraphCalc` is not merely a utility—it is an **enabling technology** in the development of AI systems that perform **automated mathematical reasoning**. In systems like `TxGraffiti`[@TxGraffiti2023], conjectures are derived from numerical relationships among invariants computed by GraphCalc, for example independence, domination, and matching related invariants[@caro2022txgraffiti]. The effectiveness of these conjecturing agents hinges directly on the reliability and breadth of invariant computations provided by this package.
 
 # Acknowledgements
 
 The authors would like to acknowledge David Amos. Without his assistance this package would have not been possible.
 
 # References
-
-Citations for tools and prior work referenced in this manuscript are included in the accompanying `paper.bib` file.
