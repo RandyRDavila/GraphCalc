@@ -8,10 +8,10 @@ tags:
 authors:
   - name: Randy Davila
     orcid: 0000-0002-9908-3760
-    equal-contrib: true
+    # equal-contrib: true
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
 affiliations:
- - name: Department of Computational & Applied Mathematics, Rice University, United States
+ - name: Department of Computational Applied Mathematics & Operations Research, Rice University, United States
    index: 1
  - name: RelationalAI, United States
    index: 2
