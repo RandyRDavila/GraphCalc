@@ -25,7 +25,7 @@ bibliography: paper.bib
 
 # Statement of Need
 
-Modern research in graph theory and network science often requires the rapid and accurate computation of multiple graph invariants across large datasets of graphs. While general-purpose libraries such as NetworkX [@hagberg2008exploring] and igraph provide essential tools for graph traversal and manipulation, they typically lack built-in support for computing structurally significant and computationally difficult invariants—especially NP-hard parameters like the independence number, chromatic number, or various domination numbers.
+Modern research in graph theory and network science often requires the rapid and accurate computation of multiple graph invariants across large datasets of graphs. While general-purpose libraries such as NetworkX [@osti_960616] and igraph provide essential tools for graph traversal and manipulation, they typically lack built-in support for computing structurally significant and computationally difficult invariants—especially NP-hard parameters like the independence number, chromatic number, or various domination numbers.
 
 `GraphCalc` addresses this gap by providing a unified, research-oriented interface for computing both classical and advanced graph invariants. Many of these quantities are computed using carefully designed linear and integer programming models, enabling exact solutions where possible and practical approximations where needed. The package is purpose-built for integration into automated conjecturing frameworks, including TxGraffiti [@TxGraffiti] and its successors (such as the Optimist [@optimist]), which rely on accurate and reproducible invariant computations across thousands of graphs to generate and evaluate mathematical conjectures.
 
