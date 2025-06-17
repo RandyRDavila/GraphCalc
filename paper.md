@@ -33,13 +33,13 @@ Originally developed to support **automated conjecturing systems**, `GraphCalc` 
 - The widely studied **domination number** and its generalizations (**total**, **connected**, **Roman**, **k-domination**, etc.) [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
 - Structural constraints defined by forbidden subgraphs, such as being **claw-free**, **triangle-free**, **diamond-free**, and **bull-free**.
 
-Altogether, `GraphCalc` implements over 100 graph-related functions, including invariant computation, spectral analysis, structural testing, and graph generation. Many of these are unavailable in any other Python package, and several are computed exactly using integer programming or specialized algorithms. The library is also well-suited for rigorous graph-theoretic research, enabling users to verify counterexamples, explore structural hypotheses, and compute benchmark values for theoretical results.
+Altogether, `GraphCalc` implements over 100 graph-related functions, including invariant computation, spectral analysis, structural testing, and graph generation. Many of these are unavailable in any other Python package, and all are computed exactly using integer programming or specialized algorithms. The library is also well-suited for rigorous graph-theoretic research, enabling users to verify counterexamples and explore structural hypotheses.
 
 # Statement of Need
 
-Modern research in graph theory—as well as in automated reasoning and conjecture-generation systems—relies on the accurate computation of graph invariants across large collections of graphs. While general-purpose libraries such as `NetworkX` [@osti_960616] and `igraph` [@csardi2006igraph] offer essential tools for graph manipulation and visualization, they provide limited support for computing many of the specialized and computationally difficult invariants central to a large amount of graph (and polyhedral) theoretical research.
+Many aspects of esearch in graph theory, as well as in automated reasoning and conjecture generation on discrete structures rely on the accurate computation of graph invariants across large collections of graphs. While important and general purpose libraries such as `NetworkX` [@osti_960616] and `igraph` [@csardi2006igraph] offer essential tools for graph manipulation and visualization, they provide limited support for computing many of the specialized and computationally difficult invariants central to a large amount of graph (and polyhedral) theoretical research.
 
-`GraphCalc` fills this gap by offering a unified, solver-enhanced framework for computing both classical and advanced graph invariants. Many parameters are evaluated via linear and integer programming models, relying on the `PuLP` optimization toolkit [@mitchell2011pulp] and the COIN‑OR CBC solver [@forrest2005cbc] to compute exact solutions for many NP‑hard invariants, or fallback to exhaustive enumeration when necessary. The library currently supports over 100 functions across a wide range of categories, including:
+`GraphCalc` fills this gap by offering a unified, solver enhanced framework for computing both classical and advanced graph invariants. Many parameters are evaluated via linear-integer programming models, relying on the `PuLP` optimization toolkit [@mitchell2011pulp] and the COIN‑OR CBC solver [@forrest2005cbc] to compute exact solutions for many NP‑hard invariants, or fallback to exhaustive enumeration when necessary. The library currently supports over 100 functions across a wide range of categories, including:
 
 - Classical invariants: **independence number**, **clique number**, **chromatic number**, **vertex cover**, and **matching number**;
 - Over a dozen **domination-type invariants**, including **total**, **Roman**, **double Roman**, **restrained**, **outer-connected**, and **k-domination**;
@@ -47,7 +47,7 @@ Modern research in graph theory—as well as in automated reasoning and conjectu
 - Degree-based and spectral invariants such as **residue**, **annihilation number**, **Slater number**, **spectral radius**, and **algebraic connectivity**;
 - Structural graph properties and Boolean predicates for detecting trees, regularity, planarity, forbidden subgraphs, and more.
 
-Unlike symbolic systems such as SageMath [@sagemath], which approach invariants within a broader algebraic framework, `GraphCalc` is purpose-built for seamless integration into **automated conjecturing systems**. It serves as the computational engine for the *TxGraffiti* and *Optimist* systems [@TxGraffiti; @optimist], which depend on accurate invariant computations to discover, test, and rank symbolic conjectures that relate seemingly unrelated structural properties of graphs and polytopes.
+Unlike broad symbolic systems such as SageMath [@sagemath], `GraphCalc` is purpose-built for seamless integration into Python **automated conjecturing systems**. It serves as the computational engine for the *TxGraffiti* and *Optimist* systems [@TxGraffiti; @optimist], which depend on accurate invariant computations to discover, test, and rank symbolic conjectures that relate seemingly unrelated structural properties of graphs and polytopes.
 
 # Features
 
