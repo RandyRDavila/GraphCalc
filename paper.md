@@ -37,7 +37,7 @@ Altogether, `GraphCalc` implements over 100 graph-related functions, including i
 
 # Statement of Need
 
-Many aspects of esearch in graph theory, as well as in automated reasoning and conjecture generation on discrete structures rely on the accurate computation of graph invariants across large collections of graphs. While important and general purpose libraries such as `NetworkX` [@osti_960616] and `igraph` [@csardi2006igraph] offer essential tools for graph manipulation and visualization, they provide limited support for computing many of the specialized and computationally difficult invariants central to a large amount of graph (and polyhedral) theoretical research.
+Many aspects of research in graph theory, as well as in automated reasoning and conjecture generation on discrete structures rely on the accurate computation of graph invariants across large collections of graphs. While important and general purpose libraries such as `NetworkX` [@osti_960616] and `igraph` [@csardi2006igraph] offer essential tools for graph manipulation and visualization, they provide limited support for computing many of the specialized and computationally difficult invariants central to a large amount of graph (and polyhedral) theoretical research.
 
 `GraphCalc` fills this gap by offering a unified, solver enhanced framework for computing both classical and advanced graph invariants. Many parameters are evaluated via linear-integer programming models, relying on the `PuLP` optimization toolkit [@mitchell2011pulp] and the COIN‑OR CBC solver [@forrest2005cbc] to compute exact solutions for many NP‑hard invariants, or fallback to exhaustive enumeration when necessary. The library currently supports over 100 functions across a wide range of categories, including:
 
