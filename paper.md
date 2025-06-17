@@ -28,7 +28,7 @@ Originally developed to support **automated conjecturing systems**, `GraphCalc` 
 `GraphCalc` includes tools for computing both classical and specialized invariants. These include well-known parameters such as the **independence number**, **clique number**, and **chromatic number** (each computed exactly using optimization models), as well as lesser-known but actively studied invariants such as:
 
 - Spectral properties related to **graph energy** [@LiShiGutman2012],
-- Degree-sequence-based invariants like **residue** [@residue], **annihilation number** [@pepper2009], and **Slater number** [@GeRa2017],
+- Degree-sequence-based invariants like **residue** [@residue], **annihilation number** [@LevitMandrescu2022], and **Slater number** [@GeRa2017],
 - Dynamic coloring-based parameters such as the **zero forcing number** and its many variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
 - The widely studied **domination number** and its generalizations (**total**, **connected**, **Roman**, **k-domination**, etc.) [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
 - Structural constraints defined by forbidden subgraphs, such as being **claw-free**, **triangle-free**, **diamond-free**, and **bull-free**.
