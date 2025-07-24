@@ -48,7 +48,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install HiGHS
-        run: sudo apt update && sudo apt install -y highs
+        run: sudo apt install -y coinor-cbc
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
