@@ -66,9 +66,3 @@ examples/             # Jupyter notebooks and demos
 ### 5. 🙏 Thanks
 
 Every contribution—big or small—helps improve GraphCalc. Your curiosity, creativity, and insight matter.
-
-### ✅ Action Items
-
-- Save the file as `CONTRIBUTING.md`.
-- Add issue templates via GitHub (`.github/ISSUE_TEMPLATE/`).
-- Make sure your `README.md` includes a contact email and link to `CONTRIBUTING.md`.
