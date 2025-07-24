@@ -1,6 +1,8 @@
 # GraphCalc
-[![Documentation Status](https://readthedocs.org/projects/graphcalc/badge/?version=latest)](https://graphcalc.readthedocs.io/en/latest/?badge=latest)
 
+[![Documentation Status](https://readthedocs.org/projects/graphcalc/badge/?version=latest)](https://graphcalc.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/graphcalc.svg)](https://pypi.org/project/graphcalc/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
@@ -24,8 +26,8 @@ To install `graphcalc`, make sure you have Python 3.7 or higher, then install it
 pip install graphcalc
 ```
 
-
 ## Example Graph Usage
+
 ```python
 from graphcalc import (
     independence_number,
@@ -46,6 +48,7 @@ print(f"Petersen graph zero forcing number = {zero_forcing_number(G)}")
 ```
 
 ## Example Polytope Usage
+
 ```python
 import graphcalc as gc
 from graphcalc.polytopes.generators import (
@@ -95,6 +98,7 @@ print(df)
 ```
 
 ## Creating Simple Graphs, Polytope Graphs, and Simple Polytope Graphs
+
 ```python
 import graphcalc as gc
 
@@ -104,6 +108,7 @@ G.add_edges_from([(0, 1), (1, 2), (2, 3)])
 G.draw()
 ```
 
-
 ### Author
+
 Randy Davila, PhD
+Email: <rrd6@rice.edu>
