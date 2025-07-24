@@ -130,6 +130,11 @@ def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
 
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {node for node in variables if variables[node].value() == 1}
     return solution_set
 
@@ -218,6 +223,11 @@ def minimum_total_domination_set(G: GraphLike) -> Set[Hashable]:
 
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {node for node in variables if variables[node].value() == 1}
     return solution_set
 
@@ -291,6 +301,11 @@ def minimum_independent_dominating_set(G: GraphLike) -> Set[Hashable]:
 
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {node for node in variables if variables[node].value() == 1}
     return solution_set
 
@@ -519,6 +534,10 @@ def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
     solver = get_default_solver()
     prob.solve(solver)
 
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     # Extract solution
     solution = {
         "x": {v: value(x[v]) for v in graph.nodes()},
@@ -614,6 +633,10 @@ def minimum_double_roman_dominating_function(graph: GraphLike) -> Dict:
     # Solve the problem
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
     # Extract solution
     solution = {
@@ -711,6 +734,10 @@ def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
     # Solve the problem using PuLP's default solver
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
     # Output results
     # print("Status:", pulp.LpStatus[prob.status])
@@ -861,6 +888,10 @@ def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
     # Solve the problem
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
     # Extract the solution
     restrained_dom_set = [v for v in G.nodes() if value(x[v]) == 1]

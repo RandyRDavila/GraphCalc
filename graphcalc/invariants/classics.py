@@ -76,6 +76,10 @@ def maximum_independent_set(G: GraphLike) -> Set[Hashable]:
     solver = get_default_solver()
     prob.solve(solver)
 
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     # Extract solution
     return {v for v in G.nodes() if pulp.value(variables[v]) == 1}
 
@@ -213,6 +217,11 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
 
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {color: [node for node in node_colors if node_colors[node][color].value() == 1] for color in colors}
     return solution_set
 
@@ -391,6 +400,11 @@ def maximum_matching(G):
 
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {edge for edge in variables if variables[edge].value() == 1}
     return solution_set
 
@@ -431,5 +445,10 @@ def matching_number(G):
 
     solver = get_default_solver()
     prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {edge for edge in variables if variables[edge].value() == 1}
     return len(solution_set)
