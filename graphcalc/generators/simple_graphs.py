@@ -455,7 +455,7 @@ def petersen_graph() -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    graphcalc.SimpleGraph
         The Petersen graph `P`.
 
     Examples
@@ -468,13 +468,16 @@ def petersen_graph() -> gc.SimpleGraph:
 def diamond_necklace(k: int) -> gc.SimpleGraph:
     r"""
     Build the diamond‐necklace graph N_k:
-      - A "diamond" is K4 with the edge between nodes 0 and 3 removed.
-        This makes nodes 0 and 3 become the degree‐2 vertices.
-      - N_k consists of k disjoint diamonds whose degree‐2 vertices
-        are then joined in a cycle:
-          for i=0…k−1, join diamond i’s node (base+3)
-                         to diamond (i+1 mod k)’s node (base_next+0)
-    Nodes are labeled 0…4k−1, with diamond i using [4i,4i+1,4i+2,4i+3].
+
+    Returns
+    -------
+    graphcalc.SimpleGraph
+        The Petersen graph `P`.
+
+    Examples
+    --------
+    >>> from graphcalc.generators import diamond_necklace
+    >>> G = diamond_necklace()
     """
     G = nx.Graph()
     deg2_verts = []

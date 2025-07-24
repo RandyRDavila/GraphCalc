@@ -14,6 +14,7 @@ __pycache__/
 # Virtual environment
 .venv/
 .dev-venv/
+.venv-test/
 
 # Distribution / packaging
 .Python

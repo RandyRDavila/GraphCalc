@@ -161,7 +161,7 @@ def minimum_degree(G: GraphLike) -> int:
 
     Examples
     --------
-   >>> import graphcalc as gc
+    >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(4)
     >>> gc.minimum_degree(G)

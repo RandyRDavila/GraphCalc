@@ -1109,7 +1109,7 @@ def is_power_dominating_set(
 
 def minimum_power_dominating_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
     r"""
-    Finds the smallest power dominating set in the graph G.
+    Finds the smallest power dominating set in the graph :math:`G`.
 
     This function uses a brute-force approach to identify the minimum subset
     of vertices that form a power dominating set.
@@ -1139,7 +1139,7 @@ def minimum_power_dominating_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hash
 
 def power_domination_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     r"""
-    Calculates the power domination number of the graph G.
+    Calculates the power domination number of the graph :math:`G`.
 
     The power domination number is the size of the smallest power dominating set.
 
@@ -1168,22 +1168,20 @@ def is_well_splitting_set(
         G: Union[nx.Graph, gc.SimpleGraph],
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
-    r"""
-    Check if S is a well-splitting set of G.
-
-    For a graph G with |V(G)| = n, a set S is well-splitting if
-    every connected component of G-S has at most ceil((n - |S|) / 2) vertices.
+    """
+    Check if :math:`S` is a well-splitting set of :math:`G`.
 
     Parameters
     ----------
-    G : NetworkX Graph.
-    S : Iterable of vertices to remove.
+    G : nx.Graph
+        The input graph :math:`G = (V, E)`.
+    S : set
+        A subset :math:`S \subseteq V(G)` to test.
 
     Returns
-    --------
+    -------
     bool
-        True if S is a well-splitting set, otherwise False.
-
+        True if S is well-splitting, False otherwise.
     """
     n = len(G.nodes())
     S_size = len(S)
@@ -1201,9 +1199,9 @@ def is_well_splitting_set(
 
 def compute_well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],):
     r"""
-    Compute the well-splitting number S_w(G) of the graph G.
+    Compute the well-splitting number :math:`S_w(G)` of the graph :math:`G`.
 
-    It searches over all subsets S ⊆ V(G) in increasing size and returns
+    It searches over all subsets :math:`S \subseteq V(G)` in increasing size and returns
     the minimum size r and all candidate sets of that size that are well-splitting.
 
     Parameters
@@ -1233,9 +1231,9 @@ def compute_well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],):
 
 def well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
     r"""
-    Compute the well-splitting number S_w(G) of the graph G. The well-splitting number
-    of a graph is the minimum size of a well-splitting set, defined as a set S of vertices
-    such that every connected component of G-S has at most ceil((|V(G)| - |S|) / 2) vertices.
+    Compute the well-splitting number :math:`S_w(G)` of the graph :math:`G`. The well-splitting number
+    of a graph is the minimum size of a well-splitting set, defined as a set :math:`S` of vertices
+    such that every connected component of :math:`G-S` has at most :math:`\lceil\frac{|V(G)| - |S|}{2}\rceil` vertices.
     A well-splitting set is a set of vertices whose removal results in a graph where
     every connected component has a size that is at most half of the remaining vertices.
 
@@ -1247,7 +1245,7 @@ def well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
     Returns
     -------
     int
-        The well-splitting number S_w(G), which is the minimum size of a well-splitting set.
+        The well-splitting number :math:`S_w(G)`, which is the minimum size of a well-splitting set.
         If no such set exists, it returns the size of the entire vertex set.
 
     Examples

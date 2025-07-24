@@ -85,7 +85,7 @@ def independence_number(G: GraphLike) -> int:
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -111,11 +111,15 @@ def maximum_clique(G: GraphLike) -> Set[Hashable]:
     This function computes the maximum clique of a graph `G` by finding the maximum independent set
     of the graph's complement.
 
-    Args:
-        G (networkx.Graph): The input graph.
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
-    Returns:
-        list: A list of nodes representing the maximum clique in the graph `G`.
+    Returns
+    -------
+    set
+        A set of nodes representing the maximum clique in the graph `G`.
 
     Examples
     --------
@@ -139,8 +143,8 @@ def clique_number(G: GraphLike) -> int:
 
     Parameters
     ----------
-    G : networkx.Graph or subclass
-        The input graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
     Returns
     -------
@@ -166,12 +170,15 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     required to color the graph `G` such that no two adjacent nodes have the same color. Each node
     is assigned a color represented by a binary variable.
 
-    Args:
-        G (networkx.Graph): The input graph.
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
-    Returns:
-        dict: A dictionary where keys are color indices and values are lists of nodes in `G`
-              assigned that color.
+    Returns
+    -------
+    dict:
+        A dictionary where keys are color indices and values are lists of nodes in `G` assigned that color.
 
     Examples
     --------
@@ -218,7 +225,7 @@ def chromatic_number(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -244,7 +251,7 @@ def minimum_vertex_cover(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -269,7 +276,7 @@ def vertex_cover_number(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -293,7 +300,7 @@ def minimum_edge_cover(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -316,7 +323,7 @@ def edge_cover_number(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -355,7 +362,7 @@ def maximum_matching(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -393,7 +400,7 @@ def matching_number(G):
 
     Parameters
     ----------
-    G : NetworkX Graph of GraphCalc SimpleGraph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns

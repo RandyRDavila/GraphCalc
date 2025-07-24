@@ -48,21 +48,6 @@ class SimpleGraph(nx.Graph):
     *args, **kwargs : arguments
         Arguments passed to the base `networkx.Graph` class.
 
-    Methods
-    -------
-    write_edgelist_to_csv(filepath)
-        Write the edge list of the graph to a CSV file.
-    read_edge_list(filepath, delimiter=None)
-        Read an edge list from a file (CSV or TXT) and add edges to the graph.
-    read_adjacency_matrix(filepath, delimiter=None)
-        Read an adjacency matrix from a file (CSV or TXT) and create the graph.
-    get_adjacency_matrix(as_numpy_array=True)
-        Returns the adjacency matrix of the graph.
-    draw(with_labels=True, node_color="lightblue", node_size=500, font_size=10)
-        Draw the graph using Matplotlib.
-    complement()
-        Returns the complement of the graph as a SimpleGraph instance.
-
     Examples
     --------
     >>> import graphcalc as gc
