@@ -26,6 +26,32 @@ To install `graphcalc`, make sure you have Python 3.7 or higher, then install it
 pip install graphcalc
 ```
 
+## Linear and Integer Programming Solvers
+
+Many of the NP-hard graph invariant computations of GraphCalc depend on third-party solvers.At least one of the following is required if you intend to use solver-based functions (e.g., `gc.solve_independent_set(G)`):
+
+- **HiGHS** (recommended):
+
+```bash
+pip install highspy
+```
+
+Or, for CLI support (e.g., from source or via Homebrew on macOS):
+
+```bash
+brew install highs  # macOS
+sudo apt install highs  # Debian/Ubuntu
+```
+
+- **CBC** (alternative):
+
+```bash
+brew install cbc      # macOS
+sudo apt install coinor-cbc  # Debian/Ubuntu
+```
+
+GraphCalc will attempt to automatically detect the solver if it is installed. You can also manually specify the solver in API calls.
+
 ## Example Graph Usage
 
 ```python
