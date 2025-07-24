@@ -44,6 +44,33 @@ To deactivate the virtual environment, run:
 
 For more information on virtual environments, refer to the `Python documentation <https://docs.python.org/3/library/venv.html>`__.
 
+4. **Linear and Integer Programming Solvers**: Some features in GraphCalc depend on third-party solvers.
+
+   At least one of the following is required if you intend to use solver-based functions (e.g., `gc.solve_independent_set`):
+
+   - **HiGHS** (recommended):
+
+     .. code-block:: bash
+
+        pip install highspy
+
+     Or, for CLI support (e.g., from source or via Homebrew on macOS):
+
+     .. code-block:: bash
+
+        brew install highs  # macOS
+        sudo apt install highs  # Debian/Ubuntu
+
+   - **CBC** (alternative):
+
+     .. code-block:: bash
+
+        brew install cbc      # macOS
+        sudo apt install coinor-cbc  # Debian/Ubuntu
+
+   GraphCalc will attempt to automatically detect the solver if it is installed. You can also manually specify the solver in API calls.
+
+
 Installation
 ------------
 
