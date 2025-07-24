@@ -1,5 +1,8 @@
+
+from typing import Union, List
 import networkx as nx
 import graphcalc as gc
+from graphcalc.core import SimpleGraph
 
 __all__ = [
     'p_vector',
@@ -14,7 +17,7 @@ __all__ = [
     'simple_polytope_graph_with_p6_greater_than_zero',
 ]
 
-def p_vector(G_nx):
+def p_vector(G_nx: Union[nx.Graph, SimpleGraph]) -> List[int]:
     r"""
     Compute the p-vector of a planar graph.
 
@@ -115,7 +118,7 @@ def p_vector(G_nx):
     return p_k_vec
 
 
-def p_gons(G, p=3):
+def p_gons(G: Union[nx.Graph, SimpleGraph], p: int = 3) -> int:
     r"""
     Compute the number of p-sided faces in a planar graph.
 
@@ -167,56 +170,57 @@ def p_gons(G, p=3):
     vector = p_vector(G)
     return vector[p - 3] if p - 3 < len(vector) else 0
 
-def fullerene(G):
-    r"""
-    Determine if a graph is a fullerene.
+def fullerene(G: Union[nx.Graph, SimpleGraph]) -> bool:
+    """
+    Determine whether a graph is a fullerene.
+
+    A fullerene is a 3-regular, planar, simple, and connected graph
+    in which every face is either a pentagon or hexagon, and exactly
+    12 of the faces are pentagons.
 
     Parameters
     ----------
-    G : networkx.Graph
-        The graph to be checked for fullerene properties.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The graph to check.
 
     Returns
     -------
     bool
-        True if the graph is a fullerene, False otherwise.
-
-    Notes
-    -----
-    This function assumes the graph is simple and connected. It uses the
-    `p_vector` function to compute the face structure of the graph.
+        True if G is a fullerene, False otherwise.
 
     Examples
     --------
     >>> import graphcalc as gc
-    >>> G = gc.Graph()
-    >>> G.add_edges_from([(0, 1), (1, 2), (2, 0)])
+    >>> G = gc.fullerene_graph(60)  # C60 buckyball
     >>> gc.fullerene(G)
-    False
+    True
     """
-    # Check if the graph is 3-regular
+    # Check if 3-regular
     if not all(degree == 3 for _, degree in G.degree):
         return False
 
-    # Check if the graph is planar
+    # Check if planar
     is_planar, _ = nx.check_planarity(G)
     if not is_planar:
         return False
 
-    # Use the p_vector_graph function to count faces of different sizes
+    # Compute p-vector: [triangles, quads, pentagons, hexagons, ...]
     vector = p_vector(G)
 
-    # Ensure there are exactly 12 pentagonal faces
-    if len(vector) < 1 or vector[0] != 12:
+    # Count pentagons
+    pentagons = vector[2] if len(vector) > 2 else 0
+    if pentagons != 12:
         return False
 
-    # Ensure all other faces are hexagonal
-    if any(vector[i] != 0 for i in range(1, len(vector) - 1)):
-        return False
+    # Ensure all other nonzero faces are hexagons
+    for i, count in enumerate(vector):
+        face_size = i + 3
+        if face_size != 5 and face_size != 6 and count > 0:
+            return False
 
     return True
 
-def simple_graph(G):
+def simple_graph(G: Union[nx.Graph, SimpleGraph]) -> bool:
     r"""
     Check if a graph is simple.
 
@@ -247,52 +251,53 @@ def simple_graph(G):
     return True
 
 
-def polytope_graph(G):
-    r"""
-    Check if a graph is the graph of a polyhedron.
+def polytope_graph(G: Union[nx.Graph, SimpleGraph]) -> bool:
+    """
+    Determine whether a graph is the 1-skeleton of a convex 3D polyhedron.
 
-    A graph is the graph of a polyhedron (or a polytope graph) if and only if it is:
-    1. Simple: The graph has no self-loops or multiple edges.
-    2. Planar: The graph can be embedded in the plane without edge crossings.
-    3. 3-Connected: The graph remains connected after removing any two vertices.
+    According to Steinitz's theorem, a graph is a polytope graph (polyhedral graph)
+    if and only if it is:
+    1. Simple (no loops or multi-edges),
+    2. Planar,
+    3. 3-connected.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The graph to check.
 
     Returns
     -------
     bool
-        True if the graph is a polytope graph, False otherwise.
+        True if G is a polytope graph, False otherwise.
 
     Examples
     --------
-    >>> import networkx as nx
-    >>> G = gc.octahedral_graph()  # Octahedral graph is a polytope graph
+    >>> import graphcalc as gc
+    >>> G = gc.octahedral_graph()
     >>> gc.polytope_graph(G)
     True
 
-    >>> G = gc.path_graph(5)  # Path graph is not a polytope graph
+    >>> G = gc.path_graph(5)
     >>> gc.polytope_graph(G)
     False
     """
-    # 1. Check if the graph is simple
-    if not gc.simple_graph(G):
+    # 1. Must be simple
+    if not simple_graph(G):
         return False
 
-    # 2. Check if the graph is planar
+    # 2. Must be planar
     is_planar, _ = nx.check_planarity(G)
     if not is_planar:
         return False
 
-    # 3. Check if the graph is 3-connected
-    if not nx.is_connected(G) or not nx.node_connectivity(G) >= 3:
+    # 3. Must be 3-connected
+    if not nx.is_connected(G) or nx.node_connectivity(G) < 3:
         return False
 
     return True
 
-def simple_polytope_graph(G):
+def simple_polytope_graph(G: Union[nx.Graph, SimpleGraph]) -> bool:
     r"""
     Check if a graph is the graph of a simple polyhedron.
 
@@ -324,7 +329,7 @@ def simple_polytope_graph(G):
     """
     return gc.simple_graph(G) and gc.polytope_graph(G) and gc.connected_and_cubic(G)
 
-def polytope_graph_with_p6_zero(G):
+def polytope_graph_with_p6_zero(G: Union[nx.Graph, SimpleGraph]) -> bool:
     r"""
     Check if a graph is the graph of a polyhedron with no hexagonal faces.
 
@@ -358,7 +363,7 @@ def polytope_graph_with_p6_zero(G):
     return gc.polytope_graph(G) and gc.p_gons(G, p=6) == 0
 
 
-def simple_polytope_graph_with_p6_zero(G):
+def simple_polytope_graph_with_p6_zero(G: Union[nx.Graph, SimpleGraph]) -> bool:
     r"""
     Check if a graph is the graph of a simple polyhedron with no hexagonal faces.
 
@@ -392,7 +397,7 @@ def simple_polytope_graph_with_p6_zero(G):
     """
     return gc.simple_polytope_graph(G) and gc.p_gons(G, p=6) == 0
 
-def polytope_graph_with_p6_greater_than_zero(G):
+def polytope_graph_with_p6_greater_than_zero(G: Union[nx.Graph, SimpleGraph]) -> bool:
     r"""
     Check if a graph is the graph of a polyhedron with at least one hexagonal face.
 
@@ -425,7 +430,7 @@ def polytope_graph_with_p6_greater_than_zero(G):
     """
     return gc.polytope_graph(G) and gc.p_gons(G, p=6) > 0
 
-def simple_polytope_graph_with_p6_greater_than_zero(G):
+def simple_polytope_graph_with_p6_greater_than_zero(G: Union[nx.Graph, SimpleGraph]) -> bool:
     r"""
     Check if a graph is the graph of a simple polyhedron with at least one hexagonal face.
 

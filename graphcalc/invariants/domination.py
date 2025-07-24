@@ -1,3 +1,5 @@
+
+from typing import Union, Set, Hashable, Dict, List
 import networkx as nx
 from itertools import combinations
 import pulp
@@ -6,7 +8,9 @@ from pulp import (
     PULP_CBC_CMD,
 )
 
+import graphcalc as gc
 from graphcalc.core.neighborhoods import neighborhood, closed_neighborhood
+from graphcalc.utils import get_default_solver, enforce_type, GraphLike
 
 __all__ = [
     "is_dominating_set",
@@ -29,7 +33,8 @@ __all__ = [
     "min_maximal_matching_number",
 ]
 
-def is_dominating_set(G, S):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def is_dominating_set(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
     r"""
     Checks if a given set of nodes, S, is a dominating set in the graph G.
 
@@ -39,7 +44,7 @@ def is_dominating_set(G, S):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     S : set
         A subset of nodes in the graph to check for domination.
@@ -65,8 +70,8 @@ def is_dominating_set(G, S):
     """
     return all(any(u in S for u in closed_neighborhood(G, v)) for v in G.nodes())
 
-
-def minimum_dominating_set(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
     r"""
     Finds a minimum dominating set for the input graph G.
 
@@ -91,7 +96,7 @@ def minimum_dominating_set(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -112,7 +117,6 @@ def minimum_dominating_set(G):
     >>> print(gc.minimum_dominating_set(G))
     {0}
     """
-    pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MinDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
@@ -124,11 +128,13 @@ def minimum_dominating_set(G):
         combination = [variables[n] for n in variables if n in closed_neighborhood(G, node)]
         prob += pulp.lpSum(combination) >= 1
 
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
     solution_set = {node for node in variables if variables[node].value() == 1}
     return solution_set
 
-def domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def domination_number(G: GraphLike) -> int:
     r"""
     Calculates the domination number of the graph G.
 
@@ -137,7 +143,7 @@ def domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -156,7 +162,8 @@ def domination_number(G):
     """
     return len(minimum_dominating_set(G))
 
-def minimum_total_domination_set(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_total_domination_set(G: GraphLike) -> Set[Hashable]:
     r"""
     Finds a minimum total dominating set for the graph G.
 
@@ -180,7 +187,7 @@ def minimum_total_domination_set(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -198,7 +205,6 @@ def minimum_total_domination_set(G):
     >>> print(result)
     {1, 2}
     """
-    pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MinTotalDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
@@ -210,11 +216,13 @@ def minimum_total_domination_set(G):
         combination = [variables[n] for n in variables if n in neighborhood(G, node)]
         prob += pulp.lpSum(combination) >= 1
 
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
     solution_set = {node for node in variables if variables[node].value() == 1}
     return solution_set
 
-def total_domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def total_domination_number(G: GraphLike) -> int:
     r"""
     Calculates the total domination number of the graph G.
 
@@ -223,7 +231,7 @@ def total_domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -242,13 +250,15 @@ def total_domination_number(G):
     """
     return len(minimum_total_domination_set(G))
 
-def minimum_independent_dominating_set(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_independent_dominating_set(G: GraphLike) -> Set[Hashable]:
     r"""
     Finds a minimum independent dominating set for the graph G using integer programming.
 
     Parameters
     ----------
-    G (networkx.Graph): The graph to find the independent dominating set for.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -279,11 +289,13 @@ def minimum_independent_dominating_set(G):
         combination = [variables[n] for n in variables if n in closed_neighborhood(G, node)]
         prob += pulp.lpSum(combination) >= 1
 
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
     solution_set = {node for node in variables if variables[node].value() == 1}
     return solution_set
 
-def independent_domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def independent_domination_number(G: GraphLike) -> int:
     r"""
     Finds a minimum independent dominating set for the graph G.
 
@@ -292,7 +304,7 @@ def independent_domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -311,7 +323,8 @@ def independent_domination_number(G):
     """
     return len(minimum_independent_dominating_set(G))
 
-def complement_is_connected(G, S):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def complement_is_connected(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
     r"""
     Checks if the complement of a set S in the graph G induces a connected subgraph.
 
@@ -320,7 +333,7 @@ def complement_is_connected(G, S):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     S : set
         A subset of nodes in the graph.
@@ -348,7 +361,8 @@ def complement_is_connected(G, S):
     X = G.nodes() - S
     return nx.is_connected(G.subgraph(X))
 
-def is_outer_connected_dominating_set(G, S):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def is_outer_connected_dominating_set(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
     r"""
     Checks if a given set S is an outer-connected dominating set in the graph G.
 
@@ -357,7 +371,7 @@ def is_outer_connected_dominating_set(G, S):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     S : set
         A subset of nodes in the graph.
@@ -384,7 +398,8 @@ def is_outer_connected_dominating_set(G, S):
     """
     return is_dominating_set(G, S) and complement_is_connected(G, S)
 
-def minimum_outer_connected_dominating_set(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_outer_connected_dominating_set(G: GraphLike) -> Set[Hashable]:
     r"""
     Finds a minimum outer-connected dominating set for the graph G by trying all subset sizes.
 
@@ -415,7 +430,8 @@ def minimum_outer_connected_dominating_set(G):
             if is_outer_connected_dominating_set(G, S):
                 return S
 
-def outer_connected_domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def outer_connected_domination_number(G: GraphLike) -> int:
     r"""
     Finds a minimum outer-connected dominating set for the graph G.
 
@@ -427,7 +443,7 @@ def outer_connected_domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -451,8 +467,8 @@ def outer_connected_domination_number(G):
     """
     return len(minimum_outer_connected_dominating_set(G))
 
-
-def minimum_roman_dominating_function(graph):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
     r"""
     Finds a Roman dominating function for the graph G using integer programming.
 
@@ -480,7 +496,6 @@ def minimum_roman_dominating_function(graph):
     >>> print(solution)
     {'x': {0: 1, 1: 0, 2: 1, 3: 0}, 'y': {0: 0, 1: 0, 2: 0, 3: 0}, 'objective': 2}
     """
-    pulp.LpSolverDefault.msg = 0
     # Initialize the problem
     prob = pulp.LpProblem("RomanDomination", pulp.LpMinimize)
 
@@ -501,7 +516,8 @@ def minimum_roman_dominating_function(graph):
         prob += x[v] + y[v] <= 1, f"ExclusivityConstraint_{v}"
 
     # Solve the problem
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
 
     # Extract solution
     solution = {
@@ -512,7 +528,8 @@ def minimum_roman_dominating_function(graph):
 
     return solution
 
-def roman_domination_number(graph):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def roman_domination_number(graph: GraphLike) -> int:
     r"""
     Calculates the Roman domination number of the graph G.
 
@@ -540,7 +557,8 @@ def roman_domination_number(graph):
     solution = minimum_roman_dominating_function(graph)
     return solution["objective"]
 
-def minimum_double_roman_dominating_function(graph):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_double_roman_dominating_function(graph: GraphLike) -> Dict:
     r"""
     Finds a double Roman dominating function for the graph G using integer programming.
 
@@ -568,7 +586,6 @@ def minimum_double_roman_dominating_function(graph):
     >>> print(solution)
     {'x': {0: 0, 1: 1, 2: 0, 3: 0}, 'y': {0: 1, 1: 0, 2: 1, 3: 0}, 'z': {0: 0, 1: 0, 2: 0, 3: 0}, 'objective': 3}
     """
-    pulp.LpSolverDefault.msg = 0
     # Initialize the problem
     prob = pulp.LpProblem("DoubleRomanDomination", pulp.LpMinimize)
 
@@ -595,7 +612,8 @@ def minimum_double_roman_dominating_function(graph):
         prob += x[v] + y[v] + z[v] <= 1, f"Constraint_1d_{v}"
 
     # Solve the problem
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
 
     # Extract solution
     solution = {
@@ -607,7 +625,8 @@ def minimum_double_roman_dominating_function(graph):
 
     return solution
 
-def double_roman_domination_number(graph):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def double_roman_domination_number(graph: GraphLike) -> int:
     r"""
     Calculates the double Roman domination number of the graph G.
 
@@ -635,8 +654,8 @@ def double_roman_domination_number(graph):
     solution = minimum_double_roman_dominating_function(graph)
     return solution["objective"]
 
-
-def minimum_rainbow_dominating_function(G, k):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
     r"""
     Finds a rainbow dominating function for the graph G with k colors using integer programming.
 
@@ -645,7 +664,7 @@ def minimum_rainbow_dominating_function(G, k):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     k : int
         The number of colors.
@@ -667,7 +686,6 @@ def minimum_rainbow_dominating_function(G, k):
     >>> print(uncolored)
     [2, 3]
     """
-    pulp.LpSolverDefault.msg = 0
     # Create a PuLP problem instance
     prob = pulp.LpProblem("Rainbow_Domination", pulp.LpMinimize)
 
@@ -691,7 +709,8 @@ def minimum_rainbow_dominating_function(G, k):
             prob += pulp.lpSum(f[u, i] for u in G.neighbors(v)) >= x[v], f"Rainbow domination for vertex {v} color {i}"
 
     # Solve the problem using PuLP's default solver
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
 
     # Output results
     # print("Status:", pulp.LpStatus[prob.status])
@@ -705,7 +724,8 @@ def minimum_rainbow_dominating_function(G, k):
 
     return colored_vertices, uncolored_vertices
 
-def rainbow_domination_number(G, k):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def rainbow_domination_number(G: GraphLike, k: int) -> int:
     r"""
     Calculates the rainbow domination number of the graph G with k colors.
 
@@ -714,7 +734,7 @@ def rainbow_domination_number(G, k):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     k : int
         The number of colors.
@@ -736,7 +756,8 @@ def rainbow_domination_number(G, k):
     colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, k)
     return len(colored_vertices)
 
-def two_rainbow_domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def two_rainbow_domination_number(G: GraphLike) -> int:
     r"""
     Calculates the 2-rainbow domination number of the graph G.
 
@@ -744,7 +765,7 @@ def two_rainbow_domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -763,7 +784,8 @@ def two_rainbow_domination_number(G):
     """
     return rainbow_domination_number(G, 2)
 
-def three_rainbow_domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def three_rainbow_domination_number(G: GraphLike) -> int:
     r"""
     Calculates the 3-rainbow domination number of the graph G.
 
@@ -771,7 +793,7 @@ def three_rainbow_domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -790,8 +812,8 @@ def three_rainbow_domination_number(G):
     """
     return rainbow_domination_number(G, 3)
 
-
-def minimum_restrained_dominating_set(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
     r"""
     Finds a minimum restrained dominating set for the graph G using integer programming.
 
@@ -801,7 +823,7 @@ def minimum_restrained_dominating_set(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -819,7 +841,6 @@ def minimum_restrained_dominating_set(G):
     >>> print(restrained_dom_set)
     [0, 2, 4]
     """
-    pulp.LpSolverDefault.msg = 0
     # Initialize the linear programming problem
     prob = pulp.LpProblem("MinimumRestrainedDomination", pulp.LpMinimize)
 
@@ -838,14 +859,16 @@ def minimum_restrained_dominating_set(G):
         prob += pulp.lpSum(1 - x[u] for u in G.neighbors(v)) >= (1 - x[v]), f"NoIsolated_{v}"
 
     # Solve the problem
-    prob.solve(PULP_CBC_CMD(msg=0))
+    solver = get_default_solver()
+    prob.solve(solver)
 
     # Extract the solution
     restrained_dom_set = [v for v in G.nodes() if value(x[v]) == 1]
 
     return restrained_dom_set
 
-def restrained_domination_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def restrained_domination_number(G: GraphLike) -> int:
     r"""
     Calculates the restrained domination number of the graph G.
 
@@ -853,7 +876,7 @@ def restrained_domination_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -873,7 +896,8 @@ def restrained_domination_number(G):
     restrained_dom_set = minimum_restrained_dominating_set(G)
     return len(restrained_dom_set)
 
-def min_maximal_matching_number(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def min_maximal_matching_number(G: GraphLike) -> int:
     r"""
     Calculates the minimum maximal matching number of the graph G.
 
@@ -882,7 +906,7 @@ def min_maximal_matching_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns

@@ -1,5 +1,6 @@
 import networkx as nx
 import graphcalc as gc
+# from graphcalc.utils import enforce_type
 
 import csv
 import itertools
@@ -366,7 +367,12 @@ class SimpleGraph(nx.Graph):
         H = nx.complement(nx.Graph(self))
         return SimpleGraph(edges=H.edges, nodes=H.nodes, name=f"{self.name} Complement")
 
-def order(G):
+
+from typing import Union
+GraphLike = Union[nx.Graph, SimpleGraph]
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def order(G: GraphLike) -> int:
     r"""
     Returns the order of a graph, which is the number of vertices.
 
@@ -390,7 +396,8 @@ def order(G):
     """
     return len(G.nodes)
 
-def size(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def size(G: GraphLike) -> int:
     r"""
     Returns the size of a graph, which is the number of edges.
 
@@ -415,7 +422,8 @@ def size(G):
     """
     return len(G.edges)
 
-def connected(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected(G: GraphLike) -> bool:
     r"""
     Checks if the graph is connected.
 
@@ -440,7 +448,8 @@ def connected(G):
     """
     return nx.is_connected(G)
 
-def connected_and_bipartite(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_bipartite(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and bipartite.
 
@@ -465,7 +474,8 @@ def connected_and_bipartite(G):
     """
     return nx.is_connected(G) and nx.is_bipartite(G)
 
-def tree(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def tree(G: GraphLike) -> bool:
     r"""
     Checks if the graph is a tree.
 
@@ -490,7 +500,8 @@ def tree(G):
     """
     return nx.is_tree(G)
 
-def connected_and_regular(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_regular(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and regular.
 
@@ -515,7 +526,8 @@ def connected_and_regular(G):
     """
     return nx.is_connected(G) and nx.is_regular(G)
 
-def connected_and_eulerian(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_eulerian(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and Eulerian.
 
@@ -540,7 +552,8 @@ def connected_and_eulerian(G):
     """
     return nx.is_connected(G) and nx.is_eulerian(G)
 
-def connected_and_planar(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_planar(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and planar.
 
@@ -565,7 +578,8 @@ def connected_and_planar(G):
     """
     return nx.is_connected(G) and nx.check_planarity(G)[0]
 
-def connected_and_bipartite(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_bipartite(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and bipartite.
 
@@ -601,7 +615,8 @@ def connected_and_bipartite(G):
     """
     return nx.is_connected(G) and nx.is_bipartite(G)
 
-def connected_and_chordal(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_chordal(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and chordal.
 
@@ -626,7 +641,8 @@ def connected_and_chordal(G):
     """
     return nx.is_connected(G) and nx.is_chordal(G)
 
-def connected_and_cubic(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_cubic(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and cubic.
 
@@ -651,7 +667,8 @@ def connected_and_cubic(G):
     """
     return nx.is_connected(G) and gc.maximum_degree(G) == gc.minimum_degree(G) == 3
 
-def subcubic(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def subcubic(G: GraphLike) -> bool:
     r"""
     Checks if the graph is subcubic.
 
@@ -678,7 +695,8 @@ def subcubic(G):
     """
     return gc.maximum_degree(G) <= 3
 
-def connected_and_subcubic(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_subcubic(G: GraphLike) -> bool:
     r"""
     Checks if the graph is both connected and subcubic.
 
@@ -723,7 +741,8 @@ def connected_and_subcubic(G):
     """
     return nx.is_connected(G) and gc.maximum_degree(G) <= 3
 
-def claw_free(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def claw_free(G: GraphLike) -> bool:
     r"""
     Checks if a graph is claw-free. A claw is a tree with three leaves adjacent to a single vertex.
 
@@ -754,7 +773,8 @@ def claw_free(G):
     # if the above loop completes, the graph is claw-free
     return True
 
-def K_4_free(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def K_4_free(G: GraphLike) -> bool:
     r"""Returns True if *G* does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
 
     Parameters
@@ -783,8 +803,8 @@ def K_4_free(G):
             return False
     return True
 
-
-def triangle_free(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def triangle_free(G: GraphLike) -> bool:
     r"""Returns True if *G* is triangle-free, and False otherwise.
 
     A graph is *triangle-free* if it contains no induced subgraph isomorphic to
@@ -820,9 +840,8 @@ def triangle_free(G):
     # if the above loop completes, the graph is triangle free
     return True
 
-
-
-def diameter(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def diameter(G: GraphLike) -> int:
     r"""
     Returns the diameter of the graph.
 
@@ -849,7 +868,8 @@ def diameter(G):
     """
     return nx.diameter(G)
 
-def radius(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def radius(G: GraphLike) -> int:
     r"""
     Returns the radius of the graph.
 
@@ -876,7 +896,8 @@ def radius(G):
     """
     return nx.radius(G)
 
-def average_shortest_path_length(G):
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def average_shortest_path_length(G: GraphLike) -> float:
     r"""
     Returns the average shortest path length of the graph.
 

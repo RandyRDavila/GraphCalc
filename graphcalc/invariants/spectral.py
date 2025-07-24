@@ -1,6 +1,10 @@
 import numpy as np
 import networkx as nx
 
+import graphcalc as gc
+from graphcalc import SimpleGraph
+from graphcalc.utils import enforce_type, GraphLike
+
 __all__ = [
     'adjacency_matrix',
     'laplacian_matrix',
@@ -14,13 +18,14 @@ __all__ = [
     'smallest_adjacency_eigenvalue',
 ]
 
-def adjacency_matrix(G):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def adjacency_matrix(G: GraphLike) -> np.ndarray:
     r"""
     Compute the adjacency matrix of a graph.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -35,21 +40,23 @@ def adjacency_matrix(G):
 
     >>> G = cycle_graph(4)
     >>> gc.adjacency_matrix(G)
-    array([[0, 1, 1, 0],
-       [1, 0, 0, 1],
-       [1, 0, 0, 1],
-       [0, 1, 1, 0]])
+    array([[0, 1, 0, 1],
+           [1, 0, 1, 0],
+           [0, 1, 0, 1],
+           [1, 0, 1, 0]])
     """
-    G = nx.convert_node_labels_to_integers(G)  # Ensure node labels are integers
-    return nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
+    G = nx.convert_node_labels_to_integers(G)
+    return nx.to_numpy_array(G, dtype=int)
 
-def laplacian_matrix(G):
+
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def laplacian_matrix(G: GraphLike) -> np.array:
     r"""
     Compute the Laplacian matrix of a graph.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -74,14 +81,14 @@ def laplacian_matrix(G):
     Degree = np.diag(np.sum(A, axis=1))  # Degree matrix
     return Degree - A  # Laplacian matrix
 
-
-def adjacency_eigenvalues(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def adjacency_eigenvalues(G: GraphLike) -> float:
     r"""
     Compute the eigenvalues of the adjacency matrix of a graph.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -102,14 +109,14 @@ def adjacency_eigenvalues(G):
     eigenvals = np.linalg.eigvals(A)
     return np.sort(eigenvals)
 
-
-def laplacian_eigenvalues(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def laplacian_eigenvalues(G: GraphLike) -> float:
     r"""
     Compute the eigenvalues of the Laplacian matrix of a graph.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -130,8 +137,8 @@ def laplacian_eigenvalues(G):
     eigenvals = np.linalg.eigvals(L)
     return np.sort(eigenvals)
 
-
-def algebraic_connectivity(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def algebraic_connectivity(G: GraphLike) -> float:
     r"""
     Compute the algebraic connectivity of a graph.
 
@@ -139,7 +146,7 @@ def algebraic_connectivity(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -159,14 +166,14 @@ def algebraic_connectivity(G):
     eigenvals = laplacian_eigenvalues(G)
     return eigenvals[1]  # Second smallest eigenvalue
 
-
-def spectral_radius(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def spectral_radius(G: GraphLike) -> float:
     r"""
     Compute the spectral radius (largest eigenvalue by absolute value) of the adjacency matrix.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -186,14 +193,14 @@ def spectral_radius(G):
     eigenvals = adjacency_eigenvalues(G)
     return max(abs(eigenvals))
 
-
-def largest_laplacian_eigenvalue(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def largest_laplacian_eigenvalue(G: GraphLike) -> np.float64:
     r"""
     Compute the largest eigenvalue of the Laplacian matrix.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -213,14 +220,14 @@ def largest_laplacian_eigenvalue(G):
     eigenvals = laplacian_eigenvalues(G)
     return max(abs(eigenvals))
 
-
-def zero_adjacency_eigenvalues_count(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def zero_adjacency_eigenvalues_count(G: GraphLike) -> int:
     r"""
     Compute the number of zero eigenvalues of the adjacency matrix.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -240,14 +247,14 @@ def zero_adjacency_eigenvalues_count(G):
     eigenvals = adjacency_eigenvalues(G)
     return sum(1 for e in eigenvals if np.isclose(e, 0))
 
-
-def second_largest_adjacency_eigenvalue(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def second_largest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
     r"""
     Compute the second largest eigenvalue of the adjacency matrix.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -267,14 +274,14 @@ def second_largest_adjacency_eigenvalue(G):
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[-2]  # Second largest in sorted eigenvalues
 
-
-def smallest_adjacency_eigenvalue(G):
+@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def smallest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
     r"""
     Compute the smallest eigenvalue of the adjacency matrix.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns

@@ -46,3 +46,4 @@ from graphcalc.data import *
 from graphcalc.generators import *
 from graphcalc.invariants import *
 from graphcalc.polytopes import *
+from graphcalc.utils import *
