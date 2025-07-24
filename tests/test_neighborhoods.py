@@ -50,4 +50,4 @@ def test_set_closed_neighbors(G, node_set, expected):
 def test_invalid_node():
     G = path_graph(4)
     with pytest.raises(ValueError):
-        neighborhood(G, 10)  # Node 10 doesn
+        neighborhood(G, 10)  # Node 10 doesnt exists
