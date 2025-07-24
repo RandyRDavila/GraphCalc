@@ -1,6 +1,12 @@
+from typing import Set, Hashable, Dict
 import pulp
 import itertools
+
+from typing import Union, Set, Hashable
 import networkx as nx
+from graphcalc.core import SimpleGraph
+from graphcalc.utils import get_default_solver, enforce_type, GraphLike
+
 
 __all__ = [
     "maximum_independent_set",
@@ -16,12 +22,11 @@ __all__ = [
     "matching_number",
 ]
 
-def maximum_independent_set(G):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def maximum_independent_set(G: GraphLike) -> Set[Hashable]:
     r"""Return a largest independent set of nodes in *G*.
 
-    This method uses integer programming to solve for a largest
-    independent set. It solves the following integer program:
-
+    This method uses integer programming to solve the following formulation:
 
     .. math::
         \max \sum_{v \in V} x_v
@@ -29,53 +34,62 @@ def maximum_independent_set(G):
     subject to
 
     .. math::
-        \sum_{\{u, v\} \in E} x_u + x_v \leq 1 \text{ for all } e \in E
+        x_u + x_v \leq 1 \quad \text{for all } \{u, v\} \in E
 
-    where *E* and *V* are the set of edges and nodes of G.
+    where *E* and *V* are the edge and vertex sets of *G*.
 
     Parameters
     ----------
-    G : NetworkX graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
     Returns
     -------
-    set
+    set of hashable
         A set of nodes comprising a largest independent set in *G*.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
-
     >>> G = complete_graph(4)
     >>> gc.maximum_independent_set(G)
     {0}
     """
-
-    # surpress output logs from pulp
-    pulp.LpSolverDefault.msg = 0
-
+    # Initialize LP model
     prob = pulp.LpProblem("MaximumIndependentSet", pulp.LpMaximize)
-    variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
-    # Set the domination number objective function
-    prob += pulp.lpSum(variables)
+    # Decision variables: x_v ∈ {0, 1} for each node
+    variables = {
+        v: pulp.LpVariable(f"x_{v}", cat="Binary")
+        for v in G.nodes()
+    }
 
-    # Set constraints for independence
-    for e in G.edges():
-        prob += variables[e[0]] + variables[e[1]] <= 1
+    # Objective: maximize the number of selected nodes
+    prob += pulp.lpSum(variables[v] for v in G.nodes())
 
-    prob.solve()
-    solution_set = {node for node in variables if variables[node].value() == 1}
-    return solution_set
+    # Constraints: adjacent nodes cannot both be selected
+    for u, v in G.edges():
+        prob += variables[u] + variables[v] <= 1, f"edge_{u}_{v}"
 
-def independence_number(G):
+    # Solve using default solver
+    solver = get_default_solver()
+    prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
+    # Extract solution
+    return {v for v in G.nodes() if pulp.value(variables[v]) == 1}
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def independence_number(G: GraphLike) -> int:
     r"""Return the size of a largest independent set in *G*.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -94,17 +108,22 @@ def independence_number(G):
     """
     return len(maximum_independent_set(G))
 
-def maximum_clique(G):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def maximum_clique(G: GraphLike) -> Set[Hashable]:
     r"""Finds the maximum clique in a graph.
 
     This function computes the maximum clique of a graph `G` by finding the maximum independent set
     of the graph's complement.
 
-    Args:
-        G (networkx.Graph): The input graph.
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
-    Returns:
-        list: A list of nodes representing the maximum clique in the graph `G`.
+    Returns
+    -------
+    set
+        A set of nodes representing the maximum clique in the graph `G`.
 
     Examples
     --------
@@ -119,8 +138,8 @@ def maximum_clique(G):
     else:
         return maximum_independent_set(nx.complement(G))
 
-
-def clique_number(G):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def clique_number(G: GraphLike) -> int:
     r"""
     Compute the clique number of the graph.
 
@@ -128,8 +147,8 @@ def clique_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph or subclass
-        The input graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
     Returns
     -------
@@ -147,20 +166,23 @@ def clique_number(G):
     complement_graph = G.complement() if hasattr(G, "complement") else nx.complement(G)
     return independence_number(complement_graph)
 
-
-def optimal_proper_coloring(G):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def optimal_proper_coloring(G: GraphLike) -> Dict:
     r"""Finds the optimal proper coloring of a graph using linear programming.
 
     This function uses integer linear programming to find the optimal (minimum) number of colors
     required to color the graph `G` such that no two adjacent nodes have the same color. Each node
     is assigned a color represented by a binary variable.
 
-    Args:
-        G (networkx.Graph): The input graph.
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
 
-    Returns:
-        dict: A dictionary where keys are color indices and values are lists of nodes in `G`
-              assigned that color.
+    Returns
+    -------
+    dict:
+        A dictionary where keys are color indices and values are lists of nodes in `G` assigned that color.
 
     Examples
     --------
@@ -171,11 +193,13 @@ def optimal_proper_coloring(G):
     >>> gc.optimal_proper_coloring(G)
     {0: [0], 1: [1], 2: [2], 3: [3]}
     """
-    pulp.LpSolverDefault.msg = 0
+    # Set up the optimization model
     prob = pulp.LpProblem("OptimalProperColoring", pulp.LpMinimize)
-    colors = {i: pulp.LpVariable("x_{}".format(i), 0, 1, pulp.LpBinary) for i in range(G.order())}
+
+    # Define decision variables
+    colors = {i: pulp.LpVariable(f"x_{i}", 0, 1, pulp.LpBinary) for i in range(G.order())}
     node_colors = {
-        node: [pulp.LpVariable("c_{}_{}".format(node, i), 0, 1, pulp.LpBinary) for i in range(G.order())] for node in G.nodes()
+        node: [pulp.LpVariable(f"c_{node}_{i}", 0, 1, pulp.LpBinary) for i in range(G.order())] for node in G.nodes()
     }
 
     # Set the min proper coloring objective function
@@ -191,11 +215,17 @@ def optimal_proper_coloring(G):
     for node, i in itertools.product(G.nodes(), range(G.order())):
         prob += node_colors[node][i] <= colors[i]
 
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {color: [node for node in node_colors if node_colors[node][color].value() == 1] for color in colors}
     return solution_set
 
-
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def chromatic_number(G):
     r"""Return the chromatic number of the graph G.
 
@@ -204,7 +234,7 @@ def chromatic_number(G):
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -224,12 +254,13 @@ def chromatic_number(G):
     colors = [color for color in coloring if len(coloring[color]) > 0]
     return len(colors)
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_vertex_cover(G):
     r"""Return a smallest vertex cover of the graph G.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -248,12 +279,13 @@ def minimum_vertex_cover(G):
     X = maximum_independent_set(G)
     return G.nodes() - X
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def vertex_cover_number(G):
     r"""Return a the size of smallest vertex cover in the graph G.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -271,12 +303,13 @@ def vertex_cover_number(G):
     """
     return G.order() - independence_number(G)
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_edge_cover(G):
     r"""Return a smallest edge cover of the graph G.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -293,12 +326,13 @@ def minimum_edge_cover(G):
     """
     return nx.min_edge_cover(G)
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def edge_cover_number(G):
     r"""Return the size of a smallest edge cover in the graph G.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -315,6 +349,7 @@ def edge_cover_number(G):
     """
     return len(nx.min_edge_cover(G))
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def maximum_matching(G):
     r"""Return a maximum matching in the graph G.
 
@@ -336,7 +371,7 @@ def maximum_matching(G):
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -352,9 +387,8 @@ def maximum_matching(G):
     >>> gc.maximum_matching(G)
     {(0, 1), (2, 3)}
     """
-    pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MaximumMatchingSet", pulp.LpMaximize)
-    variables = {edge: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, edge in enumerate(G.edges())}
+    variables = {edge: pulp.LpVariable(f"x_{edge}", 0, 1, pulp.LpBinary) for edge in G.edges()}
 
     # Set the maximum matching objective function
     prob += pulp.lpSum(variables)
@@ -364,16 +398,23 @@ def maximum_matching(G):
         incident_edges = [variables[edge] for edge in variables if node in edge]
         prob += sum(incident_edges) <= 1
 
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {edge for edge in variables if variables[edge].value() == 1}
     return solution_set
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def matching_number(G):
     r"""Return the size of a maximum matching in the graph G.
 
     Parameters
     ----------
-    G : NetworkX graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
 
     Returns
@@ -391,7 +432,6 @@ def matching_number(G):
     2
 
     """
-    pulp.LpSolverDefault.msg = 0
     prob = pulp.LpProblem("MaximumMatchingSet", pulp.LpMaximize)
     variables = {edge: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, edge in enumerate(G.edges())}
 
@@ -403,6 +443,12 @@ def matching_number(G):
         incident_edges = [variables[edge] for edge in variables if node in edge]
         prob += sum(incident_edges) <= 1
 
-    prob.solve()
+    solver = get_default_solver()
+    prob.solve(solver)
+
+    # Raise value error if solution not found
+    if pulp.LpStatus[prob.status] != 'Optimal':
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
     solution_set = {edge for edge in variables if variables[edge].value() == 1}
     return len(solution_set)

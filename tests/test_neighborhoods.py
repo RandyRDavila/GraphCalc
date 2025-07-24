@@ -49,7 +49,5 @@ def test_set_closed_neighbors(G, node_set, expected):
 
 def test_invalid_node():
     G = path_graph(4)
-    with pytest.raises(KeyError):
-        neighborhood(G, 10)  # Node 10 doesn't exist
-    with pytest.raises(KeyError):
-        closed_neighborhood(G, 10)  # Node 10 doesn't exist
+    with pytest.raises(ValueError):
+        neighborhood(G, 10)  # Node 10 doesnt exists

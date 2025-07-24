@@ -36,7 +36,7 @@ autodoc_default_options = {
 # -- Options for HTML output -------------------------------------------------
 # Use the Read the Docs theme (or alabaster if preferred)
 html_theme = 'sphinx_rtd_theme'  # Use 'alabaster' or 'sphinx_rtd_theme'
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # -- Add paths to sys.path for autodoc to locate graphcalc -------------------
 # This allows Sphinx to locate the 'graphcalc' package for documentation

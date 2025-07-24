@@ -30,7 +30,7 @@ __all__ = [
 ]
 
 
-def complete_graph(n):
+def complete_graph(n: int) -> gc.SimpleGraph:
     r"""
     Return the complete graph `K_n` with `n` nodes.
 
@@ -54,7 +54,7 @@ def complete_graph(n):
     """
     return gc.SimpleGraph(nx.complete_graph(n).edges, name=f"Complete Graph K_{n}")
 
-def cycle_graph(n):
+def cycle_graph(n: int) -> gc.SimpleGraph:
     r"""
     Return the cycle graph `C_n` with `n` nodes.
 
@@ -78,7 +78,7 @@ def cycle_graph(n):
     """
     return gc.SimpleGraph(nx.cycle_graph(n).edges, name=f"Cycle Graph C_{n}")
 
-def path_graph(n):
+def path_graph(n: int) -> gc.SimpleGraph:
     r"""
     Return the path graph `P_n` with `n` nodes.
 
@@ -102,7 +102,7 @@ def path_graph(n):
     """
     return gc.SimpleGraph(nx.path_graph(n).edges, name=f"Path Graph P_{n}")
 
-def star_graph(n):
+def star_graph(n: int) -> gc.SimpleGraph:
     r"""
     Return the star graph `S_n` with `n` nodes.
 
@@ -126,7 +126,7 @@ def star_graph(n):
     """
     return gc.SimpleGraph(nx.star_graph(n).edges, name=f"Star Graph S_{n}")
 
-def wheel_graph(n):
+def wheel_graph(n: int) -> gc.SimpleGraph:
     r"""
     Return the wheel graph `W_n` with `n` nodes.
 
@@ -150,7 +150,7 @@ def wheel_graph(n):
     """
     return gc.SimpleGraph(nx.wheel_graph(n).edges, name=f"Wheel Graph W_{n}")
 
-def grid_2d_graph(m, n):
+def grid_2d_graph(m: int, n: int) -> gc.SimpleGraph:
     r"""
     Return the 2D grid graph `G_{m,n}` with `m` rows and `n` columns.
 
@@ -177,7 +177,7 @@ def grid_2d_graph(m, n):
     """
     return gc.SimpleGraph(nx.grid_2d_graph(m, n).edges, name=f"2D Grid Graph G_{{{m},{n}}}")
 
-def barbell_graph(m, n):
+def barbell_graph(m: int, n: int) -> gc.SimpleGraph:
     r"""
     Return the barbell graph `B_{m,n}` with `m` nodes in each complete graph.
 
@@ -204,7 +204,7 @@ def barbell_graph(m, n):
     """
     return gc.SimpleGraph(nx.barbell_graph(m, n).edges, name=f"Barbell Graph B_{{{m},{n}}}")
 
-def ladder_graph(n):
+def ladder_graph(n: int) -> gc.SimpleGraph:
     r"""
     Return the ladder graph `L_n` with `2 * n` nodes.
 
@@ -229,7 +229,7 @@ def ladder_graph(n):
     """
     return gc.SimpleGraph(nx.ladder_graph(n).edges, name=f"Ladder Graph L_{n}")
 
-def binomial_tree(n):
+def binomial_tree(n: int) -> gc.SimpleGraph:
     r"""
     Return the binomial tree `BT_n` with `n` levels.
 
@@ -254,7 +254,7 @@ def binomial_tree(n):
     """
     return gc.SimpleGraph(nx.binomial_tree(n).edges, name=f"Binomial Tree BT_{n}")
 
-def balanced_tree(r, h):
+def balanced_tree(r: int, h: int) -> gc.SimpleGraph:
     r"""
     Return the balanced tree `BT_{r,h}` with branching factor `r` and height `h`.
 
@@ -281,7 +281,7 @@ def balanced_tree(r, h):
     """
     return gc.SimpleGraph(nx.balanced_tree(r, h).edges, name=f"Balanced Tree BT_{{{r},{h}}}")
 
-def erdos_renyi_graph(n, p):
+def erdos_renyi_graph(n: int, p: float, seed=None) -> gc.SimpleGraph:
     r"""
     Return the Erdos-Renyi random graph `G_{n,p}` with `n` nodes and edge probability `p`.
 
@@ -305,9 +305,9 @@ def erdos_renyi_graph(n, p):
     >>> from graphcalc.generators import erdos_renyi_graph
     >>> G = erdos_renyi_graph(4, 0.5)
     """
-    return gc.SimpleGraph(nx.erdos_renyi_graph(n, p).edges, name=f"Erdos-Renyi Graph G_{{{n},{p}}}")
+    return gc.SimpleGraph(nx.erdos_renyi_graph(n, p, seed=seed).edges, name=f"Erdos-Renyi Graph G_{{{n},{p}}}")
 
-def watts_strogatz_graph(n, k, p):
+def watts_strogatz_graph(n: int, k: int, p: float, seed=None) -> gc.SimpleGraph:
     r"""
     Return the Watts-Strogatz small-world graph `WS_{n,k,p}` with `n` nodes, degree `k`, and rewiring probability `p`.
 
@@ -334,9 +334,9 @@ def watts_strogatz_graph(n, k, p):
     >>> from graphcalc.generators import watts_strogatz_graph
     >>> G = watts_strogatz_graph(4, 2, 0.5)
     """
-    return gc.SimpleGraph(nx.watts_strogatz_graph(n, k, p).edges, name=f"Watts-Strogatz Graph WS_{{{n},{k},{p}}}")
+    return gc.SimpleGraph(nx.watts_strogatz_graph(n, k, p, seed=seed).edges, name=f"Watts-Strogatz Graph WS_{{{n},{k},{p}}}")
 
-def barabasi_albert_graph(n, m):
+def barabasi_albert_graph(n: int, m: int, seed=None) -> gc.SimpleGraph:
     r"""
     Return the Barabasi-Albert preferential attachment graph `BA_{n,m}` with `n` nodes and `m` edges per new node.
 
@@ -361,9 +361,9 @@ def barabasi_albert_graph(n, m):
     >>> from graphcalc.generators import barabasi_albert_graph
     >>> G = barabasi_albert_graph(4, 2)
     """
-    return gc.SimpleGraph(nx.barabasi_albert_graph(n, m).edges, name=f"Barabasi-Albert Graph BA_{{{n},{m}}}")
+    return gc.SimpleGraph(nx.barabasi_albert_graph(n, m, seed=seed).edges, name=f"Barabasi-Albert Graph BA_{{{n},{m}}}")
 
-def powerlaw_cluster_graph(n, m, p):
+def powerlaw_cluster_graph(n: int, m: int, p: float, seed=None) -> gc.SimpleGraph:
     r"""
     Return the powerlaw cluster graph `PLC_{n,m,p}` with `n` nodes, `m` edges per node, and rewiring probability `p`.
 
@@ -391,9 +391,9 @@ def powerlaw_cluster_graph(n, m, p):
 
     >>> G = powerlaw_cluster_graph(4, 2, 0.5)
     """
-    return gc.SimpleGraph(nx.powerlaw_cluster_graph(n, m, p).edges, name=f"Powerlaw Cluster Graph PLC_{{{n},{m},{p}}}")
+    return gc.SimpleGraph(nx.powerlaw_cluster_graph(n, m, p, seed=seed).edges, name=f"Powerlaw Cluster Graph PLC_{{{n},{m},{p}}}")
 
-def random_geometric_graph(n, radius):
+def random_geometric_graph(n: int, radius: int, seed=None) -> gc.SimpleGraph:
     r"""
     Return the random geometric graph `RGG_{n,r}` with `n` nodes and radius `r`.
 
@@ -418,9 +418,9 @@ def random_geometric_graph(n, radius):
     >>> from graphcalc.generators import random_geometric_graph
     >>> G = random_geometric_graph(4, 0.5)
     """
-    return gc.SimpleGraph(nx.random_geometric_graph(n, radius).edges, name=f"Random Geometric Graph RGG_{{{n},{radius}}}")
+    return gc.SimpleGraph(nx.random_geometric_graph(n, radius, seed=seed).edges, name=f"Random Geometric Graph RGG_{{{n},{radius}}}")
 
-def random_regular_graph(d, n):
+def random_regular_graph(d: int, n: int, seed=None) -> gc.SimpleGraph:
     r"""
     Return the random regular graph `RRG_{d,n}` with degree `d` and `n` nodes.
 
@@ -444,9 +444,9 @@ def random_regular_graph(d, n):
     >>> from graphcalc.generators import random_regular_graph
     >>> G = random_regular_graph(3, 4)
     """
-    return gc.SimpleGraph(nx.random_regular_graph(d, n).edges, name=f"Random Regular Graph RRG_{{{d},{n}}}")
+    return gc.SimpleGraph(nx.random_regular_graph(d, n, seed=seed).edges, name=f"Random Regular Graph RRG_{{{d},{n}}}")
 
-def petersen_graph():
+def petersen_graph() -> gc.SimpleGraph:
     r"""
     Return the Petersen graph `P`.
 
@@ -455,7 +455,7 @@ def petersen_graph():
 
     Returns
     -------
-    networkx.Graph
+    graphcalc.SimpleGraph
         The Petersen graph `P`.
 
     Examples
@@ -465,16 +465,19 @@ def petersen_graph():
     """
     return gc.SimpleGraph(nx.petersen_graph().edges, name="Petersen Graph P")
 
-def diamond_necklace(k: int) -> nx.Graph:
+def diamond_necklace(k: int) -> gc.SimpleGraph:
     r"""
     Build the diamond‐necklace graph N_k:
-      - A "diamond" is K4 with the edge between nodes 0 and 3 removed.
-        This makes nodes 0 and 3 become the degree‐2 vertices.
-      - N_k consists of k disjoint diamonds whose degree‐2 vertices
-        are then joined in a cycle:
-          for i=0…k−1, join diamond i’s node (base+3)
-                         to diamond (i+1 mod k)’s node (base_next+0)
-    Nodes are labeled 0…4k−1, with diamond i using [4i,4i+1,4i+2,4i+3].
+
+    Returns
+    -------
+    graphcalc.SimpleGraph
+        The Petersen graph `P`.
+
+    Examples
+    --------
+    >>> from graphcalc.generators import diamond_necklace
+    >>> G = diamond_necklace()
     """
     G = nx.Graph()
     deg2_verts = []
@@ -500,4 +503,4 @@ def diamond_necklace(k: int) -> nx.Graph:
         low_j, _ = deg2_verts[j]
         G.add_edge(high_i, low_j)
 
-    return G
+    return gc.SimpleGraph(G.edges, name=f"Diamond-Necklace-{k}")

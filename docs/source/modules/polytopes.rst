@@ -7,13 +7,16 @@ The polytopes module contains functions and classes for working with polytope gr
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:
 
 .. automodule:: graphcalc.polytopes.generators
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:
 
 .. automodule:: graphcalc.polytopes.invariants
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:

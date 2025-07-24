@@ -1,6 +1,9 @@
+
+from typing import Union, Set, List, Hashable
 import networkx as nx
 from itertools import combinations
 import graphcalc as gc
+from math import ceil
 
 
 __all__ = [
@@ -28,7 +31,12 @@ __all__ = [
 ]
 
 
-def is_k_forcing_vertex(G, v, nodes, k):
+def is_k_forcing_vertex(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        v: Hashable,
+        nodes: Union[Set[Hashable], List[Hashable]],
+        k: int
+    ) -> bool:
     r"""
     Determines whether a node *v* can perform *k*-forcing with respect to a set of nodes.
 
@@ -37,8 +45,8 @@ def is_k_forcing_vertex(G, v, nodes, k):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     v : node
         The node to check for *k*-forcing.
     nodes : list or set
@@ -79,14 +87,18 @@ def is_k_forcing_vertex(G, v, nodes, k):
     return v in S and n >= 1 and n <= k
 
 
-def is_k_forcing_active_set(G, nodes, k):
+def is_k_forcing_active_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        nodes: Union[Set[Hashable], List[Hashable]],
+        k: int
+    ) -> bool:
     r"""
     Checks if at least one node in the given set can perform *k*-forcing.
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     nodes : list or set
         The set of nodes under consideration.
     k : int
@@ -114,7 +126,11 @@ def is_k_forcing_active_set(G, nodes, k):
     return False
 
 
-def is_k_forcing_set(G, nodes, k):
+def is_k_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        nodes: Union[Set[Hashable], List[Hashable]],
+        k: int
+    ) -> bool:
     r"""
     Determines whether the given set of nodes is a *k*-forcing set in the graph.
 
@@ -123,8 +139,8 @@ def is_k_forcing_set(G, nodes, k):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     nodes : list or set
         The set of nodes under consideration.
     k : int
@@ -155,14 +171,17 @@ def is_k_forcing_set(G, nodes, k):
     return Z == set(G.nodes())
 
 
-def minimum_k_forcing_set(G, k):
+def minimum_k_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        k: int
+    ) -> Set[Hashable]:
     r"""
     Finds a smallest *k*-forcing set in the graph using brute force.
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     k : int
         The parameter for *k*-forcing.
 
@@ -189,7 +208,7 @@ def minimum_k_forcing_set(G, k):
                 return set(S)
 
 
-def k_forcing_number(G, k):
+def k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> int:
     r"""
     Calculates the *k*-forcing number of the graph.
 
@@ -197,7 +216,7 @@ def k_forcing_number(G, k):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
     k : int
         The parameter for *k*-forcing.
@@ -219,7 +238,11 @@ def k_forcing_number(G, k):
     return len(minimum_k_forcing_set(G, k))
 
 
-def is_zero_forcing_vertex(G, v, S):
+def is_zero_forcing_vertex(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        v: Hashable,
+        S: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
     r"""
     Determines whether a node *v* can force relative to a set of nodes.
 
@@ -227,7 +250,7 @@ def is_zero_forcing_vertex(G, v, S):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
     v : node
         The node to check.
@@ -252,7 +275,10 @@ def is_zero_forcing_vertex(G, v, S):
     return is_k_forcing_vertex(G, v, S, 1)
 
 
-def is_zero_forcing_active_set(G, S):
+def is_zero_forcing_active_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        S: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
     r"""
     Checks whether the given set of nodes forms a zero forcing set in the graph.
 
@@ -260,8 +286,8 @@ def is_zero_forcing_active_set(G, S):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     S : list or set
         The set of nodes under consideration.
 
@@ -283,7 +309,10 @@ def is_zero_forcing_active_set(G, S):
     return is_k_forcing_active_set(G, S, 1)
 
 
-def is_zero_forcing_set(G, S):
+def is_zero_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        S: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
     r"""
     Checks whether the given set of nodes forms a zero forcing set in the graph.
 
@@ -291,8 +320,8 @@ def is_zero_forcing_set(G, S):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     S : list or set
         The set of nodes under consideration.
 
@@ -314,14 +343,14 @@ def is_zero_forcing_set(G, S):
     return is_k_forcing_set(G, S, 1)
 
 
-def minimum_zero_forcing_set(G):
+def minimum_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
     r"""
     Finds a smallest zero forcing set in the graph using brute force.
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -340,7 +369,7 @@ def minimum_zero_forcing_set(G):
     return minimum_k_forcing_set(G, 1)
 
 
-def zero_forcing_number(G):
+def zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     r"""
     Calculates the zero forcing number of the graph.
 
@@ -348,8 +377,8 @@ def zero_forcing_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -367,14 +396,14 @@ def zero_forcing_number(G):
     """
     return len(minimum_zero_forcing_set(G))
 
-def two_forcing_number(G):
+def two_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     r"""
     Calculates the 2-forcing number of the graph.
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -393,7 +422,10 @@ def two_forcing_number(G):
     return k_forcing_number(G, 2)
 
 
-def is_total_zero_forcing_set(G, nodes):
+def is_total_zero_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        S: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
     r"""
     Checks if the given nodes form a total zero forcing set.
 
@@ -401,9 +433,9 @@ def is_total_zero_forcing_set(G, nodes):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
-    nodes : list or set
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+    S : list or set
         The set of nodes under consideration.
 
     Returns
@@ -421,14 +453,14 @@ def is_total_zero_forcing_set(G, nodes):
     >>> print(gc.is_total_zero_forcing_set(G, nodes))
     True
     """
-    S = set(n for n in nodes if n in G)
+    S = set(n for n in S if n in G)
     for v in S:
         if set(gc.neighborhood(G, v)).intersection(S) == set():
             return False
     return is_zero_forcing_set(G, S)
 
 
-def minimum_total_zero_forcing_set(G):
+def minimum_total_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
     r"""
     Finds a smallest total zero forcing set in the graph G.
 
@@ -436,8 +468,8 @@ def minimum_total_zero_forcing_set(G):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -462,7 +494,7 @@ def minimum_total_zero_forcing_set(G):
     return None
 
 
-def total_zero_forcing_number(G):
+def total_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     r"""
     Calculates the total zero forcing number of the graph G.
 
@@ -470,8 +502,8 @@ def total_zero_forcing_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -494,7 +526,11 @@ def total_zero_forcing_number(G):
         return len(Z)
 
 
-def is_connected_k_forcing_set(G, nodes, k):
+def is_connected_k_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        nodes: Union[Set[Hashable], List[Hashable]],
+        k: int,
+    ) -> bool:
     r"""
     Determines whether the given nodes form a connected k-forcing set in the graph G.
 
@@ -502,7 +538,7 @@ def is_connected_k_forcing_set(G, nodes, k):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
     nodes : list or set
         A set of nodes under consideration.
@@ -535,7 +571,10 @@ def is_connected_k_forcing_set(G, nodes, k):
     return gc.connected(H) and is_k_forcing_set(G, S, k)
 
 
-def is_connected_zero_forcing_set(G, nodes):
+def is_connected_zero_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        S: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
     r"""
     Determines whether the given nodes form a connected zero forcing set in the graph G.
 
@@ -543,9 +582,9 @@ def is_connected_zero_forcing_set(G, nodes):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
-    nodes : list or set
+    S : list or set
         A set of nodes under consideration.
 
     Returns
@@ -563,16 +602,19 @@ def is_connected_zero_forcing_set(G, nodes):
     >>> print(gc.is_connected_zero_forcing_set(G, nodes))
     True
     """
-    return is_connected_k_forcing_set(G, nodes, 1)
+    return is_connected_k_forcing_set(G, S, 1)
 
 
-def minimum_connected_k_forcing_set(G, k):
+def minimum_connected_k_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        k: int,
+    ) -> Set[Hashable]:
     r"""
     Finds the smallest connected k-forcing set in the graph G using brute force.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
     k : int
         A positive integer representing the k-forcing parameter.
@@ -606,13 +648,13 @@ def minimum_connected_k_forcing_set(G, k):
                 return set(S)
 
 
-def minimum_connected_zero_forcing_set(G):
+def minimum_connected_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],) -> Set[Hashable]:
     r"""
     Finds the smallest connected zero forcing set in the graph G using brute force.
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
 
     Returns
@@ -632,7 +674,7 @@ def minimum_connected_zero_forcing_set(G):
     return minimum_connected_k_forcing_set(G, 1)
 
 
-def connected_k_forcing_number(G, k):
+def connected_k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> int:
     r"""
     Calculates the connected kforcing number of the graph G.
 
@@ -640,7 +682,7 @@ def connected_k_forcing_number(G, k):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
     k : int
         A positive integer representing the k-forcing parameter.
@@ -672,7 +714,7 @@ def connected_k_forcing_number(G, k):
         return len(Z)
 
 
-def connected_zero_forcing_number(G):
+def connected_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
     r"""
     Calculates the connected zero forcing number of the graph G.
 
@@ -680,7 +722,7 @@ def connected_zero_forcing_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
 
     Returns
@@ -699,7 +741,11 @@ def connected_zero_forcing_number(G):
     """
     return connected_k_forcing_number(G, 1)
 
-def is_psd_forcing_vertex(G, v, black_set, component):
+def is_psd_forcing_vertex(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        v: Hashable,
+        component: Set[Hashable],
+    ) -> bool:
     r"""
     Determines whether a node *v* can perform positive semidefinite (PSD) forcing in a specific component.
 
@@ -708,12 +754,10 @@ def is_psd_forcing_vertex(G, v, black_set, component):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     v : node
         A single node in G.
-    black_set : set
-        A set of nodes considered as "black" in the forcing process.
     component : set
         A set of nodes representing a connected component of G - black_set.
 
@@ -743,7 +787,10 @@ def is_psd_forcing_vertex(G, v, black_set, component):
     return (False, None)
 
 
-def psd_color_change(G, black_set):
+def psd_color_change(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        black_set: Set[Hashable],
+    ) -> Set[Hashable]:
     r"""
     Applies the Positive Semidefinite (PSD) color change rule to a graph G.
 
@@ -754,8 +801,8 @@ def psd_color_change(G, black_set):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     black_set : set
         A set of initial black vertices.
 
@@ -784,7 +831,7 @@ def psd_color_change(G, black_set):
 
         for component in components:
             for v in black_set:
-                can_force, w = is_psd_forcing_vertex(G, v, black_set, component)
+                can_force, w = is_psd_forcing_vertex(G, v, component)
                 if can_force:
                     new_black.add(w)
 
@@ -797,7 +844,10 @@ def psd_color_change(G, black_set):
     return black_set
 
 
-def is_psd_zero_forcing_set(G, black_set):
+def is_psd_zero_forcing_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        black_set: Set[Hashable],
+    ) -> bool:
     r"""
     Determines whether the given set of black vertices is a PSD zero forcing set.
 
@@ -806,8 +856,8 @@ def is_psd_zero_forcing_set(G, black_set):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     black_set : set
         A set of initial black vertices.
 
@@ -830,7 +880,7 @@ def is_psd_zero_forcing_set(G, black_set):
     return len(derived_set) == G.order()
 
 
-def minimum_psd_zero_forcing_set(G):
+def minimum_psd_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],)-> Set[Hashable]:
     r"""
     Finds a smallest PSD zero forcing set in the graph G.
 
@@ -839,8 +889,8 @@ def minimum_psd_zero_forcing_set(G):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -862,8 +912,7 @@ def minimum_psd_zero_forcing_set(G):
             if is_psd_zero_forcing_set(G, black_set):
                 return set(black_set)
 
-
-def positive_semidefinite_zero_forcing_number(G):
+def positive_semidefinite_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
     r"""
     Calculates the Positive Semidefinite (PSD) zero forcing number of the graph G.
 
@@ -872,8 +921,8 @@ def positive_semidefinite_zero_forcing_number(G):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -892,7 +941,11 @@ def positive_semidefinite_zero_forcing_number(G):
     return len(minimum_psd_zero_forcing_set(G))
 
 
-def is_k_power_dominating_set(G, nodes, k):
+def is_k_power_dominating_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        nodes: Union[Set[Hashable], List[Hashable]],
+        k: int
+    ) -> bool:
     r"""
     Checks if the given nodes comprise a k-power dominating set in the graph G.
 
@@ -904,8 +957,8 @@ def is_k_power_dominating_set(G, nodes, k):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     nodes : list or set
         An iterable container of nodes in G to test as a k-power dominating set.
     k : int
@@ -940,7 +993,10 @@ def is_k_power_dominating_set(G, nodes, k):
     return is_k_forcing_set(G, gc.set_closed_neighbors(G, nodes), k)
 
 
-def minimum_k_power_dominating_set(G, k):
+def minimum_k_power_dominating_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        k: int,
+    ) -> Set[Hashable]:
     r"""
     Checks if the given nodes comprise a k-power dominating set in the graph G.
 
@@ -950,8 +1006,8 @@ def minimum_k_power_dominating_set(G, k):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     nodes : list or set
         An iterable container of nodes in G.
     k : int
@@ -978,7 +1034,10 @@ def minimum_k_power_dominating_set(G, k):
                 return set(S)
 
 
-def k_power_domination_number(G, k):
+def k_power_domination_number(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        k: int,
+    ) -> int:
     r"""
     Finds the smallest k-power dominating set in the graph G.
 
@@ -987,8 +1046,8 @@ def k_power_domination_number(G, k):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     k : int
         A positive integer representing the power domination threshold.
 
@@ -1013,7 +1072,10 @@ def k_power_domination_number(G, k):
                 return i
 
 
-def is_power_dominating_set(G, nodes):
+def is_power_dominating_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        nodes: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
     r"""
     Checks if the given nodes form a power dominating set in the graph G.
 
@@ -1022,8 +1084,8 @@ def is_power_dominating_set(G, nodes):
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     nodes : list or set
         An iterable container of nodes in G.
 
@@ -1045,17 +1107,17 @@ def is_power_dominating_set(G, nodes):
     return is_k_power_dominating_set(G, nodes, 1)
 
 
-def minimum_power_dominating_set(G):
+def minimum_power_dominating_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
     r"""
-    Finds the smallest power dominating set in the graph G.
+    Finds the smallest power dominating set in the graph :math:`G`.
 
     This function uses a brute-force approach to identify the minimum subset
     of vertices that form a power dominating set.
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -1075,16 +1137,16 @@ def minimum_power_dominating_set(G):
     return minimum_k_power_dominating_set(G, 1)
 
 
-def power_domination_number(G):
+def power_domination_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     r"""
-    Calculates the power domination number of the graph G.
+    Calculates the power domination number of the graph :math:`G`.
 
     The power domination number is the size of the smallest power dominating set.
 
     Parameters
     ----------
-    G : networkx.Graph
-        An undirected graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
 
     Returns
     -------
@@ -1102,27 +1164,24 @@ def power_domination_number(G):
     """
     return k_power_domination_number(G, 1)
 
-import networkx as nx
-from itertools import combinations
-from math import ceil
-
-def is_well_splitting_set(G, S):
-    r"""
-    Check if S is a well-splitting set of G.
-
-    For a graph G with |V(G)| = n, a set S is well-splitting if
-    every connected component of G-S has at most ceil((n - |S|) / 2) vertices.
+def is_well_splitting_set(
+        G: Union[nx.Graph, gc.SimpleGraph],
+        S: Union[Set[Hashable], List[Hashable]],
+    ) -> bool:
+    """
+    Check if :math:`S` is a well-splitting set of :math:`G`.
 
     Parameters
     ----------
-    G : NetworkX Graph.
-    S : Iterable of vertices to remove.
+    G : nx.Graph
+        The input graph :math:`G = (V, E)`.
+    S : set
+        A subset :math:`S \subseteq V(G)` to test.
 
     Returns
-    --------
+    -------
     bool
-        True if S is a well-splitting set, otherwise False.
-
+        True if S is well-splitting, False otherwise.
     """
     n = len(G.nodes())
     S_size = len(S)
@@ -1138,11 +1197,11 @@ def is_well_splitting_set(G, S):
             return False
     return True
 
-def compute_well_splitting_number(G):
+def compute_well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],):
     r"""
-    Compute the well-splitting number S_w(G) of the graph G.
+    Compute the well-splitting number :math:`S_w(G)` of the graph :math:`G`.
 
-    It searches over all subsets S ⊆ V(G) in increasing size and returns
+    It searches over all subsets :math:`S \subseteq V(G)` in increasing size and returns
     the minimum size r and all candidate sets of that size that are well-splitting.
 
     Parameters
@@ -1170,11 +1229,11 @@ def compute_well_splitting_number(G):
     # In worst-case the entire vertex set is needed.
     return n, []
 
-def well_splitting_number(G):
+def well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
     r"""
-    Compute the well-splitting number S_w(G) of the graph G. The well-splitting number
-    of a graph is the minimum size of a well-splitting set, defined as a set S of vertices
-    such that every connected component of G-S has at most ceil((|V(G)| - |S|) / 2) vertices.
+    Compute the well-splitting number :math:`S_w(G)` of the graph :math:`G`. The well-splitting number
+    of a graph is the minimum size of a well-splitting set, defined as a set :math:`S` of vertices
+    such that every connected component of :math:`G-S` has at most :math:`\lceil\frac{|V(G)| - |S|}{2}\rceil` vertices.
     A well-splitting set is a set of vertices whose removal results in a graph where
     every connected component has a size that is at most half of the remaining vertices.
 
@@ -1186,7 +1245,7 @@ def well_splitting_number(G):
     Returns
     -------
     int
-        The well-splitting number S_w(G), which is the minimum size of a well-splitting set.
+        The well-splitting number :math:`S_w(G)`, which is the minimum size of a well-splitting set.
         If no such set exists, it returns the size of the entire vertex set.
 
     Examples

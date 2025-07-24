@@ -13,6 +13,8 @@ __pycache__/
 
 # Virtual environment
 .venv/
+.dev-venv/
+.venv-test/
 
 # Distribution / packaging
 .Python
@@ -32,6 +34,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+requirements.txt
 
 # PyInstaller
 *.manifest

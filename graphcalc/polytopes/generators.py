@@ -11,8 +11,11 @@ Examples
 >>> H = octahedron_graph()
 """
 
-import graphcalc as gc
 import networkx as nx
+from graphcalc.polytopes import (
+    SimplePolytopeGraph,
+    PolytopeGraph,
+)
 
 __all__ = [
     "cube_graph",
@@ -23,7 +26,7 @@ __all__ = [
     "convex_polytopes_text_example",
 ]
 
-def cube_graph():
+def cube_graph() -> SimplePolytopeGraph:
     r"""
     Generate the graph of a cube.
 
@@ -33,10 +36,10 @@ def cube_graph():
         The graph of a cube (3-regular polytope).
     """
     edges = nx.cubical_graph().edges
-    return gc.SimplePolytopeGraph(edges=edges, name="Cube Graph")
+    return SimplePolytopeGraph(edges=edges, name="Cube Graph")
 
 
-def octahedron_graph():
+def octahedron_graph() -> PolytopeGraph:
     r"""
     Generate the graph of an octahedron.
 
@@ -45,10 +48,10 @@ def octahedron_graph():
     PolytopeGraph
         The graph of an octahedron (planar, simple, and 3-connected).
     """
-    return gc.PolytopeGraph(edges=nx.octahedral_graph().edges, name="Octahedron Graph")
+    return PolytopeGraph(edges=nx.octahedral_graph().edges, name="Octahedron Graph")
 
 
-def dodecahedron_graph():
+def dodecahedron_graph() -> SimplePolytopeGraph:
     r"""
     Generate the graph of a dodecahedron.
 
@@ -57,10 +60,10 @@ def dodecahedron_graph():
     SimplePolytopeGraph
         The graph of a dodecahedron (3-regular polytope).
     """
-    return gc.SimplePolytopeGraph(edges=nx.dodecahedral_graph().edges, name="Dodecahedron Graph")
+    return SimplePolytopeGraph(edges=nx.dodecahedral_graph().edges, name="Dodecahedron Graph")
 
 
-def tetrahedron_graph():
+def tetrahedron_graph() -> PolytopeGraph:
     r"""
     Generate the graph of a tetrahedron.
 
@@ -69,10 +72,10 @@ def tetrahedron_graph():
     PolytopeGraph
         The graph of a tetrahedron (planar, simple, and 3-connected).
     """
-    return gc.PolytopeGraph(edges=nx.tetrahedral_graph().edges, name="Tetrahedron Graph")
+    return PolytopeGraph(edges=nx.tetrahedral_graph().edges, name="Tetrahedron Graph")
 
 
-def icosahedron_graph():
+def icosahedron_graph() -> PolytopeGraph:
     """
     Generate the graph of an icosahedron.
 
@@ -81,10 +84,10 @@ def icosahedron_graph():
     PolytopeGraph
         The graph of an icosahedron (planar, simple, and 3-connected).
     """
-    return gc.PolytopeGraph(edges=nx.icosahedral_graph().edges, name="Icosahedron Graph")
+    return PolytopeGraph(edges=nx.icosahedral_graph().edges, name="Icosahedron Graph")
 
 
-def convex_polytopes_text_example(n=1):
+def convex_polytopes_text_example(n = 1) -> PolytopeGraph:
     """
     Generate a polytope graph from the first predefined edge list.
 
@@ -128,4 +131,4 @@ def convex_polytopes_text_example(n=1):
         (10, 11),
         (12, 13)
     ]
-    return gc.PolytopeGraph(edges=edge_list, name="Polytope from Edge List 1")
+    return PolytopeGraph(edges=edge_list, name="Polytope from Edge List 1")

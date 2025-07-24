@@ -1,4 +1,10 @@
 
+from typing import Set, Hashable, List, Union
+import networkx as nx
+
+import graphcalc as gc
+from graphcalc.core.basics import SimpleGraph
+from graphcalc.utils import enforce_type, GraphLike
 
 __all__= [
     'neighborhood',
@@ -7,18 +13,19 @@ __all__= [
     'set_closed_neighbors',
 ]
 
-def neighborhood(G, v):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def neighborhood(G: GraphLike, v: Hashable) -> Set[Hashable]:
     r"""
-    Returns the neighborhood of a vertex in a graph.
+    Returns the open neighborhood of a vertex in a graph.
 
     The neighborhood of a vertex v consists of all vertices directly connected
     to v by an edge.
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
-    v : int
+    v : hashable
         The vertex whose neighborhood is to be computed.
 
     Returns
@@ -26,18 +33,25 @@ def neighborhood(G, v):
     set
         A set of vertices adjacent to v.
 
+    Raises
+    ------
+    ValueError
+        If the vertex v is not in the graph.
+
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> gc.neighborhood(G, 1)
     {0, 2}
     """
-    return set([u for u in G[v]])
+    if v not in G:
+        raise ValueError(f"Vertex {v!r} is not in the graph.")
+    return set(G[v])
 
-def closed_neighborhood(G, v):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def closed_neighborhood(G: GraphLike, v: Hashable) -> Set[Hashable]:
     r"""
     Returns the closed neighborhood of a vertex in a graph.
 
@@ -67,7 +81,8 @@ def closed_neighborhood(G, v):
     """
     return neighborhood(G, v) | {v}
 
-def set_neighbors(G, S):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def set_neighbors(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> Set[Hashable]:
     r"""
     Returns the set of neighbors of a set of vertices in a graph.
 
@@ -97,7 +112,8 @@ def set_neighbors(G, S):
     """
     return set.union(*[neighborhood(G, v) for v in S])
 
-def set_closed_neighbors(G, S):
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def set_closed_neighbors(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> Set[Hashable]:
     r"""
     Returns the set of closed neighbors of a set of vertices in a graph.
 
