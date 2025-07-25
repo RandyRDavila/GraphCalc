@@ -432,23 +432,4 @@ def matching_number(G):
     2
 
     """
-    prob = pulp.LpProblem("MaximumMatchingSet", pulp.LpMaximize)
-    variables = {edge: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, edge in enumerate(G.edges())}
-
-    # Set the maximum matching objective function
-    prob += pulp.lpSum(variables)
-
-    # Set constraints
-    for node in G.nodes():
-        incident_edges = [variables[edge] for edge in variables if node in edge]
-        prob += sum(incident_edges) <= 1
-
-    solver = get_default_solver()
-    prob.solve(solver)
-
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
-
-    solution_set = {edge for edge in variables if variables[edge].value() == 1}
-    return len(solution_set)
+    return len(maximum_matching(G))
