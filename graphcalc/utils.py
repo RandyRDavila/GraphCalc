@@ -18,11 +18,10 @@ def get_default_solver():
     else:
         raise EnvironmentError(
             "No supported solver found. Please install one:\n"
+            "- brew install cbc or sudo apt install coinor-cbc  (classic)\n"
+            "- brew install glpk   (fallback)\n"
             "- brew install highs  (fast, MIT license)\n"
-            "- brew install cbc    (classic)\n"
-            "- brew install glpk   (fallback)"
         )
-
 
 from functools import wraps
 import networkx as nx

@@ -30,20 +30,7 @@ pip install graphcalc
 
 Many of the NP-hard graph invariant computations of GraphCalc depend on third-party solvers.At least one of the following is required if you intend to use solver-based functions (e.g., `gc.solve_independent_set(G)`):
 
-- **HiGHS** (recommended):
-
-```bash
-pip install highspy
-```
-
-Or, for CLI support (e.g., from source or via Homebrew on macOS):
-
-```bash
-brew install highs  # macOS
-sudo apt install highs  # Debian/Ubuntu
-```
-
-- **CBC** (alternative):
+- **CBC** (recommended):
 
 ```bash
 brew install cbc      # macOS
