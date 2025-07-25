@@ -31,8 +31,8 @@ The library supports both classical and advanced invariants. These include:
 - Spectral properties related to *graph energy* [@LiShiGutman2012],
 - Degree-sequence-based invariants like *residue* [@residue], *annihilation number* [@LevitMandrescu2022], and *Slater number* [@GeRa2017],
 - Dynamic coloring parameters such as the *zero forcing number* and its numerous variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
-- Domination-type parameters including *total**, *connected**, *Roman**, and *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
-- Structural predicates that test for properties like **claw-free**, *triangle-free*, *diamond-free*, or *bull-free* graphs.
+- Domination-type parameters including *total*, *connected**, *Roman**, and *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
+- Structural predicates that test for properties like *claw-free*, *triangle-free*, *diamond-free*, or *bull-free* graphs.
 
 In total, `GraphCalc` provides over 100 graph-related functions for invariant evaluation, spectral analysis, structural testing, and graph generation—many of which are unavailable in other Python packages. All are computed *exactly*, leveraging integer programming, enumeration, or symbolic methods. As such, `GraphCalc` is not only a powerful research tool for graph theorists, but also a critical enabler for automated reasoning systems seeking to discover new mathematical truths.
 
