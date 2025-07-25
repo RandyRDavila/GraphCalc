@@ -4,7 +4,7 @@ First off, thank you for taking the time to contribute to **GraphCalc**! This pr
 
 ## 📬 Before You Begin
 
-Please read the [README](./README.md) for an overview of the project. For questions or private suggestions, you can also reach out via email: **<randydavila@proton.me>**.
+Please read the [README](./README.md) for an overview of the project. For questions or private suggestions, you can also reach out via email: **<rrd6@rice.edu>**.
 
 ---
 
