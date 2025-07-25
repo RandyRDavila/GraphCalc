@@ -11,9 +11,9 @@ authors:
     # equal-contrib: true
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
 affiliations:
- - name: Department of Computational Applied Mathematics & Operations Research, Rice University, United States
-   index: 1
  - name: RelationalAI, United States
+   index: 1
+ - name: Department of Computational Applied Mathematics & Operations Research,Rice University, United States
    index: 2
 date: 7 May 2025
 bibliography: paper.bib
@@ -23,7 +23,7 @@ bibliography: paper.bib
 
 `GraphCalc` is a Python library for computing a wide range of graph-theoretic invariants using a blend of exact enumeration, solver-based optimization, and seamless integration with `NetworkX`. While it supports `NetworkX` graphs natively, it also includes its own lightweight data structures for graphs and polytopes, enabling efficient experimentation, extension, and symbolic computation.
 
-Originally developed to power *automated conjecturing systems**, `GraphCalc` forms the computational backbone of the *TxGraffiti* (*TexasGraffiti*) family of programs [@TxGraffiti2023; @TxGraffiti; @optimist]. These systems generate mathematical conjectures by analyzing large datasets of graphs enriched with invariant data—making the scope, precision, and diversity of `GraphCalc`'s computations essential for discovery.
+Originally developed to power *automated conjecturing systems*, `GraphCalc` forms the computational backbone of the *TxGraffiti* (short for *TexasGraffiti*) family of programs [@TxGraffiti2023; @TxGraffiti; @optimist]. These systems generate mathematical conjectures by analyzing large datasets of graphs enriched with invariant data—making the scope, precision, and diversity of `GraphCalc`'s computations essential for discovery.
 
 The library supports both classical and advanced invariants. These include:
 
@@ -31,14 +31,14 @@ The library supports both classical and advanced invariants. These include:
 - Spectral properties related to *graph energy* [@LiShiGutman2012],
 - Degree-sequence-based invariants like *residue* [@residue], *annihilation number* [@LevitMandrescu2022], and *Slater number* [@GeRa2017],
 - Dynamic coloring parameters such as the *zero forcing number* and its numerous variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
-- Domination-type parameters including *total*, *connected**, *Roman**, and *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
+- Domination-type parameters including *total*, *connected*, *Roman*, and *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
 - Structural predicates that test for properties like *claw-free*, *triangle-free*, *diamond-free*, or *bull-free* graphs.
 
 In total, `GraphCalc` provides over 100 graph-related functions for invariant evaluation, spectral analysis, structural testing, and graph generation—many of which are unavailable in other Python packages. All are computed *exactly*, leveraging integer programming, enumeration, or symbolic methods. As such, `GraphCalc` is not only a powerful research tool for graph theorists, but also a critical enabler for automated reasoning systems seeking to discover new mathematical truths.
 
 ## Statement of Need
 
-Research in graph theory, combinatorics, and automated reasoning often depends on the accurate computation of graph invariants across large collections of discrete structures. While symbolic systems like `SageMath` [@sagemath] and general-purpose libraries such as `NetworkX` [@osti_960616] and `igraph` [@csardi2006igraph] support a range of invariant computations, they do not offer the *breadth**, *depth**, or *conjecture-oriented design** found in `GraphCalc`. The library implements over 100 exact functions—including many that are difficult to find elsewhere—covering classical invariants, advanced domination-type parameters, spectral quantities, and structural graph properties. Moreover, `GraphCalc` enables users to batch-evaluate entire collections of graphs and export the results as structured knowledge tables—tabular datasets that serve as input features for downstream reasoning systems. This design mirrors preprocessing pipelines in machine learning, where raw data is transformed into feature-rich representations. As a result, `GraphCalc` integrates seamlessly into automated conjecturing systems like *TxGraffiti*, where symbolic patterns are mined from numerical invariant data.
+Research in graph theory, combinatorics, and automated reasoning often depends on the accurate computation of graph invariants across large collections of discrete structures. While symbolic systems like `SageMath` [@sagemath] and general-purpose libraries such as `NetworkX` [@osti_960616] and `igraph` [@csardi2006igraph] support a range of invariant computations, they do not offer the *breadth*, *depth*, or *conjecture-oriented design* found in `GraphCalc`. The library implements over 100 exact functions—including many that are difficult to find elsewhere—covering classical invariants, advanced domination-type parameters, spectral quantities, and structural graph properties. Moreover, `GraphCalc` enables users to batch-evaluate entire collections of graphs and export the results as structured knowledge tables—tabular datasets that serve as input features for downstream reasoning systems. This design mirrors preprocessing pipelines in machine learning, where raw data is transformed into feature-rich representations. As a result, `GraphCalc` integrates seamlessly into automated conjecturing systems like *TxGraffiti*, where symbolic patterns are mined from numerical invariant data.
 
 To support this broad functionality, `GraphCalc` employs a hybrid computational strategy that blends solver-based optimization, exhaustive enumeration, and well defined optimal algorithms. Many NP-hard invariants—including the independence number, chromatic number, and total domination number—are computed exactly using integer programming models via the `PuLP` library [@mitchell2011pulp] and the COIN-OR CBC solver [@forrest2005cbc]. Others, such as the residue, annihilation number, and Slater number, rely on enumeration or degree-sequence analysis tailored for structural graph theory. This solver-enhanced foundation enables `GraphCalc` to compute dozens of invariants with exact guarantees—making it an essential tool for both mathematical experimentation and automated discovery.
 
