@@ -6,7 +6,7 @@ We welcome contributions to `graphcalc`! If you're interested in contributing, p
 Reporting Issues
 ----------------
 
-If you find a bug or have suggestions, please submit an issue on our GitHub repository: `https://github.com/username/graphcalc`.
+If you find a bug or have suggestions, please submit an issue on our GitHub repository: `https://github.com/randyrdavila/graphcalc`.
 
 Pull Requests
 -------------
