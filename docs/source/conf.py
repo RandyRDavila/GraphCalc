@@ -9,7 +9,7 @@
 project = 'graphcalc'
 copyright = '2024, Randy Davila, PhD'
 author = 'Randy Davila, PhD'
-release = '0.1.19'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -43,4 +43,7 @@ html_theme = 'sphinx_rtd_theme'  # Use 'alabaster' or 'sphinx_rtd_theme'
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../'))  # Adjust path to locate 'graphcalc'
+
+# Add the src directory to sys.path
+sys.path.insert(0, os.path.abspath('../../src'))
+# sys.path.insert(0, os.path.abspath('../../'))  # Adjust path to locate 'graphcalc'

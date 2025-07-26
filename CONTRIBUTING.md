@@ -57,10 +57,10 @@ pytest
 ### 📁 Project Structure
 
 ```bash
-graphcalc/            # Core logic and invariants
+src/            # Core logic and invariants
 tests/                # Unit tests
 docs/                 # Sphinx documentation
-examples/             # Jupyter notebooks and demos
+examples/             # TODO: Jupyter notebooks and demos
 ```
 
 ### 5. 🙏 Thanks
