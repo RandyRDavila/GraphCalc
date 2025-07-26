@@ -16,6 +16,7 @@ __all__ = [
     "optimal_proper_coloring",
     "chromatic_number",
     "minimum_vertex_cover",
+    "minimum_edge_cover",
     "vertex_cover_number",
     "edge_cover_number",
     "maximum_matching",
@@ -54,7 +55,7 @@ def maximum_independent_set(G: GraphLike) -> Set[Hashable]:
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
     >>> gc.maximum_independent_set(G)
-    {0}
+    {3}
     """
     # Initialize LP model
     prob = pulp.LpProblem("MaximumIndependentSet", pulp.LpMaximize)
@@ -191,7 +192,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
 
     >>> G = complete_graph(4)
     >>> gc.optimal_proper_coloring(G)
-    {0: [0], 1: [1], 2: [2], 3: [3]}
+    {0: [1], 1: [0], 2: [3], 3: [2]}
     """
     # Set up the optimization model
     prob = pulp.LpProblem("OptimalProperColoring", pulp.LpMinimize)
@@ -274,7 +275,7 @@ def minimum_vertex_cover(G):
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
     >>> gc.minimum_vertex_cover(G)
-    {1, 2, 3}
+    {0, 1, 2}
     """
     X = maximum_independent_set(G)
     return G.nodes() - X
@@ -323,6 +324,7 @@ def minimum_edge_cover(G):
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
     >>> gc.minimum_edge_cover(G)
+    {(2, 1), (3, 0)}
     """
     return nx.min_edge_cover(G)
 
@@ -346,6 +348,7 @@ def edge_cover_number(G):
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
     >>> gc.edge_cover_number(G)
+    2
     """
     return len(nx.min_edge_cover(G))
 

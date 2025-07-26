@@ -83,6 +83,8 @@ def degree_sequence(G: GraphLike, nonincreasing=True) -> List[int]:
     degrees = [degree(G, v) for v in G.nodes]
     if nonincreasing:
         degrees.sort(reverse=True)
+    else:
+        degrees.sort()
     return degrees
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
@@ -210,7 +212,7 @@ def sub_k_domination_number(G: GraphLike, k: int) -> float:
     >>> from graphcalc.generators import cycle_graph
     >>> G = cycle_graph(4)
     >>> gc.sub_k_domination_number(G, 1)
-    True
+    2
 
     References
     ----------
@@ -344,7 +346,7 @@ def sub_total_domination_number(G: GraphLike) -> int:
 
     >>> K = complete_graph(5)  # A complete graph with 5 vertices
     >>> gc.sub_total_domination_number(K)
-    1
+    2
 
     References
     ----------
@@ -399,11 +401,11 @@ def annihilation_number(G: GraphLike) -> int:
 
     >>> H = path_graph(5)  # A path graph with 5 vertices
     >>> gc.annihilation_number(H)
-    2
+    3
 
     >>> K = complete_graph(5)  # A complete graph with 5 vertices
     >>> gc.annihilation_number(K)
-    1
+    2
 
     References
     ----------
@@ -455,15 +457,15 @@ def residue(G: GraphLike) -> int:
 
     >>> G = path_graph(4)  # Path graph with 4 vertices
     >>> gc.residue(G)
-    4
+    2
 
     >>> H = complete_graph(4)  # Complete graph with 4 vertices
     >>> gc.residue(H)
-    0
+    1
 
     >>> K = cycle_graph(5)  # Cycle graph with 5 vertices
     >>> gc.residue(K)
-    5
+    2
 
     References
     ----------
@@ -524,7 +526,7 @@ def harmonic_index(G: GraphLike) -> float:
 
     >>> H = complete_graph(3)  # Complete graph with 3 vertices
     >>> gc.harmonic_index(H)
-    2.0
+    1.5
 
     Notes
     -----
