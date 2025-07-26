@@ -34,9 +34,9 @@ open build/html/index.html
 
 Pull requests are welcome! Before submitting code:
 
-- Format with black, isort, and run pytest.
-
 - Add unit tests for new features.
+
+- Run pytests
 
 - Include a NumPy-style docstring and usage examples.
 
@@ -57,7 +57,7 @@ pytest
 ### 📁 Project Structure
 
 ```bash
-src/            # Core logic and invariants
+src/                  # Core logic and invariants
 tests/                # Unit tests
 docs/                 # Sphinx documentation
 examples/             # TODO: Jupyter notebooks and demos
