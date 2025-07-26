@@ -1,7 +1,7 @@
 # GraphCalc
 
 [![Documentation Status](https://readthedocs.org/projects/graphcalc/badge/?version=latest)](https://graphcalc.readthedocs.io/en/latest/?badge=latest)
-[![PyPI version](https://badge.fury.io/py/graphcalc.svg)](https://pypi.org/project/graphcalc/)
+[![PyPI version](https://badge.fury.io/py/graphcalc.svg?ts=20250726)](https://pypi.org/project/graphcalc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
