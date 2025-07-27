@@ -19,10 +19,8 @@ Submodules
 
 Examples
 --------
->>> from graphcalc.generators.simple import cycle_graph
+>>> from graphcalc.generators import cycle_graph
 >>> G = cycle_graph(5)
->>> print(G.nodes())
->>> print(G.edges())
 
 Dependencies
 ------------

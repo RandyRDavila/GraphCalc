@@ -6,7 +6,7 @@ These generators must be explicitly imported.
 
 Examples
 --------
->>> from graphcalc.generators.polytopes import cube_graph, octahedron_graph
+>>> from graphcalc.polytopes.generators import cube_graph, octahedron_graph
 >>> G = cube_graph()
 >>> H = octahedron_graph()
 """

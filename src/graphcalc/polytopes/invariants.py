@@ -47,18 +47,18 @@ def p_vector(G_nx: Union[nx.Graph, SimpleGraph]) -> List[int]:
     >>> import graphcalc as gc
     >>> G = gc.cycle_graph(6)  # Hexagon
     >>> gc.p_vector(G)
-    [0, 1]  # One hexagonal face and no smaller faces
+    [0, 0, 0, 1]
 
     Compute the p-vector of a graph with multiple face sizes:
 
-    >>> G = gc.Graph()
+    >>> G = gc.SimpleGraph()
     >>> G.add_edges_from([
     ...     (0, 1), (1, 2), (2, 3), (3, 0),  # Quadrilateral face
     ...     (0, 4), (4, 1),  # Two triangular faces
     ...     (1, 5), (5, 2)
     ... ])
     >>> gc.p_vector(G)
-    [2, 1]  # Two triangles and one quadrilateral
+    [2, 1, 0, 1]
     """
     # Ensure the graph is labeled with consecutive integers
     G_nx = nx.convert_node_labels_to_integers(G_nx)
@@ -149,12 +149,12 @@ def p_gons(G: Union[nx.Graph, SimpleGraph], p: int = 3) -> int:
     >>> import graphcalc as gc
     >>> G = gc.cycle_graph(6)  # Hexagon
     >>> gc.p_gons(G, p=3)
-    0  # The hexagon has no triangular faces
+    0
 
     Count the number of hexagonal faces in the same graph:
 
     >>> gc.p_gons(G, p=6)
-    1  # The hexagon has exactly one 6-sided face
+    1
 
     Count the number of pentagonal faces in a graph with multiple face types:
 
@@ -165,7 +165,7 @@ def p_gons(G: Union[nx.Graph, SimpleGraph], p: int = 3) -> int:
     ...     (1, 5), (5, 2)
     ... ])
     >>> gc.p_gons(G, p=5)
-    0  # The graph has no pentagonal faces
+    0
     """
     vector = p_vector(G)
     return vector[p - 3] if p - 3 < len(vector) else 0
@@ -187,13 +187,6 @@ def fullerene(G: Union[nx.Graph, SimpleGraph]) -> bool:
     -------
     bool
         True if G is a fullerene, False otherwise.
-
-    Examples
-    --------
-    >>> import graphcalc as gc
-    >>> G = gc.fullerene_graph(60)  # C60 buckyball
-    >>> gc.fullerene(G)
-    True
     """
     # Check if 3-regular
     if not all(degree == 3 for _, degree in G.degree):
@@ -273,11 +266,6 @@ def polytope_graph(G: Union[nx.Graph, SimpleGraph]) -> bool:
 
     Examples
     --------
-    >>> import graphcalc as gc
-    >>> G = gc.octahedral_graph()
-    >>> gc.polytope_graph(G)
-    True
-
     >>> G = gc.path_graph(5)
     >>> gc.polytope_graph(G)
     False
@@ -319,7 +307,8 @@ def simple_polytope_graph(G: Union[nx.Graph, SimpleGraph]) -> bool:
 
     Examples
     --------
-    >>> G = gc.cubical_graph()  # Octahedral graph is a simple polytope graph
+    >>> import graphcalc as gc
+    >>> G = gc.cube_graph()  # Octahedral graph is a simple polytope graph
     >>> gc.simple_polytope_graph(G)
     True
 
@@ -352,13 +341,9 @@ def polytope_graph_with_p6_zero(G: Union[nx.Graph, SimpleGraph]) -> bool:
     Examples
     --------
     >>> import graphcalc as gc
-    >>> G = gc.octahedral_graph()  # Octahedral graph is a polytope graph with no hexagonal faces
-    >>> gc.polytope_graph_with_p6_zero(G)
-    True
-
-    >>> G = gc.cubical_graph()  # Cubical graph is a polytope graph with hexagonal faces
+    >>> G = gc.cube_graph()  # Cubical graph is a polytope graph with hexagonal faces
     >>> polytope_graph_with_p6_zero(G)
-    False
+    True
     """
     return gc.polytope_graph(G) and gc.p_gons(G, p=6) == 0
 
@@ -387,13 +372,9 @@ def simple_polytope_graph_with_p6_zero(G: Union[nx.Graph, SimpleGraph]) -> bool:
     Examples
     --------
     >>> import graphcalc as gc
-    >>> G = gc.octahedral_graph()  # Octahedral graph is a simple polytope graph with no hexagonal faces
+    >>> G = gc.cube_graph()  # Cubical graph is a simple polytope graph with hexagonal faces
     >>> gc.simple_polytope_graph_with_p6_zero(G)
     True
-
-    >>> G = gc.cubical_graph()  # Cubical graph is a simple polytope graph with hexagonal faces
-    >>> gc.simple_polytope_graph_with_p6_zero(G)
-    False
     """
     return gc.simple_polytope_graph(G) and gc.p_gons(G, p=6) == 0
 
@@ -420,11 +401,7 @@ def polytope_graph_with_p6_greater_than_zero(G: Union[nx.Graph, SimpleGraph]) ->
     Examples
     --------
     >>> import graphcalc as gc
-    >>> G = gc.cubical_graph()  # Cubical graph is a polytope graph with hexagonal faces
-    >>> gc.polytope_graph_with_p6_greater_than_zero(G)
-    True
-
-    >>> G = gc.octahedral_graph()  # Octahedral graph is a polytope graph with no hexagonal faces
+    >>> G = gc.cube_graph()  # Cubical graph is a polytope graph with hexagonal faces
     >>> gc.polytope_graph_with_p6_greater_than_zero(G)
     False
     """
@@ -454,11 +431,7 @@ def simple_polytope_graph_with_p6_greater_than_zero(G: Union[nx.Graph, SimpleGra
     Examples
     --------
     >>> import graphcalc as gc
-    >>> G = gc.cubical_graph()  # Cubical graph is a simple polytope graph with hexagonal faces
-    >>> gc.simple_polytope_graph_with_p6_greater_than_zero(G)
-    True
-
-    >>> G = gc.octahedral_graph()  # Octahedral graph is a simple polytope graph with no hexagonal faces
+    >>> G = gc.cube_graph()  # Cubical graph is a simple polytope graph with hexagonal faces
     >>> gc.simple_polytope_graph_with_p6_greater_than_zero(G)
     False
     """

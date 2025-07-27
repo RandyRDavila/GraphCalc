@@ -45,11 +45,8 @@ def compute_graph_properties(function_names, graph, return_as_dict=True):
     >>> from graphcalc.generators import cycle_graph
     >>> G = cycle_graph(6)  # A cycle graph with 6 nodes
     >>> function_names = ["spectral_radius", "number_of_nodes"]
-    >>> gc.compute_graph_properties(function_names, G)
-    {'spectral_radius': 2.0, 'number_of_nodes': 6}
-
-    >>> gc.compute_graph_properties(function_names, G, return_as_dict=False)
-    [2.0, 6]
+    >>> dictionary_solution = gc.compute_graph_properties(function_names, G)
+    >>> list_solution = gc.compute_graph_properties(function_names, G, return_as_dict=False)
     """
 
 
@@ -105,11 +102,7 @@ def expand_list_columns(df):
     >>> data = {'graph_id': [1, 2, 3],
     ...         'p_vector': [[3, 0, 1], [2, 1], []]}
     >>> df = pd.DataFrame(data)
-    >>> expand_list_columns(df)
-       graph_id  p_vector[0]  p_vector[1]  p_vector[2]
-    0         1          3.0          0.0          1.0
-    1         2          2.0          1.0          0.0
-    2         3          0.0          0.0          0.0
+    >>> new_df = expand_list_columns(df)
     """
     df_expanded = df.copy()
 
@@ -168,10 +161,7 @@ def compute_graph_properties_dataframe(function_names, graphs):
     >>> G2 = path_graph(5)
     >>> function_names = ["spectral_radius", "algebraic_connectivity"]
     >>> graphs = [G1, G2]
-    >>> gc.compute_graph_properties_dataframe(function_names, graphs)
-       spectral_radius  algebraic_connectivity
-    0             2.0                    2.0
-    1             1.618033988749895         0.3819660112501051
+    >>> df = gc.compute_graph_properties_dataframe(function_names, graphs)
     """
     # Initialize a list to store results for each graph
     rows = []

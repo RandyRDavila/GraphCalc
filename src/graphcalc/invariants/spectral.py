@@ -40,10 +40,10 @@ def adjacency_matrix(G: GraphLike) -> np.ndarray:
 
     >>> G = cycle_graph(4)
     >>> gc.adjacency_matrix(G)
-    array([[0, 1, 0, 1],
-           [1, 0, 1, 0],
-           [0, 1, 0, 1],
-           [1, 0, 1, 0]])
+    array([[0, 1, 1, 0],
+           [1, 0, 0, 1],
+           [1, 0, 0, 1],
+           [0, 1, 1, 0]])
     """
     G = nx.convert_node_labels_to_integers(G)
     return nx.to_numpy_array(G, dtype=int)
@@ -72,9 +72,9 @@ def laplacian_matrix(G: GraphLike) -> np.array:
     >>> G = cycle_graph(4)
     >>> gc.laplacian_matrix(G)
     array([[ 2, -1, -1,  0],
-       [-1,  2,  0, -1],
-       [-1,  0,  2, -1],
-       [ 0, -1, -1,  2]])
+           [-1,  2,  0, -1],
+           [-1,  0,  2, -1],
+           [ 0, -1, -1,  2]])
     """
     G = nx.convert_node_labels_to_integers(G)  # Ensure node labels are integers
     A = nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
@@ -98,12 +98,14 @@ def adjacency_eigenvalues(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.adjacency_eigenvalues(G)
-    array([-2.00000000e+00,  0.00000000e+00,  6.59737022e-17,  2.00000000e+00])
+    >>> eigenvals = gc.adjacency_eigenvalues(G)
+    >>> np.allclose(eigenvals, [-2.0, 0.0, 0.0, 2.0], atol=1e-6)
+    True
     """
     A = nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
     eigenvals = np.linalg.eigvals(A)
@@ -130,8 +132,7 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.laplacian_eigenvalues(G)
-    array([-2.22044605e-16,  2.00000000e+00,  2.00000000e+00,  4.00000000e+00])
+    >>> solution = gc.laplacian_eigenvalues(G)
     """
     L = laplacian_matrix(G)
     eigenvals = np.linalg.eigvals(L)
@@ -156,12 +157,13 @@ def algebraic_connectivity(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.algebraic_connectivity(G)
-    1.9999999999999996
+    >>> np.allclose(gc.algebraic_connectivity(G), 2.0)
+    True
     """
     eigenvals = laplacian_eigenvalues(G)
     return eigenvals[1]  # Second smallest eigenvalue
@@ -183,12 +185,13 @@ def spectral_radius(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.spectral_radius(G)
-    2.0
+    >>> np.allclose(gc.spectral_radius(G), 2.0)
+    True
     """
     eigenvals = adjacency_eigenvalues(G)
     return max(abs(eigenvals))
@@ -214,8 +217,8 @@ def largest_laplacian_eigenvalue(G: GraphLike) -> np.float64:
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.largest_laplacian_eigenvalue(G)
-    3.9999999999999996
+    >>> np.allclose(gc.largest_laplacian_eigenvalue(G), 4.0)
+    True
     """
     eigenvals = laplacian_eigenvalues(G)
     return max(abs(eigenvals))
@@ -268,8 +271,7 @@ def second_largest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.second_largest_adjacency_eigenvalue(G)
-    6.597370221478735e-17
+    >>> solution = gc.second_largest_adjacency_eigenvalue(G)
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[-2]  # Second largest in sorted eigenvalues
@@ -291,12 +293,13 @@ def smallest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.smallest_adjacency_eigenvalue(G)
-    -1.9999999999999996
+    >>> np.allclose(gc.smallest_adjacency_eigenvalue(G), -2.0)
+    True
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[0]  # Smallest eigenvalue

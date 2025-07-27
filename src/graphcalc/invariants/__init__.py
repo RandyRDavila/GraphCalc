@@ -23,7 +23,7 @@ Submodules
 Examples
 --------
 >>> from graphcalc.invariants import degree_sequence
->>> from graphcalc.generators.simple import cycle_graph
+>>> from graphcalc.generators import cycle_graph
 >>> G = cycle_graph(5)
 >>> degree_sequence(G)
 [2, 2, 2, 2, 2]

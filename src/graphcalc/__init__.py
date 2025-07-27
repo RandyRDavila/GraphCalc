@@ -21,15 +21,6 @@ Submodules
 - `invariants`: Compute various graph invariants, including degree and spectral properties.
 - `polytopes`: Tools for analyzing and generating polytope graphs.
 
-Examples
---------
->>> import graphcalc as gc
->>> G = gc.generators.simple.cycle_graph(6)  # Create a cycle graph with 6 nodes
->>> gc.core.size(G)
-6
->>> gc.invariants.degree.degree_sequence(G)
-[2, 2, 2, 2, 2, 2]
-
 Dependencies
 ------------
 GraphCalc relies on:

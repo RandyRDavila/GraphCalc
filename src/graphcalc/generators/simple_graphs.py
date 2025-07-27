@@ -477,7 +477,7 @@ def diamond_necklace(k: int) -> gc.SimpleGraph:
     Examples
     --------
     >>> from graphcalc.generators import diamond_necklace
-    >>> G = diamond_necklace()
+    >>> G = diamond_necklace(2)
     """
     G = nx.Graph()
     deg2_verts = []

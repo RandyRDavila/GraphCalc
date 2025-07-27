@@ -17,7 +17,7 @@ Examples
 >>> G = SimpleGraph()
 >>> G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
 >>> size(G)
-6
+5
 >>> order(G)
 6
 """

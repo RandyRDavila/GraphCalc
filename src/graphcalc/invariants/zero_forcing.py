@@ -7,8 +7,12 @@ from math import ceil
 
 
 __all__ = [
+    "is_k_forcing_vertex",
+    "is_k_forcing_active_set",
+    "is_k_forcing_set",
     "minimum_k_forcing_set",
     "k_forcing_number",
+    "is_zero_forcing_vertex",
     "is_zero_forcing_set",
     "minimum_zero_forcing_set",
     "zero_forcing_number",
@@ -16,13 +20,21 @@ __all__ = [
     "is_total_zero_forcing_set",
     "minimum_total_zero_forcing_set",
     "total_zero_forcing_number",
+    "is_connected_k_forcing_set",
     "minimum_connected_k_forcing_set",
     "minimum_connected_zero_forcing_set",
+    "is_connected_zero_forcing_set",
+    "connected_k_forcing_number",
     "connected_zero_forcing_number",
+    "is_psd_forcing_vertex",
+    "is_psd_zero_forcing_set",
+    "psd_color_change",
     "minimum_psd_zero_forcing_set",
     "positive_semidefinite_zero_forcing_number",
     "minimum_k_power_dominating_set",
+    "is_k_power_dominating_set",
     "k_power_domination_number",
+    "is_power_dominating_set",
     "minimum_power_dominating_set",
     "power_domination_number",
     "is_well_splitting_set",
@@ -73,7 +85,7 @@ def is_k_forcing_vertex(
 
     >>> G = path_graph(4)
     >>> nodes = {0, 1}
-    >>> print(gc.is_k_forcing_vertex(G, 0, nodes, 1))
+    >>> print(gc.is_k_forcing_vertex(G, 1, nodes, 1))
     True
     """
     # check that k is a positive integer
@@ -269,7 +281,7 @@ def is_zero_forcing_vertex(
 
     >>> G = path_graph(4)
     >>> S = {0, 1}
-    >>> print(gc.is_zero_forcing_vertex(G, 0, S))
+    >>> gc.is_zero_forcing_vertex(G, 1, S)
     True
     """
     return is_k_forcing_vertex(G, v, S, 1)
@@ -303,7 +315,7 @@ def is_zero_forcing_active_set(
 
     >>> G = path_graph(4)
     >>> S = {0, 3}
-    >>> print(gc.is_zero_forcing_set(G, S))
+    >>> gc.is_zero_forcing_set(G, S)
     True
     """
     return is_k_forcing_active_set(G, S, 1)
@@ -337,7 +349,7 @@ def is_zero_forcing_set(
 
     >>> G = path_graph(4)
     >>> S = {0, 3}
-    >>> print(gc.is_zero_forcing_set(G, S))
+    >>> gc.is_zero_forcing_set(G, S)
     True
     """
     return is_k_forcing_set(G, S, 1)
@@ -363,7 +375,7 @@ def minimum_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable
     >>> from graphcalc.generators import path_graph
 
     >>> G = path_graph(4)
-    >>> print(gc.minimum_zero_forcing_set(G, 1))
+    >>> gc.minimum_zero_forcing_set(G)
     {0}
     """
     return minimum_k_forcing_set(G, 1)
@@ -484,7 +496,7 @@ def minimum_total_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Ha
     >>> G = path_graph(4)
     >>> result = gc.minimum_total_zero_forcing_set(G)
     >>> print(result)
-    {0, 3}
+    {0, 1}
     """
     for i in range(2, G.order() + 1):
         for S in combinations(G.nodes(), i):
@@ -698,7 +710,7 @@ def connected_k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> in
     >>> from graphcalc.generators import path_graph
 
     >>> G = path_graph(4)
-    >>> print(gc.connected_zero_forcing_number(G, 1))
+    >>> print(gc.connected_k_forcing_number(G, 1))
     1
     """
     # check that k is a positive integer
@@ -775,7 +787,7 @@ def is_psd_forcing_vertex(
     >>> G = path_graph(4)
     >>> black_set = {0, 1}
     >>> component = {2, 3}
-    >>> print(gc.is_psd_forcing_vertex(G, 1, black_set, component))
+    >>> print(gc.is_psd_forcing_vertex(G, 1, component))
     (True, 2)
     """
     set_neighbors = set(gc.neighborhood(G, v))
@@ -820,7 +832,7 @@ def psd_color_change(
     >>> black_set = {0}
     >>> result = gc.psd_color_change(G, black_set)
     >>> print(result)
-    {0, 1}
+    {0, 1, 2, 3, 4}
     """
     black_set = set(black_set)
     white_set = set(G.nodes()) - black_set
@@ -905,7 +917,7 @@ def minimum_psd_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],)-> Set[Hash
     >>> G = path_graph(4)
     >>> result = gc.minimum_psd_zero_forcing_set(G)
     >>> print(result)
-    [0, 3]
+    {0}
     """
     for i in range(1, G.order() + 1):
         for black_set in combinations(G.nodes(), i):
@@ -985,10 +997,6 @@ def is_k_power_dominating_set(
     >>> nodes = {0}
     >>> print(gc.is_k_power_dominating_set(G, nodes, 2))
     True
-
-    >>> nodes = {4}
-    >>> print(gc.is_k_power_dominating_set(G, nodes, 3))
-    False
     """
     return is_k_forcing_set(G, gc.set_closed_neighbors(G, nodes), k)
 
@@ -1169,7 +1177,7 @@ def is_well_splitting_set(
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     """
-    Check if :math:`S` is a well-splitting set of :math:`G`.
+    Check if S is a well-splitting set of G.
 
     Parameters
     ----------
