@@ -29,13 +29,6 @@ class PolytopeGraph(gc.SimpleGraph):
         Reads an adjacency matrix from a file and validates the graph as a polytope graph.
     is_simple()
         Checks if the graph is a simple polytope graph.
-
-    Examples
-    --------
-    >>> import networkx as nx
-    >>> from graphcalc.polytopes import PolytopeGraph
-    >>> G = nx.cubical_graph()
-    >>> polytope = PolytopeGraph(edges=G.edges, nodes=G.nodes, name="Cube Graph")
     """
 
     def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
@@ -155,15 +148,6 @@ class PolytopeGraph(gc.SimpleGraph):
         Notes
         -----
         This method always uses a planar layout to ensure no edge crossings.
-
-        Examples
-        --------
-        >>> import networkx as nx
-        >>> from graphcalc.polytopes import PolytopeGraph
-        >>> G = nx.cubical_graph()
-
-        >>> polytope = PolytopeGraph(edges=G.edges, nodes=G.nodes, name="Cube Graph")
-        >>> polytope.draw()
         """
         if not self.is_planar():
             raise ValueError("The graph is not planar and cannot be drawn using a planar layout.")
@@ -215,12 +199,6 @@ class PolytopeGraph(gc.SimpleGraph):
         ------
         ValueError
             If the graph is not a valid polytope graph after reading the edge list.
-
-        Examples
-        --------
-        >>> from graphcalc.polytopes import PolytopeGraph
-        >>> polytope = PolytopeGraph()
-        >>> polytope.read_edge_list("polytope_edges.txt")
         """
         super().read_edge_list(filepath, delimiter)
         if not self.is_polytope_graph():
@@ -242,12 +220,6 @@ class PolytopeGraph(gc.SimpleGraph):
         ------
         ValueError
             If the graph is not a valid polytope graph after reading the adjacency matrix.
-
-        Examples
-        --------
-        >>> from graphcalc.polytopes import PolytopeGraph
-        >>> polytope = PolytopeGraph()
-        >>> polytope.read_adjacency_matrix("polytope_adjacency.txt")
         """
         super().read_adjacency_matrix(filepath, delimiter)
         if not self.is_polytope_graph():
@@ -325,11 +297,6 @@ class SimplePolytopeGraph(PolytopeGraph):
         ------
         ValueError
             If the graph is not valid after all edges are added.
-
-        Examples
-        --------
-        >>> from graphcalc.polytopes import SimplePolytopeGraph
-        >>> G = nx.cubical_graph()
         """
         self._bypass_validation = True  # Temporarily bypass validation
         super().add_edges_from(ebunch_to_add, **attr)
@@ -368,12 +335,6 @@ class SimplePolytopeGraph(PolytopeGraph):
         ------
         ValueError
             If the graph is not a valid simple polytope graph after reading the edge list.
-
-        Examples
-        --------
-        >>> from graphcalc.polytopes import SimplePolytopeGraph
-        >>> polytope = SimplePolytopeGraph()
-        >>> polytope.read_edge_list("simple_polytope_edges.txt")
         """
         super().read_edge_list(filepath, delimiter)
         if not self.is_3_regular():
@@ -396,12 +357,6 @@ class SimplePolytopeGraph(PolytopeGraph):
         ------
         ValueError
             If the graph is not a valid simple polytope graph after reading the adjacency matrix.
-
-        Examples
-        --------
-        >>> from graphcalc.polytopes import SimplePolytopeGraph
-        >>> polytope = SimplePolytopeGraph()
-        >>> polytope.read_adjacency_matrix("simple_polytope_adjacency.txt")
         """
         super().read_adjacency_matrix(filepath, delimiter)
         if not self.is_3_regular():

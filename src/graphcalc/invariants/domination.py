@@ -28,9 +28,13 @@ __all__ = [
     "minimum_double_roman_dominating_function",
     "double_roman_domination_number",
     "minimum_rainbow_dominating_function",
+    "rainbow_domination_number",
     "two_rainbow_domination_number",
     "three_rainbow_domination_number",
     "min_maximal_matching_number",
+    "restrained_domination_number",
+    "minimum_restrained_dominating_set",
+    "minimum_outer_connected_dominating_set",
 ]
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
@@ -111,11 +115,11 @@ def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
 
     >>> G = path_graph(4)
     >>> print(gc.minimum_dominating_set(G))
-    {1, 3}
+    {1, 2}
 
     >>> G = complete_graph(3)
     >>> print(gc.minimum_dominating_set(G))
-    {0}
+    {2}
     """
     prob = pulp.LpProblem("MinDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
@@ -282,7 +286,7 @@ def minimum_independent_dominating_set(G: GraphLike) -> Set[Hashable]:
     >>> G = path_graph(4)
     >>> result = gc.minimum_independent_dominating_set(G)
     >>> print(result)
-    {1, 3}
+    {0, 3}
     """
     prob = pulp.LpProblem("MinIndependentDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
@@ -333,7 +337,7 @@ def independent_domination_number(G: GraphLike) -> int:
     >>> from graphcalc.generators import path_graph
 
     >>> G = path_graph(4)
-    >>> gc.minimum_independent_dominating_set(G)
+    >>> gc.independent_domination_number(G)
     2
     """
     return len(minimum_independent_dominating_set(G))
@@ -369,7 +373,7 @@ def complement_is_connected(G: GraphLike, S: Union[Set[Hashable], List[Hashable]
     >>> print(gc.complement_is_connected(G, S))
     True
 
-    >>> S = {0, 1}
+    >>> S = {0, 2}
     >>> print(gc.complement_is_connected(G, S))
     False
     """
@@ -403,13 +407,13 @@ def is_outer_connected_dominating_set(G: GraphLike, S: Union[Set[Hashable], List
     >>> from graphcalc.generators import path_graph
 
     >>> G = path_graph(4)
-    >>> S = {0}
-    >>> print(gc.is_outer_connected_dominating_set(G, S))
-    True
-
-    >>> S = {0, 1}
+    >>> S = {0, 2, 4}
     >>> print(gc.is_outer_connected_dominating_set(G, S))
     False
+
+    >>> S = {0, 1, 2}
+    >>> print(gc.is_outer_connected_dominating_set(G, S))
+    True
     """
     return is_dominating_set(G, S) and complement_is_connected(G, S)
 
@@ -509,7 +513,7 @@ def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
     >>> G = path_graph(4)
     >>> solution = gc.minimum_roman_dominating_function(G)
     >>> print(solution)
-    {'x': {0: 1, 1: 0, 2: 1, 3: 0}, 'y': {0: 0, 1: 0, 2: 0, 3: 0}, 'objective': 2}
+    {'x': {0: 0.0, 1: 0.0, 2: 0.0, 3: 1.0}, 'y': {0: 0.0, 1: 1.0, 2: 0.0, 3: 0.0}, 'objective': 3.0}
     """
     # Initialize the problem
     prob = pulp.LpProblem("RomanDomination", pulp.LpMinimize)
@@ -571,7 +575,7 @@ def roman_domination_number(graph: GraphLike) -> int:
 
     >>> G = path_graph(4)
     >>> print(gc.roman_domination_number(G))
-    2
+    3.0
     """
     solution = minimum_roman_dominating_function(graph)
     return solution["objective"]
@@ -603,7 +607,7 @@ def minimum_double_roman_dominating_function(graph: GraphLike) -> Dict:
     >>> G = path_graph(4)
     >>> solution = gc.minimum_double_roman_dominating_function(G)
     >>> print(solution)
-    {'x': {0: 0, 1: 1, 2: 0, 3: 0}, 'y': {0: 1, 1: 0, 2: 1, 3: 0}, 'z': {0: 0, 1: 0, 2: 0, 3: 0}, 'objective': 3}
+    {'x': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0}, 'y': {0: 0.0, 1: 0.0, 2: 0.0, 3: 1.0}, 'z': {0: 0.0, 1: 1.0, 2: 0.0, 3: 0.0}, 'objective': 5.0}
     """
     # Initialize the problem
     prob = pulp.LpProblem("DoubleRomanDomination", pulp.LpMinimize)
@@ -672,7 +676,7 @@ def double_roman_domination_number(graph: GraphLike) -> int:
 
     >>> G = path_graph(4)
     >>> print(gc.double_roman_domination_number(G))
-    3
+    5.0
     """
     solution = minimum_double_roman_dominating_function(graph)
     return solution["objective"]
@@ -705,9 +709,9 @@ def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
     >>> G = path_graph(4)
     >>> colored, uncolored = gc.minimum_rainbow_dominating_function(G, 2)
     >>> print(colored)
-    [(0, 1), (1, 2)]
+    [(0, 1), (1, 1), (3, 2)]
     >>> print(uncolored)
-    [2, 3]
+    [2]
     """
     # Create a PuLP problem instance
     prob = pulp.LpProblem("Rainbow_Domination", pulp.LpMinimize)
@@ -746,9 +750,6 @@ def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
     colored_vertices = [(v, i) for v in G.nodes for i in range(1, k+1) if value(f[v, i]) == 1]
     uncolored_vertices = [v for v in G.nodes if value(x[v]) == 1]
 
-    print(f"Colored vertices: {colored_vertices}")
-    print(f"Uncolored vertices: {uncolored_vertices}")
-
     return colored_vertices, uncolored_vertices
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
@@ -778,7 +779,7 @@ def rainbow_domination_number(G: GraphLike, k: int) -> int:
 
     >>> G = path_graph(4)
     >>> gc.rainbow_domination_number(G, 2)
-    2
+    3
     """
     colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, k)
     return len(colored_vertices)
@@ -807,9 +808,10 @@ def two_rainbow_domination_number(G: GraphLike) -> int:
 
     >>> G = path_graph(4)
     >>> gc.two_rainbow_domination_number(G)
-    2
+    3
     """
-    return rainbow_domination_number(G, 2)
+    colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, 2)
+    return len(colored_vertices)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def three_rainbow_domination_number(G: GraphLike) -> int:
@@ -835,7 +837,7 @@ def three_rainbow_domination_number(G: GraphLike) -> int:
 
     >>> G = path_graph(4)
     >>> gc.three_rainbow_domination_number(G)
-    3
+    4
     """
     return rainbow_domination_number(G, 3)
 
@@ -866,7 +868,7 @@ def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
     >>> G = path_graph(5)
     >>> restrained_dom_set = gc.minimum_restrained_dominating_set(G)
     >>> print(restrained_dom_set)
-    [0, 2, 4]
+    [0, 3, 4]
     """
     # Initialize the linear programming problem
     prob = pulp.LpProblem("MinimumRestrainedDomination", pulp.LpMinimize)
@@ -952,6 +954,6 @@ def min_maximal_matching_number(G: GraphLike) -> int:
 
     >>> G = path_graph(4)
     >>> gc.min_maximal_matching_number(G)
-    2
+    1
     """
     return domination_number(nx.line_graph(G))

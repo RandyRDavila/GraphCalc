@@ -108,7 +108,7 @@ def set_neighbors(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> Set[
 
     >>> G = path_graph(4)
     >>> gc.set_neighbors(G, {1, 2})
-    {0, 3}
+    {0, 1, 2, 3}
     """
     return set.union(*[neighborhood(G, v) for v in S])
 

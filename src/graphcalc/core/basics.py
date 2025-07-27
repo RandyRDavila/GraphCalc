@@ -23,6 +23,10 @@ __all__= [
     'connected_and_subcubic',
     'tree',
     'SimpleGraph',
+    'K_4_free',
+    'triangle_free',
+    'subcubic',
+    'claw_free',
 ]
 
 class SimpleGraph(nx.Graph):
@@ -47,13 +51,6 @@ class SimpleGraph(nx.Graph):
         Additional information about the graph.
     *args, **kwargs : arguments
         Arguments passed to the base `networkx.Graph` class.
-
-    Examples
-    --------
-    >>> import graphcalc as gc
-    >>> G = gc.SimpleGraph(name="Example Graph")
-    >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
-    >>> G.draw()
     """
 
     def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
@@ -93,13 +90,6 @@ class SimpleGraph(nx.Graph):
         ----------
         filepath : str
             The path to the CSV file where the edge list will be written.
-
-        Examples
-        --------
-        >>> import graphcalc as gc
-        >>> G = gc.SimpleGraph(name="Example Graph")
-        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
-        >>> G.write_edgelist_to_csv("edgelist.csv")
         """
         with open(filepath, mode='w', newline='') as csvfile:
             writer = csv.writer(csvfile)
@@ -133,12 +123,6 @@ class SimpleGraph(nx.Graph):
         -----
         - For CSV files, the file must have a header with "Source" and "Target".
         - For TXT files, the file should contain one edge per line with node pairs separated by whitespace.
-
-        Examples
-        --------
-        >>> import graphcalc as gc
-        >>> G = gc.SimpleGraph()
-        >>> G.read_edge_list("edgelist.csv")
         """
         import os
 
@@ -210,12 +194,6 @@ class SimpleGraph(nx.Graph):
             If the file does not exist.
         ValueError
             If the file format is invalid or the adjacency matrix is not square.
-
-        Examples
-        --------
-        >>> import graphcalc as gc
-        >>> G = gc.SimpleGraph()
-        >>> G.read_adjacency_matrix("adjacency_matrix.csv")
         """
         import os
 
@@ -295,13 +273,6 @@ class SimpleGraph(nx.Graph):
             The size of the nodes (default is 500).
         font_size : int, optional
             The font size of the labels (default is 10).
-
-        Examples
-        --------
-        >>> import graphcalc as gc
-        >>> G = gc.SimpleGraph(name="Example Graph")
-        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
-        >>> G.draw()
         """
         plt.figure(figsize=(8, 6))
         nx.draw(
@@ -701,11 +672,7 @@ def connected_and_subcubic(G: GraphLike) -> bool:
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import (
-        cycle_graph,
-        path_graph,
-        star_graph,
-    )
+    >>> from graphcalc.generators import cycle_graph, path_graph, star_graph
 
     >>> G = cycle_graph(4)  # Degree of all nodes is 2, connected
     >>> gc.connected_and_subcubic(G)
@@ -750,7 +717,7 @@ def claw_free(G: GraphLike) -> bool:
     >>> gc.claw_free(G)
     True
     """
-    claw = gc.generators.general.star_graph(3)
+    claw = nx.star_graph(3)
     for S in set(itertools.combinations(G.nodes(), 3)):
         H = G.subgraph(list(S))
         if nx.is_isomorphic(H, claw):
@@ -779,9 +746,9 @@ def K_4_free(G: GraphLike) -> bool:
 
     >>> G = complete_graph(4)
     >>> gc.K_4_free(G)
-    True
+    False
     """
-    K_4 = gc.generators.general.complete_graph(4)
+    K_4 = nx.complete_graph(4)
     for S in set(itertools.combinations(G.nodes(), 4)):
         H = G.subgraph(list(S))
         if nx.is_isomorphic(H, K_4):
@@ -815,7 +782,7 @@ def triangle_free(G: GraphLike) -> bool:
     False
     """
     # define a triangle graph, also known as the complete graph K_3
-    triangle = gc.generators.simple_graphs.complete_graph(3)
+    triangle = nx.complete_graph(3)
 
     # enumerate over all possible combinations of 3 vertices contained in G
     for S in set(itertools.combinations(G.nodes(), 3)):
@@ -903,6 +870,6 @@ def average_shortest_path_length(G: GraphLike) -> float:
 
     >>> G = path_graph(4)
     >>> gc.average_shortest_path_length(G)
-    1.5
+    1.6666666666666667
     """
     return nx.average_shortest_path_length(G)

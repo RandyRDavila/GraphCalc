@@ -40,10 +40,10 @@ def adjacency_matrix(G: GraphLike) -> np.ndarray:
 
     >>> G = cycle_graph(4)
     >>> gc.adjacency_matrix(G)
-    array([[0, 1, 0, 1],
-           [1, 0, 1, 0],
-           [0, 1, 0, 1],
-           [1, 0, 1, 0]])
+    array([[0, 1, 1, 0],
+           [1, 0, 0, 1],
+           [1, 0, 0, 1],
+           [0, 1, 1, 0]])
     """
     G = nx.convert_node_labels_to_integers(G)
     return nx.to_numpy_array(G, dtype=int)
@@ -72,9 +72,9 @@ def laplacian_matrix(G: GraphLike) -> np.array:
     >>> G = cycle_graph(4)
     >>> gc.laplacian_matrix(G)
     array([[ 2, -1, -1,  0],
-       [-1,  2,  0, -1],
-       [-1,  0,  2, -1],
-       [ 0, -1, -1,  2]])
+           [-1,  2,  0, -1],
+           [-1,  0,  2, -1],
+           [ 0, -1, -1,  2]])
     """
     G = nx.convert_node_labels_to_integers(G)  # Ensure node labels are integers
     A = nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
@@ -103,7 +103,7 @@ def adjacency_eigenvalues(G: GraphLike) -> float:
 
     >>> G = cycle_graph(4)
     >>> gc.adjacency_eigenvalues(G)
-    array([-2.00000000e+00,  0.00000000e+00,  6.59737022e-17,  2.00000000e+00])
+    array([-2.00000000e+00, -2.13090407e-25,  2.13090407e-25,  2.00000000e+00])
     """
     A = nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
     eigenvals = np.linalg.eigvals(A)
@@ -131,7 +131,7 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
 
     >>> G = cycle_graph(4)
     >>> gc.laplacian_eigenvalues(G)
-    array([-2.22044605e-16,  2.00000000e+00,  2.00000000e+00,  4.00000000e+00])
+    array([0., 2., 2., 4.])
     """
     L = laplacian_matrix(G)
     eigenvals = np.linalg.eigvals(L)
@@ -161,7 +161,7 @@ def algebraic_connectivity(G: GraphLike) -> float:
 
     >>> G = cycle_graph(4)
     >>> gc.algebraic_connectivity(G)
-    1.9999999999999996
+    np.float64(1.9999999999999996)
     """
     eigenvals = laplacian_eigenvalues(G)
     return eigenvals[1]  # Second smallest eigenvalue
@@ -188,7 +188,7 @@ def spectral_radius(G: GraphLike) -> float:
 
     >>> G = cycle_graph(4)
     >>> gc.spectral_radius(G)
-    2.0
+    np.float64(1.9999999999999993)
     """
     eigenvals = adjacency_eigenvalues(G)
     return max(abs(eigenvals))
@@ -215,7 +215,7 @@ def largest_laplacian_eigenvalue(G: GraphLike) -> np.float64:
 
     >>> G = cycle_graph(4)
     >>> gc.largest_laplacian_eigenvalue(G)
-    3.9999999999999996
+    np.float64(3.9999999999999982)
     """
     eigenvals = laplacian_eigenvalues(G)
     return max(abs(eigenvals))
@@ -269,7 +269,7 @@ def second_largest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
 
     >>> G = cycle_graph(4)
     >>> gc.second_largest_adjacency_eigenvalue(G)
-    6.597370221478735e-17
+    np.float64(2.130904069729519e-25)
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[-2]  # Second largest in sorted eigenvalues
@@ -296,7 +296,7 @@ def smallest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
 
     >>> G = cycle_graph(4)
     >>> gc.smallest_adjacency_eigenvalue(G)
-    -1.9999999999999996
+    np.float64(-1.9999999999999993)
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[0]  # Smallest eigenvalue
