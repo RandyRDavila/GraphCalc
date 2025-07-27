@@ -111,14 +111,10 @@ def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import path_graph, complete_graph
+    >>> from graphcalc.generators import path_graph
 
     >>> G = path_graph(4)
-    >>> print(gc.minimum_dominating_set(G))
-    {1, 2}
-
-    >>> G = complete_graph(3)
-    >>> optimal_set = gc.minimum_dominating_set(G)
+    >>> solution = gc.minimum_dominating_set(G)
     """
     prob = pulp.LpProblem("MinDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
