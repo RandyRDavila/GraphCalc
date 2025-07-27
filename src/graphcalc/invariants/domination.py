@@ -118,7 +118,7 @@ def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
     {1, 2}
 
     >>> G = complete_graph(3)
-    >>> optimal_set = gc.minimum_dominating_set(G))
+    >>> optimal_set = gc.minimum_dominating_set(G)
     """
     prob = pulp.LpProblem("MinDominatingSet", pulp.LpMinimize)
     variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}

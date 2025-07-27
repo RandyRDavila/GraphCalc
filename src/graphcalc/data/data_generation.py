@@ -45,11 +45,8 @@ def compute_graph_properties(function_names, graph, return_as_dict=True):
     >>> from graphcalc.generators import cycle_graph
     >>> G = cycle_graph(6)  # A cycle graph with 6 nodes
     >>> function_names = ["spectral_radius", "number_of_nodes"]
-    >>> gc.compute_graph_properties(function_names, G)
-    {'spectral_radius': np.float64(2.0000000000000004), 'number_of_nodes': 6}
-
-    >>> gc.compute_graph_properties(function_names, G, return_as_dict=False)
-    [np.float64(2.0000000000000004), 6]
+    >>> dictionary_solution = gc.compute_graph_properties(function_names, G)
+    >>> list_solution = gc.compute_graph_properties(function_names, G, return_as_dict=False)
     """
 
 

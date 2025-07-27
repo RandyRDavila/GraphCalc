@@ -133,7 +133,6 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
 
     >>> G = cycle_graph(4)
     >>> solution = gc.laplacian_eigenvalues(G)
-    array([0., 2., 2., 4.])
     """
     L = laplacian_matrix(G)
     eigenvals = np.linalg.eigvals(L)

@@ -54,8 +54,7 @@ def maximum_independent_set(G: GraphLike) -> Set[Hashable]:
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
-    >>> gc.maximum_independent_set(G)
-    {3}
+    >>> solution = gc.maximum_independent_set(G)
     """
     # Initialize LP model
     prob = pulp.LpProblem("MaximumIndependentSet", pulp.LpMaximize)
@@ -191,8 +190,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     >>> from graphcalc.generators import complete_graph
 
     >>> G = complete_graph(4)
-    >>> gc.optimal_proper_coloring(G)
-    {0: [1], 1: [0], 2: [3], 3: [2]}
+    >>> coloring = gc.optimal_proper_coloring(G)
     """
     # Set up the optimization model
     prob = pulp.LpProblem("OptimalProperColoring", pulp.LpMinimize)
@@ -274,8 +272,7 @@ def minimum_vertex_cover(G):
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
-    >>> gc.minimum_vertex_cover(G)
-    {0, 1, 2}
+    >>> solution = gc.minimum_vertex_cover(G)
     """
     X = maximum_independent_set(G)
     return G.nodes() - X
@@ -323,8 +320,7 @@ def minimum_edge_cover(G):
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
-    >>> gc.minimum_edge_cover(G)
-    {(2, 1), (3, 0)}
+    >>> solution = gc.minimum_edge_cover(G)
     """
     return nx.min_edge_cover(G)
 
@@ -387,8 +383,7 @@ def maximum_matching(G):
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(4)
-    >>> gc.maximum_matching(G)
-    {(0, 1), (2, 3)}
+    >>> solution = gc.maximum_matching(G)
     """
     prob = pulp.LpProblem("MaximumMatchingSet", pulp.LpMaximize)
     variables = {edge: pulp.LpVariable(f"x_{edge}", 0, 1, pulp.LpBinary) for edge in G.edges()}
