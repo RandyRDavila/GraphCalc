@@ -1177,14 +1177,13 @@ def is_well_splitting_set(
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     """
-    Check if S is a well-splitting set of G.
+    Check if G is a well-splitting set of G
 
     Parameters
     ----------
     G : nx.Graph
-        The input graph :math:`G = (V, E)`.
+
     S : set
-        A subset :math:`S \subseteq V(G)` to test.
 
     Returns
     -------
