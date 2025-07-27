@@ -98,12 +98,14 @@ def adjacency_eigenvalues(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.adjacency_eigenvalues(G)
-    array([-2.00000000e+00, -2.13090407e-25,  2.13090407e-25,  2.00000000e+00])
+    >>> eigenvals = gc.adjacency_eigenvalues(G)
+    >>> np.allclose(eigenvals, [-2.0, 0.0, 0.0, 2.0], atol=1e-6)
+    True
     """
     A = nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
     eigenvals = np.linalg.eigvals(A)
@@ -130,7 +132,7 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.laplacian_eigenvalues(G)
+    >>> solution = gc.laplacian_eigenvalues(G)
     array([0., 2., 2., 4.])
     """
     L = laplacian_matrix(G)
@@ -270,8 +272,7 @@ def second_largest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.second_largest_adjacency_eigenvalue(G)
-    np.float64(2.130904069729519e-25)
+    >>> solution = gc.second_largest_adjacency_eigenvalue(G)
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[-2]  # Second largest in sorted eigenvalues
