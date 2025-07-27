@@ -156,12 +156,13 @@ def algebraic_connectivity(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.algebraic_connectivity(G)
-    np.float64(1.9999999999999996)
+    >>> np.allclose(gc.algebraic_connectivity(G), 2.0)
+    True
     """
     eigenvals = laplacian_eigenvalues(G)
     return eigenvals[1]  # Second smallest eigenvalue
@@ -183,12 +184,13 @@ def spectral_radius(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.spectral_radius(G)
-    np.float64(1.9999999999999993)
+    >>> np.allclose(gc.spectral_radius(G), 2.0)
+    True
     """
     eigenvals = adjacency_eigenvalues(G)
     return max(abs(eigenvals))
@@ -214,8 +216,8 @@ def largest_laplacian_eigenvalue(G: GraphLike) -> np.float64:
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.largest_laplacian_eigenvalue(G)
-    np.float64(3.9999999999999982)
+    >>> np.allclose(gc.largest_laplacian_eigenvalue(G), 4.0)
+    True
     """
     eigenvals = laplacian_eigenvalues(G)
     return max(abs(eigenvals))
@@ -291,12 +293,13 @@ def smallest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
 
     >>> G = cycle_graph(4)
-    >>> gc.smallest_adjacency_eigenvalue(G)
-    np.float64(-1.9999999999999993)
+    >>> np.allclose(gc.smallest_adjacency_eigenvalue(G), -2.0)
+    True
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[0]  # Smallest eigenvalue
