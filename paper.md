@@ -84,30 +84,27 @@ The `GraphCalc` package supports both single-graph queries and batch evaluation 
 ```python
 >>> import graphcalc as gc
 >>> from graphcalc import petersen_graph
-
+>>>
 >>> # Create the Petersen graph
 >>> G = petersen_graph()
-
 >>> # Compute selected invariants
 >>> gc.independence_number(G)
 4
-
 >>> gc.residue(G)
 3
-
 >>> gc.claw_free(G)
 False
 ```
 
 ## Relevance to Automated Discovery
 
-Automated mathematical discovery has a rich history, dating back to symbolic logic programs like Wang’s *Program II* in the 1950s [@wang1960mechanical], and advancing significantly with systems such as Fajtlowicz’s *Graffiti* [@Fajtlowicz1988] and DeLaViña’s *Graffiti.pc* [@DeLaVina2005] in the 1980s and 1990s. These pioneering systems demonstrated that computers could do more than verify known mathematics—they could help **generate** it, particularly by formulating conjectures grounded in patterns among graph invariants. Notably, *Graffiti* included its own embedded module for computing such invariants, a design decision that enabled the system to generate over 60 published conjectures, many appearing in top mathematical journals.
+Automated mathematical discovery has a rich history, dating back to symbolic logic programs like Wang’s *Program II* in the 1950s [@wang1960mechanical], and advancing significantly with systems such as Fajtlowicz’s *Graffiti* [@Fajtlowicz1988] and DeLaViña’s *Graffiti.pc* [@DeLaVina2005] in the 1980s and 1990s. These pioneering systems demonstrated that computers could do more than verify known mathematics—they could help *generate* it, particularly by formulating conjectures grounded in patterns among graph invariants. Notably, *Graffiti* included its own embedded module for computing such invariants, a design decision that enabled the system to generate over 60 published conjectures, many appearing in top mathematical journals.
 
 `GraphCalc` continues this lineage. Originally developed as the internal invariant engine for the *TxGraffiti* system, it served for years as a private computational backend before being released as an open-source Python package. This decision was motivated by the growing interest in AI-assisted mathematical reasoning and the desire to make a high-quality, extensible invariant engine available for others to experiment with.
 
-Today, `GraphCalc` powers the latest version of *TxGraffiti* and its agentic counterpart the *Optimist* [@TxGraffiti2023; @optimist], which analyze large families of graphs and polytopes to discover symbolic conjectures. To support this process, `GraphCalc` computes a rich spectrum of graph-theoretic quantities—from well-known invariants like **chromatic number** and **independence number** to more specialized parameters such as **positive semidefinite zero forcing**, **Slater number**, and **residue**.
+Today, `GraphCalc` powers the latest version of *TxGraffiti* and its agentic counterpart the *Optimist* [@TxGraffiti2023; @optimist], which analyze large families of graphs and polytopes to discover symbolic conjectures. To support this process, `GraphCalc` computes a rich spectrum of graph-theoretic quantities—from well-known invariants like *chromatic number* and *independence number* to more specialized parameters such as *positive semidefinite zero forcing*, *Slater number*, and *residue*.
 
-While not optimized for massive-scale network analysis, `GraphCalc` excels in the domain where most mathematical conjectures are formed: **small to medium-sized graphs** that are easily visualized and reasoned about. This design philosophy echoes the foundational principles of Fajtlowicz’s original system, which emphasized working with “small but interesting” graphs as fertile ground for discovery. By transforming these structures into structured numerical profiles, `GraphCalc` enables automated systems to detect symbolic patterns and formulate conjectures that are both novel and mathematically meaningful.
+While not optimized for massive-scale network analysis, `GraphCalc` excels in the domain where most mathematical conjectures are formed: *small to medium-sized graphs* that are easily visualized and reasoned about. This design philosophy echoes the foundational principles of Fajtlowicz’s original system, which emphasized working with “small but interesting” graphs as fertile ground for discovery. By transforming these structures into structured numerical profiles, `GraphCalc` enables automated systems to detect symbolic patterns and formulate conjectures that are both novel and mathematically meaningful.
 
 ## Acknowledgements
 
