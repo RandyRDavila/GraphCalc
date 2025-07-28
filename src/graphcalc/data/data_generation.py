@@ -5,7 +5,7 @@ import pandas as pd
 __all__ = [
     "compute_graph_properties",
     "expand_list_columns",
-    "compute_graph_properties_dataframe",
+    "compute_knowledge_table",
 ]
 
 def compute_graph_properties(function_names, graph, return_as_dict=True):
@@ -124,7 +124,7 @@ def expand_list_columns(df):
     return df_expanded
 
 
-def compute_graph_properties_dataframe(function_names, graphs):
+def compute_knowledge_table(function_names, graphs):
     r"""
     Compute graph properties for a collection of NetworkX graphs and return a pandas DataFrame.
 
@@ -161,7 +161,7 @@ def compute_graph_properties_dataframe(function_names, graphs):
     >>> G2 = path_graph(5)
     >>> function_names = ["spectral_radius", "algebraic_connectivity"]
     >>> graphs = [G1, G2]
-    >>> df = gc.compute_graph_properties_dataframe(function_names, graphs)
+    >>> df = gc.compute_knowledge_table(function_names, graphs)
     """
     # Initialize a list to store results for each graph
     rows = []
