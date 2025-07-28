@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Ring 1 Tests
+    name: Unit and Docstring
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
