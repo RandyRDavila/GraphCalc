@@ -21,9 +21,9 @@ bibliography: paper.bib
 
 ## Summary
 
-`GraphCalc` is a Python library for computing a wide range of graph-theoretic invariants using a blend of exact enumeration, solver-based optimization, and seamless integration with `NetworkX`. While it supports `NetworkX` graphs natively, it also includes it's own structures for graphs and polytopes, enabling efficient experimentation, extension, symbolic computation, and use in *automated conjecturing systems*.
+`GraphCalc` is a Python library for computing a broad range of graph-theoretic invariants, purpose-built to support research in combinatorics, network science, and automated reasoning. It offers exact implementations of over 100 functions, spanning classical invariants (e.g., independence number, chromatic number, spectral radius) and a wide array of lesser-known parameters central to contemporary graph theory.
 
-`GraphCalc` was originally the computational backbone of the automated conjecturing system *TxGraffiti* (short for *Texas-Graffiti*) [@TxGraffiti2023; @TxGraffiti], and its agentic counterpart [@optimist]. These AI systems automate the process of generating mathematical conjectures by analyzing a tabular dataset called the *knowledge table* -- each row corresponding to a graph or polytope instance and columns corresponding to numerical or Boolean values calculated on the instances. When dynamically updating this table of knowledge with new graph instances `GraphCalc` is the primary source of computation. Indeed, `GraphCalc` comes with such functionality built in, inherrited from it's previous life inside the *TxGraffiti* system:
+Originally developed as the invariant engine for the automated conjecturing system TxGraffiti, `GraphCalc` has since matured into a general-purpose research tool that facilitates the large-scale construction of structured, high-resolution invariant datasets. These datasets, often organized into tabular “knowledge tables,” form the basis for symbolic pattern mining, hypothesis generation, and downstream machine reasoning. For example,
 
 ```python
 >>> import graphcalc as gc
@@ -36,18 +36,18 @@ bibliography: paper.bib
 1      6    12              4.0                    2
 ```
 
-When creating, recreating, and updating a dataset of computed properties on graphs, performance considerations appear rather quickly. However, when dealing with scientific and mathematical discovery, as is the case with automated conjecturing systems, exactness of solutions is needed. Thus, each graph invariant included in `GraphCalc` is computed exactly, and wherever possible, solved using mixed-integer programming.
+In contrast to general graph libraries such as NetworkX or igraph, `GraphCalc` emphasizes coverage over convenience, providing researchers with one of the most extensive collections of computable graph invariants available in open-source software. Its design is particularly suited to mathematical exploration on small to medium graphs, where symbolic relationships among invariants are often most visible and meaningful. By enabling fast, programmatic access to both standard and obscure graph parameters, `GraphCalc` lowers the barrier to large-scale experimentation and supports the discovery of new relationships in discrete mathematics.
 
-The library supports both classical and advanced invariants. These include:
+The library includes exact implementations of:
 
-- Fundamental quantities such as *independence number*, *clique number*, and *chromatic number* (each computed exactly via integer programming),
-- Spectral properties related to *graph energy*, i.e., eigen values of various matrices defined by graphs [@LiShiGutman2012],
-- Degree-sequence-based invariants like *residue* [@residue], *annihilation number* [@LevitMandrescu2022], and *Slater number* [@GeRa2017],
-- Dynamic coloring parameters such as the *zero forcing number*, the *k-forcing number*, *power domination number*, and numerous other variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
-- Domination-type parameters including *total*, *connected*, *Roman*, *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
-- Structural predicates that test for properties like *claw-free*, *triangle-free*, *diamond-free*, or *bull-free* graphs.
+- Fundamental quantities such as independence number, clique number, and chromatic number (via integer programming),
+Spectral properties related to graph energy, i.e., eigenvalues of adjacency and Laplacian matrices [@LiShiGutman2012],
+- Degree-sequence-based invariants like residue [@residue], annihilation number [@LevitMandrescu2022], and Slater number [@GeRa2017],
+- Propagation-based parameters including zero forcing, k-forcing, and power domination variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
+- Domination-type invariants such as total, connected, Roman, rainbow, and restrained domination [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
+- Structural predicates for classes like claw-free, triangle-free, diamond-free, and bull-free graphs.
 
-In total, `GraphCalc` provides over 100 graph-related functions for invariant evaluation, spectral analysis, structural testing, and graph generation—many of which are unavailable in other Python packages. All are computed *exactly*, leveraging integer programming, enumeration, or symbolic methods. As such, `GraphCalc` is not only a powerful research tool for graph theorists, but also a critical enabler for automated reasoning systems seeking to discover new mathematical truths.
+Together, these functions cover an expansive and often underrepresented space of graph invariants. Many of these are unavailable in other Python libraries, and all are computed exactly using a mix of solver-based optimization, enumeration, and symbolic methods. As such, `GraphCalc` serves not only as a comprehensive computational toolkit for graph theorists, but as a foundational component in modern systems for automated conjecture generation and symbolic discovery.
 
 ## Statement of Need
 
