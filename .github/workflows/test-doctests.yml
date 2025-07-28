@@ -11,20 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: 📦 Install dependencies
+      - name: Install HiGHS
+        run: sudo apt install -y coinor-cbc
+
+      - name: Install dependencies
         run: |
-          sudo apt install -y coinor-cbc
           python -m pip install --upgrade pip
           pip install -e .[dev]  # uses your pyproject.toml optional dev deps
 
-      - name: ✅ Test docstring examples
+      - name: Test docstring examples
         run: |
           pytest --doctest-modules -v src/
