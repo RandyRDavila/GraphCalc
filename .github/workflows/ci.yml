@@ -58,6 +58,6 @@ jobs:
       - name: Run unit tests
         run: pytest
 
-      - name: Test docstring examples
+      - name: Run docstring examples as tests
         run: |
           pytest --doctest-modules -v src/
