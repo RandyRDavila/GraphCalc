@@ -26,6 +26,7 @@ We welcome proposals for new functionality, heuristics, or performance improveme
 Typos, unclear explanations, or better examples? Submit a PR with your improvements. You can run the docs locally with:
 
 ```bash
+cd docs
 make html
 open build/html/index.html
 ```
