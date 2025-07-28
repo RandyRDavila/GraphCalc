@@ -41,10 +41,10 @@ In contrast to general graph libraries such as NetworkX or igraph, `GraphCalc` e
 The library includes exact implementations of:
 
 - Fundamental quantities such as independence number, clique number, and chromatic number (via integer programming),
-Spectral properties related to graph energy, i.e., eigenvalues of adjacency and Laplacian matrices [@LiShiGutman2012],
-- Degree-sequence-based invariants like residue [@residue], annihilation number [@LevitMandrescu2022], and Slater number [@GeRa2017],
-- Propagation-based parameters including zero forcing, k-forcing, and power domination variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
-- Domination-type invariants such as total, connected, Roman, rainbow, and restrained domination [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
+Spectral properties related to graph energy, i.e., eigenvalues of adjacency and Laplacian matrices,
+- Degree-sequence-based invariants like residue, annihilation number, and Slater number,
+- Propagation-based parameters including zero forcing, k-forcing, and power domination variants,
+- Domination-type invariants such as total, connected, Roman, rainbow, and restrained domination,
 - Structural predicates for classes like claw-free, triangle-free, diamond-free, and bull-free graphs.
 
 Together, these functions cover an expansive and often underrepresented space of graph invariants. Many of these are unavailable in other Python libraries, and all are computed exactly using a mix of solver-based optimization, enumeration, and symbolic methods. As such, `GraphCalc` serves not only as a comprehensive computational toolkit for graph theorists, but as a foundational component in modern systems for automated conjecture generation and symbolic discovery.
