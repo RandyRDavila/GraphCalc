@@ -26,12 +26,14 @@ bibliography: paper.bib
 `GraphCalc` was originally the computational backbone of the automated conjecturing system *TxGraffiti* (short for *Texas-Graffiti*) [@TxGraffiti2023; @TxGraffiti], and its agentic counterpart [@optimist]. These AI systems automate the process of generating mathematical conjectures by analyzing a tabular dataset called the *knowledge table* -- each row corresponding to a graph or polytope instance and columns corresponding to numerical or Boolean values calculated on the instances. When dynamically updating this table of knowledge with new graph instances `GraphCalc` is the primary source of computation. Indeed, `GraphCalc` comes with such functionality built in, inherrited from it's previous life inside the *TxGraffiti* system:
 
 ```python
-from graphcalc.polytopes.generators import cube_graph, octahedron_graph
-graphs = [cube_graph(), octahedron_graph()]
-functions = ["order", "size", "spectral_radius", "independence_number"]
-
-knowledge_table = gc.compute_graph_properties_dataframe(functions, graphs)
-print(knowledge_table)
+>>> import graphcalc as gc
+>>> from graphcalc.polytopes.generators import cube_graph, octahedron_graph
+>>> graphs = [cube_graph(), octahedron_graph()]
+>>> functions = ["order", "size", "spectral_radius", "independence_number"]
+>>> gc.compute_graph_properties_dataframe(functions, graphs)
+   order  size  spectral_radius  independence_number
+0      8    12              3.0                    4
+1      6    12              4.0                    2
 ```
 
 When creating, recreating, and updating a dataset of computed properties on graphs, performance considerations appear rather quickly. However, when dealing with scientific and mathematical discovery, as is the case with automated conjecturing systems, exactness of solutions is needed. Thus, each graph invariant included in `GraphCalc` is computed exactly, and wherever possible, solved using mixed-integer programming.
