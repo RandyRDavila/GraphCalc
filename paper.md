@@ -36,9 +36,9 @@ Originally developed as the invariant engine for the automated conjecturing syst
 1      6    12              4.0                    2
 ```
 
-In contrast to general graph libraries such as NetworkX or igraph, `GraphCalc` emphasizes coverage over convenience, providing researchers with one of the most extensive collections of computable graph invariants available in open-source software. Its design is particularly suited to mathematical exploration on small to medium graphs, where symbolic relationships among invariants are often most visible and meaningful. By enabling fast, programmatic access to both standard and obscure graph parameters, `GraphCalc` lowers the barrier to large-scale experimentation and supports the discovery of new relationships in discrete mathematics.
+While general-purpose graph libraries such as `NetworkX` and `igraph` are widely used for network analysis and algorithmic exploration, they offer limited support for *lesser-known* invariants that often arise in extremal combinatorics and graph theory. `GraphCalc` fills this gap by providing exact implementations of over 100 graph-theoretic parameters—including many that are difficult to compute or entirely unavailable in other Python libraries. This expanded coverage makes it a valuable tool for researchers seeking to analyze symbolic relationships among invariants or generate conjectures from numerical data.
 
-The library includes exact implementations of:
+ Its design is particularly suited to mathematical exploration on small to medium graphs, where symbolic relationships among invariants are often most visible and meaningful. By enabling fast, programmatic access to both standard and obscure graph parameters, `GraphCalc` lowers the barrier to large-scale experimentation and supports the discovery of new relationships in discrete mathematics. The library includes exact implementations of:
 
 - Fundamental quantities such as *independence number*, *clique number*, and *chromatic number*,
 Spectral properties related to graph energy, i.e., eigenvalues of adjacency and Laplacian matrices,
