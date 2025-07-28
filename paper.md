@@ -21,17 +21,28 @@ bibliography: paper.bib
 
 ## Summary
 
-`GraphCalc` is a Python library for computing a wide range of graph-theoretic invariants using a blend of exact enumeration, solver-based optimization, and seamless integration with `NetworkX`. While it supports `NetworkX` graphs natively, it also includes its own lightweight data structures for graphs and polytopes, enabling efficient experimentation, extension, and symbolic computation.
+`GraphCalc` is a Python library for computing a wide range of graph-theoretic invariants using a blend of exact enumeration, solver-based optimization, and seamless integration with `NetworkX`. While it supports `NetworkX` graphs natively, it also includes it's own structures for graphs and polytopes, enabling efficient experimentation, extension, symbolic computation, and use in *automated conjecturing systems*.
 
-Originally developed to power *automated conjecturing systems*, `GraphCalc` forms the computational backbone of the *TxGraffiti* (short for *TexasGraffiti*) family of programs [@TxGraffiti2023; @TxGraffiti; @optimist]. These systems generate mathematical conjectures by analyzing large datasets of graphs enriched with invariant data—making the scope, precision, and diversity of `GraphCalc`'s computations essential for discovery.
+`GraphCalc` was originally the computational backbone of the automated conjecturing system *TxGraffiti* (short for *Texas-Graffiti*) [@TxGraffiti2023; @TxGraffiti], and its agentic counterpart [@optimist]. These AI systems automate the process of generating mathematical conjectures by analyzing a tabular dataset called the *knowledge table* -- each row corresponding to a graph or polytope instance and columns corresponding to numerical or Boolean values calculated on the instances. When dynamically updating this table of knowledge with new graph instances `GraphCalc` is the primary source of computation. Indeed, `GraphCalc` comes with such functionality built in, inherrited from it's previous life inside the *TxGraffiti* system:
+
+```python
+from graphcalc.polytopes.generators import cube_graph, octahedron_graph
+graphs = [cube_graph(), octahedron_graph()]
+functions = ["order", "size", "spectral_radius", "independence_number"]
+
+knowledge_table = gc.compute_graph_properties_dataframe(functions, graphs)
+print(knowledge_table)
+```
+
+When creating, recreating, and updating a dataset of computed properties on graphs, performance considerations appear rather quickly. However, when dealing with scientific and mathematical discovery, as is the case with automated conjecturing systems, exactness of solutions is needed. Thus, each graph invariant included in `GraphCalc` is computed exactly, and wherever possible, solved using mixed-integer programming.
 
 The library supports both classical and advanced invariants. These include:
 
 - Fundamental quantities such as *independence number*, *clique number*, and *chromatic number* (each computed exactly via integer programming),
-- Spectral properties related to *graph energy* [@LiShiGutman2012],
+- Spectral properties related to *graph energy*, i.e., eigen values of various matrices defined by graphs [@LiShiGutman2012],
 - Degree-sequence-based invariants like *residue* [@residue], *annihilation number* [@LevitMandrescu2022], and *Slater number* [@GeRa2017],
-- Dynamic coloring parameters such as the *zero forcing number* and its numerous variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
-- Domination-type parameters including *total*, *connected*, *Roman*, and *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
+- Dynamic coloring parameters such as the *zero forcing number*, the *k-forcing number*, *power domination number*, and numerous other variants [@AIMMINIMUMRANKSPECIALGRAPHSWORKGROUP20081628; @AMOS20151; @DAVILA2019115; @DavilaHenningMagnantPepper2018],
+- Domination-type parameters including *total*, *connected*, *Roman*, *rainbow*, *k-domination* [@HaHeHe_core; @HaHeHe_topics; @HeYe2010],
 - Structural predicates that test for properties like *claw-free*, *triangle-free*, *diamond-free*, or *bull-free* graphs.
 
 In total, `GraphCalc` provides over 100 graph-related functions for invariant evaluation, spectral analysis, structural testing, and graph generation—many of which are unavailable in other Python packages. All are computed *exactly*, leveraging integer programming, enumeration, or symbolic methods. As such, `GraphCalc` is not only a powerful research tool for graph theorists, but also a critical enabler for automated reasoning systems seeking to discover new mathematical truths.
