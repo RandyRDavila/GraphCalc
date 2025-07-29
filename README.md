@@ -106,8 +106,7 @@ function_names = [
 
 # Compute properties for multiple polytopes
 graphs = [G1, G2, G3, G4, G5, G6, G7]
-df = gc.compute_graph_properties_dataframe(function_names, graphs)
-print(df)
+df = gc.compute_knowledge_table(function_names, graphs)
 ```
 
 ## Creating Simple Graphs, Polytope Graphs, and Simple Polytope Graphs
