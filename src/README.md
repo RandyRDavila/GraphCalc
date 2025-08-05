@@ -28,7 +28,7 @@ pip install graphcalc
 
 ## Linear and Integer Programming Solvers
 
-Many of the NP-hard graph invariant computations of GraphCalc depend on third-party solvers.At least one of the following is required if you intend to use solver-based functions (e.g., `gc.solve_independent_set(G)`):
+Many of the NP-hard graph invariant computations of GraphCalc depend on third-party solvers.At least one of the following is required if you intend to use solver-based functions (e.g., `gc.maximum_independent_set(G)`):
 
 - **CBC** (recommended):
 
