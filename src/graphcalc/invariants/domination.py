@@ -3,14 +3,11 @@ from typing import Union, Set, Hashable, Dict, List
 import networkx as nx
 from itertools import combinations
 import pulp
-from pulp import (
-    value,
-    PULP_CBC_CMD,
-)
+from pulp import value
 
 import graphcalc as gc
 from graphcalc.core.neighborhoods import neighborhood, closed_neighborhood
-from graphcalc.utils import get_default_solver, enforce_type, GraphLike
+from graphcalc.utils import get_default_solver, enforce_type, GraphLike, _extract_and_report
 
 __all__ = [
     "is_dominating_set",
@@ -38,7 +35,10 @@ __all__ = [
 ]
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def is_dominating_set(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
+def is_dominating_set(
+    G: GraphLike,
+    S: Union[Set[Hashable], List[Hashable]],
+) -> bool:
     r"""
     Checks if a given set of nodes, S, is a dominating set in the graph G.
 
@@ -75,7 +75,7 @@ def is_dominating_set(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> 
     return all(any(u in S for u in closed_neighborhood(G, v)) for v in G.nodes())
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
+def minimum_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""
     Finds a minimum dominating set for the input graph G.
 
@@ -134,8 +134,8 @@ def minimum_dominating_set(G: GraphLike) -> Set[Hashable]:
     if pulp.LpStatus[prob.status] != 'Optimal':
         raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
-    solution_set = {node for node in variables if variables[node].value() == 1}
-    return solution_set
+    # Extract solution
+    return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def domination_number(G: GraphLike) -> int:
@@ -167,7 +167,7 @@ def domination_number(G: GraphLike) -> int:
     return len(minimum_dominating_set(G))
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_total_domination_set(G: GraphLike) -> Set[Hashable]:
+def minimum_total_domination_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""
     Finds a minimum total dominating set for the graph G.
 
@@ -225,8 +225,8 @@ def minimum_total_domination_set(G: GraphLike) -> Set[Hashable]:
     if pulp.LpStatus[prob.status] != 'Optimal':
         raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
-    solution_set = {node for node in variables if variables[node].value() == 1}
-    return solution_set
+    # Extract solution
+    return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def total_domination_number(G: GraphLike) -> int:
@@ -258,7 +258,7 @@ def total_domination_number(G: GraphLike) -> int:
     return len(minimum_total_domination_set(G))
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_independent_dominating_set(G: GraphLike) -> Set[Hashable]:
+def minimum_independent_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""
     Finds a minimum independent dominating set for the graph G using integer programming.
 
@@ -301,8 +301,8 @@ def minimum_independent_dominating_set(G: GraphLike) -> Set[Hashable]:
     if pulp.LpStatus[prob.status] != 'Optimal':
         raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
-    solution_set = {node for node in variables if variables[node].value() == 1}
-    return solution_set
+    # Extract solution
+    return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def independent_domination_number(G: GraphLike) -> int:

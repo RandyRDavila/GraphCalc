@@ -44,7 +44,7 @@ def complete_graph(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The complete graph `K_n`.
 
     Examples
@@ -68,7 +68,7 @@ def cycle_graph(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The cycle graph `C_n`.
 
     Examples
@@ -92,7 +92,7 @@ def path_graph(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The path graph `P_n`.
 
     Examples
@@ -116,7 +116,7 @@ def star_graph(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The star graph `S_n`.
 
     Examples
@@ -140,7 +140,7 @@ def wheel_graph(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The wheel graph `W_n`.
 
     Examples
@@ -167,7 +167,7 @@ def grid_2d_graph(m: int, n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The 2D grid graph `G_{m,n}`.
 
     Examples
@@ -194,7 +194,7 @@ def barbell_graph(m: int, n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The barbell graph `B_{m,n}`.
 
     Examples
@@ -219,7 +219,7 @@ def ladder_graph(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The ladder graph `L_n`.
 
     Examples
@@ -244,7 +244,7 @@ def binomial_tree(n: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The binomial tree `BT_n`.
 
     Examples
@@ -271,7 +271,7 @@ def balanced_tree(r: int, h: int) -> gc.SimpleGraph:
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The balanced tree `BT_{r,h}`.
 
     Examples
@@ -294,10 +294,12 @@ def erdos_renyi_graph(n: int, p: float, seed=None) -> gc.SimpleGraph:
         The number of nodes in the graph.
     p : float
         The probability of an edge between any pair of nodes.
+    seed : int (optional)
+        The randomization seed for constructing the Erdos-Renyi random graph.
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The Erdos-Renyi random graph `G_{n,p}`.
 
     Examples
@@ -323,10 +325,12 @@ def watts_strogatz_graph(n: int, k: int, p: float, seed=None) -> gc.SimpleGraph:
         The degree of each node in the ring lattice.
     p : float
         The probability of rewiring each edge.
+    seed : int (optional)
+        The randomization seed for constructing the Watts-Strogatz small-world graph.
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The Watts-Strogatz small-world graph `WS_{n,k,p}`.
 
     Examples
@@ -350,10 +354,12 @@ def barabasi_albert_graph(n: int, m: int, seed=None) -> gc.SimpleGraph:
         The number of nodes in the graph.
     m : int
         The number of edges per new node.
+    seed : int (optional)
+        The randomization seed for constructing the Barabasi-Albert graph.
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The Barabasi-Albert preferential attachment graph `BA_{n,m}`.
 
     Examples
@@ -379,10 +385,12 @@ def powerlaw_cluster_graph(n: int, m: int, p: float, seed=None) -> gc.SimpleGrap
         The number of edges per node in the ring lattice.
     p : float
         The probability of rewiring each edge.
+    seed : int (optional)
+        The randomization seed for constructing the powerlaw cluster graph.
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The powerlaw cluster graph `PLC_{n,m,p}`.
 
     Examples
@@ -407,10 +415,12 @@ def random_geometric_graph(n: int, radius: int, seed=None) -> gc.SimpleGraph:
         The number of nodes in the graph.
     radius : float
         The radius of the geometric graph.
+    seed : int (optional)
+        The randomization seed for constructing the random geometric graph.
 
     Returns
     -------
-    networkx.Graph
+    gc.SimpleGraph
         The random geometric graph `RGG_{n,r}`.
 
     Examples
@@ -433,11 +443,13 @@ def random_regular_graph(d: int, n: int, seed=None) -> gc.SimpleGraph:
         The degree of each node in the graph.
     n : int
         The number of nodes in the graph.
+    seed : int (optional)
+        The randomization seed for constructing the random :math`d`-regular graph.
 
     Returns
     -------
-    networkx.Graph
-        The random regular graph `RRG_{d,n}`.
+    gc.SimpleGraph
+        The random :math`d`-regular graph.
 
     Examples
     --------
@@ -467,17 +479,24 @@ def petersen_graph() -> gc.SimpleGraph:
 
 def diamond_necklace(k: int) -> gc.SimpleGraph:
     r"""
-    Build the diamond‐necklace graph N_k:
+    Build the diamond‐necklace graph :math:`N_k`:
+
+    Parameters
+    ----------
+    k : int
+        Number of diamonds to chain together. Must be ≥ 1.
 
     Returns
     -------
     graphcalc.SimpleGraph
-        The Petersen graph `P`.
+        The diamond-necklace graph :math:`N_k`.
 
     Examples
     --------
     >>> from graphcalc.generators import diamond_necklace
     >>> G = diamond_necklace(2)
+    >>> G.order(), G.size()
+    (8, 12)
     """
     G = nx.Graph()
     deg2_verts = []

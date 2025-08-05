@@ -2,10 +2,9 @@ from typing import Set, Hashable, Dict
 import pulp
 import itertools
 
-from typing import Union, Set, Hashable
 import networkx as nx
 from graphcalc.core import SimpleGraph
-from graphcalc.utils import get_default_solver, enforce_type, GraphLike
+from graphcalc.utils import get_default_solver, enforce_type, GraphLike, _extract_and_report
 
 
 __all__ = [
@@ -24,7 +23,7 @@ __all__ = [
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_independent_set(G: GraphLike) -> Set[Hashable]:
+def maximum_independent_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""Return a largest independent set of nodes in *G*.
 
     This method uses integer programming to solve the following formulation:
@@ -81,7 +80,7 @@ def maximum_independent_set(G: GraphLike) -> Set[Hashable]:
         raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
     # Extract solution
-    return {v for v in G.nodes() if pulp.value(variables[v]) == 1}
+    return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def independence_number(G: GraphLike) -> int:
@@ -109,7 +108,7 @@ def independence_number(G: GraphLike) -> int:
     return len(maximum_independent_set(G))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_clique(G: GraphLike) -> Set[Hashable]:
+def maximum_clique(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""Finds the maximum clique in a graph.
 
     This function computes the maximum clique of a graph `G` by finding the maximum independent set
@@ -134,9 +133,9 @@ def maximum_clique(G: GraphLike) -> Set[Hashable]:
     {0, 1, 2, 3}
     """
     if hasattr(G, "complement"):
-        return maximum_independent_set(G.complement())
+        return maximum_independent_set(G.complement(), verbose=verbose)
     else:
-        return maximum_independent_set(nx.complement(G))
+        return maximum_independent_set(nx.complement(G), verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def clique_number(G: GraphLike) -> int:
@@ -225,7 +224,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     return solution_set
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def chromatic_number(G):
+def chromatic_number(G: GraphLike):
     r"""Return the chromatic number of the graph G.
 
     The chromatic number of a graph is the smallest number of colors needed to color the vertices of G so that no two
@@ -254,7 +253,7 @@ def chromatic_number(G):
     return len(colors)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def minimum_vertex_cover(G):
+def minimum_vertex_cover(G: GraphLike):
     r"""Return a smallest vertex cover of the graph G.
 
     Parameters
@@ -278,7 +277,7 @@ def minimum_vertex_cover(G):
     return G.nodes() - X
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def vertex_cover_number(G):
+def vertex_cover_number(G: GraphLike):
     r"""Return a the size of smallest vertex cover in the graph G.
 
     Parameters
@@ -302,7 +301,7 @@ def vertex_cover_number(G):
     return G.order() - independence_number(G)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def minimum_edge_cover(G):
+def minimum_edge_cover(G: GraphLike):
     r"""Return a smallest edge cover of the graph G.
 
     Parameters
@@ -325,7 +324,7 @@ def minimum_edge_cover(G):
     return nx.min_edge_cover(G)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def edge_cover_number(G):
+def edge_cover_number(G: GraphLike):
     r"""Return the size of a smallest edge cover in the graph G.
 
     Parameters
@@ -349,7 +348,7 @@ def edge_cover_number(G):
     return len(nx.min_edge_cover(G))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_matching(G):
+def maximum_matching(G: GraphLike, verbose : bool = False):
     r"""Return a maximum matching in the graph G.
 
     A matching in a graph is a set of edges with no shared endpoint. This function uses
@@ -403,11 +402,11 @@ def maximum_matching(G):
     if pulp.LpStatus[prob.status] != 'Optimal':
         raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
-    solution_set = {edge for edge in variables if variables[edge].value() == 1}
-    return solution_set
+    # Extract the results
+    return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def matching_number(G):
+def matching_number(G: GraphLike):
     r"""Return the size of a maximum matching in the graph G.
 
     Parameters
