@@ -102,6 +102,9 @@ def minimum_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
+    verbose : bool, default=False
+        If True, print detailed solver output and intermediate results during
+        optimization. If False, run silently.
 
     Returns
     -------
@@ -193,6 +196,9 @@ def minimum_total_domination_set(G: GraphLike, verbose : bool = False) -> Set[Ha
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
+    verbose : bool, default=False
+        If True, print detailed solver output and intermediate results during
+        optimization. If False, run silently.
 
     Returns
     -------
@@ -266,6 +272,9 @@ def minimum_independent_dominating_set(G: GraphLike, verbose : bool = False) -> 
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
+    verbose : bool, default=False
+        If True, print detailed solver output and intermediate results during
+        optimization. If False, run silently.
 
     Returns
     -------

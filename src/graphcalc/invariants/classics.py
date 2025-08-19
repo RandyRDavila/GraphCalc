@@ -43,6 +43,9 @@ def maximum_independent_set(G: GraphLike, verbose : bool = False) -> Set[Hashabl
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected simple graph.
+    verbose : bool, default=False
+        If True, print detailed solver output and intermediate results during
+        optimization. If False, run silently.
 
     Returns
     -------
@@ -119,6 +122,9 @@ def maximum_clique(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected simple graph.
+    verbose : bool, default=False
+        If True, print detailed solver output and intermediate results during
+        optimization. If False, run silently.
 
     Returns
     -------
@@ -372,6 +378,9 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
     ----------
     G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected graph.
+    verbose : bool, default=False
+        If True, print detailed solver output and intermediate results during
+        optimization. If False, run silently.
 
     Returns
     -------
