@@ -20,6 +20,7 @@ __all__ = [
     "edge_cover_number",
     "maximum_matching",
     "matching_number",
+    "triameter",
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
@@ -224,7 +225,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     return solution_set
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def chromatic_number(G: GraphLike):
+def chromatic_number(G: GraphLike) -> int:
     r"""Return the chromatic number of the graph G.
 
     The chromatic number of a graph is the smallest number of colors needed to color the vertices of G so that no two
@@ -253,7 +254,7 @@ def chromatic_number(G: GraphLike):
     return len(colors)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def minimum_vertex_cover(G: GraphLike):
+def minimum_vertex_cover(G: GraphLike) -> set:
     r"""Return a smallest vertex cover of the graph G.
 
     Parameters
@@ -277,7 +278,7 @@ def minimum_vertex_cover(G: GraphLike):
     return G.nodes() - X
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def vertex_cover_number(G: GraphLike):
+def vertex_cover_number(G: GraphLike) -> int:
     r"""Return a the size of smallest vertex cover in the graph G.
 
     Parameters
@@ -324,7 +325,7 @@ def minimum_edge_cover(G: GraphLike):
     return nx.min_edge_cover(G)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def edge_cover_number(G: GraphLike):
+def edge_cover_number(G: GraphLike) -> int:
     r"""Return the size of a smallest edge cover in the graph G.
 
     Parameters
@@ -348,7 +349,7 @@ def edge_cover_number(G: GraphLike):
     return len(nx.min_edge_cover(G))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_matching(G: GraphLike, verbose : bool = False):
+def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
     r"""Return a maximum matching in the graph G.
 
     A matching in a graph is a set of edges with no shared endpoint. This function uses
@@ -406,7 +407,7 @@ def maximum_matching(G: GraphLike, verbose : bool = False):
     return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def matching_number(G: GraphLike):
+def matching_number(G: GraphLike) -> int:
     r"""Return the size of a maximum matching in the graph G.
 
     Parameters
@@ -430,3 +431,34 @@ def matching_number(G: GraphLike):
 
     """
     return len(maximum_matching(G))
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def triameter(G: GraphLike) -> int:
+    """
+    Compute the triameter of a connected graph G.
+
+    The triameter is the maximum, over all triples {u,v,w},
+    of d(u,v) + d(v,w) + d(u,w).
+
+    Parameters
+    ----------
+    G : nx.Graph
+        An undirected, connected graph.
+
+    Returns
+    -------
+    int
+        The triameter of the graph.
+    """
+    if not nx.is_connected(G):
+        raise ValueError("Graph must be connected to have a finite triameter.")
+
+    # Precompute all-pairs shortest-path distances
+    dist = dict(nx.all_pairs_shortest_path_length(G))
+
+    tri = 0
+    for u, v, w in itertools.combinations(G.nodes(), 3):
+        s = dist[u][v] + dist[v][w] + dist[u][w]
+        if s > tri:
+            tri = s
+    return tri
