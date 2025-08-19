@@ -14,19 +14,32 @@ __all__= [
     'diameter',
     'radius',
     'average_shortest_path_length',
+    'bipartite',
     'connected_and_bipartite',
+    'chordal',
     'connected_and_chordal',
+    'cubic',
     'connected_and_cubic',
+    'eulerian',
     'connected_and_eulerian',
+    'planar',
     'connected_and_planar',
+    'regular',
     'connected_and_regular',
+    'subcubic',
     'connected_and_subcubic',
     'tree',
     'SimpleGraph',
     'K_4_free',
+    'connected_and_K_4_free',
     'triangle_free',
-    'subcubic',
+    'connected_and_triangle_free',
     'claw_free',
+    'connected_and_claw_free',
+    'planar',
+    'connected_and_planar',
+    'cograph',
+    'connected_and_cograph',
 ]
 
 class SimpleGraph(nx.Graph):
@@ -334,7 +347,7 @@ def order(G: GraphLike) -> int:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -359,7 +372,7 @@ def size(G: GraphLike) -> int:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -385,7 +398,7 @@ def connected(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -404,6 +417,31 @@ def connected(G: GraphLike) -> bool:
     """
     return nx.is_connected(G)
 
+def bipartite(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and bipartite.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is bipartite, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+
+    >>> G = nx.path_graph(4)
+    >>> gc.bipartite(G)
+    True
+    """
+    return nx.is_bipartite(G)
+
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_bipartite(G: GraphLike) -> bool:
     r"""
@@ -411,7 +449,7 @@ def connected_and_bipartite(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -428,7 +466,7 @@ def connected_and_bipartite(G: GraphLike) -> bool:
     >>> gc.connected_and_bipartite(G)
     True
     """
-    return nx.is_connected(G) and nx.is_bipartite(G)
+    return connected(G) and bipartite(G)
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def tree(G: GraphLike) -> bool:
@@ -437,7 +475,7 @@ def tree(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -456,6 +494,31 @@ def tree(G: GraphLike) -> bool:
     """
     return nx.is_tree(G)
 
+def regular(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is regular.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is regular, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.regular(G)
+    True
+    """
+    return nx.is_regular(G)
+
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_regular(G: GraphLike) -> bool:
     r"""
@@ -463,7 +526,7 @@ def connected_and_regular(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -480,7 +543,32 @@ def connected_and_regular(G: GraphLike) -> bool:
     >>> gc.connected_and_regular(G)
     True
     """
-    return nx.is_connected(G) and nx.is_regular(G)
+    return connected(G) and regular(G)
+
+def eulerian(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is Eulerian.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is Eulerian, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.eulerian(G)
+    True
+    """
+    return nx.is_eulerian(G)
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_eulerian(G: GraphLike) -> bool:
@@ -489,7 +577,7 @@ def connected_and_eulerian(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -506,7 +594,41 @@ def connected_and_eulerian(G: GraphLike) -> bool:
     >>> gc.connected_and_eulerian(G)
     True
     """
-    return nx.is_connected(G) and nx.is_eulerian(G)
+    return connected(G) and eulerian(G)
+
+def planar(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is planar.
+
+    A graph is planar if it can be drawn in the plane without
+    any edges crossing. This function uses the Boyer–Myrvold
+    planarity test implemented in NetworkX.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is planar, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph, complete_graph
+
+    >>> G = cycle_graph(5)
+    >>> gc.planar(G)
+    True
+
+    >>> H = complete_graph(5)
+    >>> gc.planar(H)
+    False
+    """
+    is_planar, _ = nx.check_planarity(G)
+    return is_planar
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_planar(G: GraphLike) -> bool:
@@ -515,7 +637,7 @@ def connected_and_planar(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -532,44 +654,32 @@ def connected_and_planar(G: GraphLike) -> bool:
     >>> gc.connected_and_planar(G)
     True
     """
-    return nx.is_connected(G) and nx.check_planarity(G)[0]
+    return connected(G) and planar(G)
 
-#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def connected_and_bipartite(G: GraphLike) -> bool:
+def chordal(G: GraphLike) -> bool:
     r"""
-    Checks if the graph is both connected and bipartite.
-
-    A graph is connected if there is a path between every pair of vertices.
-    A graph is bipartite if its vertices can be divided into two disjoint sets
-    such that every edge connects a vertex in one set to a vertex in the other set.
+    Checks if the graph is chordal.
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
     -------
     bool
-        True if the graph is connected and bipartite, otherwise False.
+        True if the graph is chordal, otherwise False.
 
     Examples
     --------
-    >>> from graphcalc.generators import path_graph, cycle_graph
-    >>> G = path_graph(4)
-    >>> connected_and_bipartite(G)
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.chordal(G)
     True
-
-    >>> H = cycle_graph(5)  # Odd-length cycle is not bipartite
-    >>> connected_and_bipartite(H)
-    False
-
-    >>> I = gc.SimpleGraph()
-    >>> I.add_edges_from([(1, 2), (3, 4)])  # Disconnected graph
-    >>> connected_and_bipartite(I)
-    False
     """
-    return nx.is_connected(G) and nx.is_bipartite(G)
+    return nx.is_chordal(G)
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_chordal(G: GraphLike) -> bool:
@@ -578,7 +688,7 @@ def connected_and_chordal(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -595,7 +705,32 @@ def connected_and_chordal(G: GraphLike) -> bool:
     >>> gc.connected_and_chordal(G)
     True
     """
-    return nx.is_connected(G) and nx.is_chordal(G)
+    return connected(G) and chordal(G)
+
+def cubic(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is cubic.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is cubic, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import petersen_graph
+
+    >>> G = petersen_graph()
+    >>> gc.cubic(G)
+    True
+    """
+    return gc.maximum_degree(G) == gc.minimum_degree(G) == 3
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_cubic(G: GraphLike) -> bool:
@@ -604,7 +739,7 @@ def connected_and_cubic(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -621,7 +756,7 @@ def connected_and_cubic(G: GraphLike) -> bool:
     >>> gc.connected_and_cubic(G)
     True
     """
-    return nx.is_connected(G) and gc.maximum_degree(G) == gc.minimum_degree(G) == 3
+    return connected(G) and cubic(G)
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def subcubic(G: GraphLike) -> bool:
@@ -632,7 +767,7 @@ def subcubic(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -661,7 +796,7 @@ def connected_and_subcubic(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -691,7 +826,7 @@ def connected_and_subcubic(G: GraphLike) -> bool:
     >>> connected_and_subcubic(J)
     False
     """
-    return nx.is_connected(G) and gc.maximum_degree(G) <= 3
+    return connected(G) and subcubic(G)
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def claw_free(G: GraphLike) -> bool:
@@ -700,7 +835,7 @@ def claw_free(G: GraphLike) -> bool:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -725,9 +860,36 @@ def claw_free(G: GraphLike) -> bool:
     # if the above loop completes, the graph is claw-free
     return True
 
+def connected_and_claw_free(G: GraphLike) -> bool:
+    r"""
+    Checks if a graph is claw-free. A claw is a tree with three leaves adjacent to a single vertex.
+    A graph is connected if there is a path between every pair of vertices.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is claw-free, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.connected_and_claw_free(G)
+    True
+    """
+    return connected(G) and claw_free(G)
+
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def K_4_free(G: GraphLike) -> bool:
-    r"""Returns True if *G* does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
+    r"""
+    Returns True if *G* does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
 
     Parameters
     ----------
@@ -737,7 +899,7 @@ def K_4_free(G: GraphLike) -> bool:
     Returns
     -------
     boolean
-        True if G is a complete graph, False otherwise.
+        True if G does not contain the complete graph K_4 as a subgraph, False otherwise.
 
     Examples
     --------
@@ -754,6 +916,31 @@ def K_4_free(G: GraphLike) -> bool:
         if nx.is_isomorphic(H, K_4):
             return False
     return True
+
+def connected_and_K_4_free(G: GraphLike) -> bool:
+    r"""
+    Returns True if *G* is connected and does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is connected and does not contain the complete graph K_4 as a subgraph, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.connected_and_K_4_free(G)
+    False
+    """
+    return connected(G) and K_4_free(G)
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def triangle_free(G: GraphLike) -> bool:
@@ -792,7 +979,35 @@ def triangle_free(G: GraphLike) -> bool:
     # if the above loop completes, the graph is triangle free
     return True
 
-#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_triangle_free(G: GraphLike) -> bool:
+    r"""
+    Returns True if *G* is connected and triangle-free, and False otherwise.
+
+    A graph is *triangle-free* if it contains no induced subgraph isomorphic to
+    the complete graph on 3 vertices.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is connected and triangle-free, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gp
+    >>> from graphcalc.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.connected_and_triangle_free(G)
+    False
+    """
+    return connected(G) and triangle_free(G)
+
+#@enforce_type(0, (networkx.Graph or graphcalc.SimpleGraph, gc.SimpleGraph))
 def diameter(G: GraphLike) -> int:
     r"""
     Returns the diameter of the graph.
@@ -801,7 +1016,7 @@ def diameter(G: GraphLike) -> int:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -829,7 +1044,7 @@ def radius(G: GraphLike) -> int:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -855,7 +1070,7 @@ def average_shortest_path_length(G: GraphLike) -> float:
 
     Parameters
     ----------
-    G : nx.Graph
+    G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
     Returns
@@ -873,3 +1088,110 @@ def average_shortest_path_length(G: GraphLike) -> float:
     1.6666666666666667
     """
     return nx.average_shortest_path_length(G)
+
+def cograph(G: nx.Graph) -> bool:
+    """
+    Determine whether a graph is a cograph (P4-free).
+
+    A cograph is any graph that contains no induced path on four vertices (P4).
+    Equivalently, the class is generated from K1 by repeatedly taking disjoint
+    unions and joins; or, recursively: a graph is a cograph iff it has at most
+    one vertex, or it is disconnected and each connected component is a cograph,
+    or its complement is disconnected and each complement-component induces
+    a cograph.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph (not necessarily connected).
+
+    Returns
+    -------
+    bool
+        True if the graph is a cograph (P4-free), False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, complete_graph, cycle_graph
+
+    # P4 is not a cograph
+    >>> gc.cograph(path_graph(4))
+    False
+
+    # Complete graphs are cographs
+    >>> gc.cograph(complete_graph(5))
+    True
+
+    # C4 is P4-free, hence a cograph
+    >>> gc.cograph(cycle_graph(4))
+    True
+    """
+    n = G.number_of_nodes()
+    if n <= 1:
+        return True
+
+    # Case 1: G is disconnected -> all components must be cographs
+    try:
+        connected = nx.is_connected(G)
+    except nx.NetworkXPointlessConcept:
+        # empty graph: treat as cograph by convention
+        return True
+
+    if not connected:
+        for comp in nx.connected_components(G):
+            if not cograph(G.subgraph(comp).copy()):
+                return False
+        return True
+
+    # Case 2: complement is disconnected -> all complement-components (as
+    # node sets) must induce cographs in the ORIGINAL graph
+    H = nx.complement(G)
+    if not nx.is_connected(H):
+        for comp in nx.connected_components(H):
+            if not cograph(G.subgraph(comp).copy()):
+                return False
+        return True
+
+    # Otherwise, both G and its complement are connected and |V|>1 -> not a cograph
+    return False
+
+def connected_and_cograph(G: nx.Graph) -> bool:
+    """
+    Determine whether a graph is connacter and a cograph (P4-free).
+
+    A cograph is any graph that contains no induced path on four vertices (P4).
+    Equivalently, the class is generated from K1 by repeatedly taking disjoint
+    unions and joins; or, recursively: a graph is a cograph iff it has at most
+    one vertex, or it is disconnected and each connected component is a cograph,
+    or its complement is disconnected and each complement-component induces
+    a cograph.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph (not necessarily connected).
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and a cograph (P4-free), False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, complete_graph, cycle_graph
+
+    # P4 is not a cograph
+    >>> gc.connected_and_cograph(path_graph(4))
+    False
+
+    # Complete graphs are cographs
+    >>> gc.connected_and_cograph(complete_graph(5))
+    True
+
+    # C4 is P4-free, hence a cograph
+    >>> gc.connected_and_cograph(cycle_graph(4))
+    True
+    """
+    return connected(G) and cograph(G)

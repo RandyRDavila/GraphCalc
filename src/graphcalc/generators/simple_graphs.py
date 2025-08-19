@@ -27,6 +27,7 @@ __all__ = [
     "random_regular_graph",
     "petersen_graph",
     "diamond_necklace",
+    "fan_graph",
 ]
 
 
@@ -523,3 +524,55 @@ def diamond_necklace(k: int) -> gc.SimpleGraph:
         G.add_edge(high_i, low_j)
 
     return gc.SimpleGraph(G.edges, name=f"Diamond-Necklace-{k}")
+
+
+def fan_graph(p: int) -> gc.SimpleGraph:
+    """
+    Construct the fan graph Fan(p).
+
+    The fan graph Fan(p) is obtained by taking p disjoint copies of the
+    path graph `P_2` (a single edge), and then adding one additional hub
+    vertex that is adjacent to both endpoints of every `P_2`.
+    Equivalently, `Fan(p)` is the graph consisting of `p` triangles that all
+    share a common hub vertex.
+
+    Properties
+    ----------
+    - Number of vertices: 2`p` + 1
+    - Number of edges: 3`p`
+    - Contains `p` edge-disjoint triangles through the hub
+
+    Parameters
+    ----------
+    p : int
+        Number of `P_2` copies (`p` >= 1).
+
+    Returns
+    -------
+    gc.SimpleGraph
+        The resulting fan graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> G = gc.fan_graph(3)
+    >>> gc.order(G)
+    7
+    >>> gc.size(G)
+    9
+    """
+    if p < 1:
+        raise ValueError("p must be >= 1")
+
+    G = nx.Graph()
+    hub = 0
+    G.add_node(hub)
+
+    for i in range(p):
+        u = 2*i + 1
+        v = 2*i + 2
+        G.add_edge(u, v)     # the P2 edge
+        G.add_edge(hub, u)   # attach hub to both endpoints
+        G.add_edge(hub, v)
+
+    return gc.SimpleGraph(G.edges, name=f"Fan({p})")

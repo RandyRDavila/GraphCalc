@@ -449,6 +449,15 @@ def triameter(G: GraphLike) -> int:
     -------
     int
         The triameter of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
+
+    >>> G = cycle_graph(10)
+    >>> gc.triameter(G)
+    10
     """
     if not nx.is_connected(G):
         raise ValueError("Graph must be connected to have a finite triameter.")
