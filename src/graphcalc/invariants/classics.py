@@ -206,8 +206,7 @@ def clique_number(G: GraphLike) -> int:
     >>> gc.clique_number(G)
     4
     """
-    complement_graph = G.complement() if hasattr(G, "complement") else nx.complement(G)
-    return independence_number(complement_graph)
+    return len(maximum_clique(G))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def optimal_proper_coloring(G: GraphLike) -> Dict:

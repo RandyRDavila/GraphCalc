@@ -14,7 +14,7 @@ pythonpath = ["src"]
 
 [project]
 name = "graphcalc"
-version = "1.2.9"
+version = "1.2.10"
 description = "A Python package for graph computation functions"
 authors = [{ name = "Randy Davila", email = "rrd6@rice.edu" }]
 license = { text = "MIT" }
