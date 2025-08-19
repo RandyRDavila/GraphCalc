@@ -40,6 +40,8 @@ __all__= [
     'connected_and_planar',
     'cograph',
     'connected_and_cograph',
+    'nontrivial',
+    'isolate_free',
 ]
 
 class SimpleGraph(nx.Graph):
@@ -1089,7 +1091,7 @@ def average_shortest_path_length(G: GraphLike) -> float:
     """
     return nx.average_shortest_path_length(G)
 
-def cograph(G: nx.Graph) -> bool:
+def cograph(G: GraphLike) -> bool:
     """
     Determine whether a graph is a cograph (P4-free).
 
@@ -1156,7 +1158,7 @@ def cograph(G: nx.Graph) -> bool:
     # Otherwise, both G and its complement are connected and |V|>1 -> not a cograph
     return False
 
-def connected_and_cograph(G: nx.Graph) -> bool:
+def connected_and_cograph(G: GraphLike) -> bool:
     """
     Determine whether a graph is connacter and a cograph (P4-free).
 
@@ -1195,3 +1197,64 @@ def connected_and_cograph(G: nx.Graph) -> bool:
     True
     """
     return connected(G) and cograph(G)
+
+def nontrivial(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is nontrivial.
+
+    A graph is nontrivial if it has at least two vertices, i.e., order(G) ≥ 2.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph.
+
+    Returns
+    -------
+    bool
+        True if |V(G)| ≥ 2, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> import networkx as nx
+    >>> gc.nontrivial(nx.path_graph(1))
+    False
+    >>> gc.nontrivial(nx.path_graph(2))
+    True
+    """
+    return order(G) >= 2
+
+
+def isolate_free(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is isolate-free (no degree-0 vertices).
+
+    A graph is isolate-free if every vertex has degree at least 1.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph.
+
+    Returns
+    -------
+    bool
+        True if minimum degree δ(G) ≥ 1 (or G is empty), False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> import networkx as nx
+    >>> H = nx.path_graph(4)
+    >>> gc.isolate_free(H)
+    True
+    >>> H.add_node(100)  # add an isolated vertex
+    >>> gc.isolate_free(H)
+    False
+    """
+    # Fast path: empty graph has no isolates by convention; return True or,
+    # if you prefer “empty is NOT isolate-free”, change to `return G.number_of_nodes() > 0 and ...`
+    if order(G) == 0:
+        return True
+    return all(deg > 0 for deg in gc.degree_sequence(G))

@@ -6,6 +6,9 @@ __all__ = [
     "compute_graph_properties",
     "expand_list_columns",
     "compute_knowledge_table",
+    "GRAPHCALC_PROPERTY_LIST",
+    "all_properties",
+    "append_graph_row",
 ]
 
 def compute_graph_properties(function_names, graph, return_as_dict=True):
@@ -78,7 +81,7 @@ def compute_graph_properties(function_names, graph, return_as_dict=True):
         return list(results.values())
 
 
-def expand_list_columns(df):
+def expand_list_columns(df: pd.DataFrame):
     r"""
     Expand columns with list entries into separate columns.
 
@@ -124,7 +127,7 @@ def expand_list_columns(df):
     return df_expanded
 
 
-def compute_knowledge_table(function_names, graphs):
+def compute_knowledge_table(function_names: list, graphs: list) -> pd.DataFrame:
     r"""
     Compute graph properties for a collection of NetworkX graphs and return a pandas DataFrame.
 
@@ -176,3 +179,145 @@ def compute_knowledge_table(function_names, graphs):
     # Create a DataFrame from the results
     df = pd.DataFrame(rows)
     return expand_list_columns(df)
+
+GRAPHCALC_PROPERTY_LIST = [
+    'order',
+    'size',
+    'connected',
+    'diameter',
+    'radius',
+    'average_shortest_path_length',
+    'bipartite',
+    'chordal',
+    'cubic',
+    'eulerian',
+    'planar',
+    'regular',
+    'subcubic',
+    'tree',
+    'K_4_free',
+    'triangle_free',
+    'claw_free',
+    'planar',
+    'cograph',
+    'nontrivial',
+    "independence_number",
+    "clique_number",
+    "chromatic_number",
+    "vertex_cover_number",
+    "edge_cover_number",
+    "matching_number",
+    "triameter",
+    'average_degree',
+    'maximum_degree',
+    'minimum_degree',
+    "slater",
+    "sub_total_domination_number",
+    "annihilation_number",
+    "residue",
+    "harmonic_index",
+    "domination_number",
+    "total_domination_number",
+    "independent_domination_number",
+    "outer_connected_domination_number",
+    "roman_domination_number",
+    "double_roman_domination_number",
+    "two_rainbow_domination_number",
+    "three_rainbow_domination_number",
+    "min_maximal_matching_number",
+    "restrained_domination_number",
+    'algebraic_connectivity',
+    'spectral_radius',
+    'largest_laplacian_eigenvalue',
+    'zero_adjacency_eigenvalues_count',
+    'second_largest_adjacency_eigenvalue',
+    'smallest_adjacency_eigenvalue',
+    "zero_forcing_number",
+    "two_forcing_number",
+    "total_zero_forcing_number",
+    "connected_zero_forcing_number",
+    "positive_semidefinite_zero_forcing_number",
+    "power_domination_number",
+    "well_splitting_number",
+]
+
+def all_properties(graphs: list) -> pd.DataFrame:
+    """
+    Compute the full knowledge table of graph properties and invariants.
+
+    This function evaluates all available invariants and Boolean properties
+    implemented in the `graphcalc` package (as listed in
+    ``GRAPHCALC_PROPERTY_LIST``) on each graph in the input collection.
+    The results are aggregated into a pandas DataFrame, where each row
+    corresponds to a graph instance and each column corresponds to a
+    specific property or invariant.
+
+    Parameters
+    ----------
+    graphs : list of networkx.Graph
+        A collection of NetworkX graphs.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame where:
+          - Rows correspond to the input graphs.
+          - Columns correspond to the full set of `graphcalc` invariants
+            and Boolean properties defined in ``GRAPHCALC_PROPERTY_LIST``.
+
+    Raises
+    ------
+    Exception
+        If any property function raises an error during execution for any graph.
+
+    Notes
+    -----
+    This is a convenience wrapper around :func:`compute_knowledge_table`
+    that uses the complete list of invariants and properties available in
+    the `graphcalc` package. Use this if you want a comprehensive "fingerprint"
+    of each graph in your dataset.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph, path_graph
+    >>> G1 = cycle_graph(6)
+    >>> G2 = path_graph(5)
+    >>> df = gc.all_properties([G1, G2])
+    >>> df.columns[:5]  # show a few property names
+    Index(['order', 'size', 'connected', 'diameter', 'radius'], dtype='object')
+    """
+    return compute_knowledge_table(GRAPHCALC_PROPERTY_LIST, graphs)
+
+def append_graph_row(df: pd.DataFrame, G) -> pd.DataFrame:
+    """
+    Append a new row to an existing knowledge table with the properties
+    of a new graph.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Existing knowledge table (as returned by `compute_full_knowledge_table`
+        or `compute_knowledge_table`).
+    G : networkx.Graph
+        A new graph to analyze.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A new DataFrame with the additional row for G.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph, path_graph
+    >>> df = gc.all_properties([cycle_graph(5)])
+    >>> df.shape[0]
+    1
+    >>> df = gc.append_graph_row(df, path_graph(4))
+    >>> df.shape[0]
+    2
+    """
+    row = compute_graph_properties(GRAPHCALC_PROPERTY_LIST, G)
+    # turn dict -> DataFrame (1 row), then concat
+    return pd.concat([df, pd.DataFrame([row])], ignore_index=True)
