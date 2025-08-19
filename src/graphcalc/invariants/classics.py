@@ -112,37 +112,74 @@ def independence_number(G: GraphLike) -> int:
     return len(maximum_independent_set(G))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_clique(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
-    r"""Finds the maximum clique in a graph.
+def maximum_clique(G: GraphLike, verbose: bool = False) -> Set[Hashable]:
+    r"""
+    Return a maximum clique of nodes in *G* using integer programming.
 
-    This function computes the maximum clique of a graph `G` by finding the maximum independent set
-    of the graph's complement.
+    We select binary variables :math:`x_v \in \{0,1\}` for each vertex :math:`v`,
+    maximize the number of selected vertices, and forbid selecting two
+    non-adjacent vertices simultaneously:
+
+    Objective
+    ---------
+    .. math::
+        \max \sum_{v \in V} x_v
+
+    Constraints
+    -----------
+    .. math::
+        x_u + x_v \le 1 \quad \text{for every non-edge } \{u,v\} \notin E.
+
+    This enforces that the chosen vertices induce a complete subgraph, i.e., a clique.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected simple graph.
     verbose : bool, default=False
-        If True, print detailed solver output and intermediate results during
-        optimization. If False, run silently.
+        If True, print detailed solver/output information via the internal reporter.
+        If False, run silently.
 
     Returns
     -------
-    set
-        A set of nodes representing the maximum clique in the graph `G`.
+    set of hashable
+        A set of nodes forming a maximum clique in *G*.
 
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import complete_graph
-    >>> G = complete_graph(4)
-    >>> gc.maximum_clique(G)
+    >>> from graphcalc.generators import complete_graph, cycle_graph
+    >>> gc.maximum_clique(complete_graph(4))
     {0, 1, 2, 3}
     """
-    if hasattr(G, "complement"):
-        return maximum_independent_set(G.complement(), verbose=verbose)
-    else:
-        return maximum_independent_set(nx.complement(G), verbose=verbose)
+    # MILP model
+    prob = pulp.LpProblem("MaximumClique", pulp.LpMaximize)
+
+    # Binary decision variables x_v for each vertex
+    variables = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
+
+    # Objective: maximize number of selected vertices
+    prob += pulp.lpSum(variables.values())
+
+    # Precompute edge set for O(1) non-edge checks
+    E = {frozenset((u, v)) for (u, v) in G.edges()}
+    nodes = list(G.nodes())
+
+    # For every non-edge {u,v}, forbid selecting both: x_u + x_v <= 1
+    for u, v in itertools.combinations(nodes, 2):
+        if frozenset((u, v)) not in E:
+            prob += variables[u] + variables[v] <= 1, f"nonedge_{u}_{v}"
+
+    # Solve
+    solver = get_default_solver()
+    prob.solve(solver)
+
+    # Check status
+    if pulp.LpStatus[prob.status] != "Optimal":
+        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+
+    # Extract selected vertices (and optionally print if verbose)
+    return _extract_and_report(prob, variables, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def clique_number(G: GraphLike) -> int:
