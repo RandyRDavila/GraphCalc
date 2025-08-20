@@ -77,13 +77,13 @@ def is_dominating_set(
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""
-    Finds a minimum dominating set for the input graph G.
+    Finds a minimum dominating set for the input graph :math:`G`.
 
-    The minimum dominating set is the smallest subset of nodes S ⊆ V such that every node in the graph is either
-    part of S or adjacent to at least one node in S. This function solves the problem using integer programming.
+    The minimum dominating set is the smallest subset of nodes :math:`S \subseteq V` such that every node in the graph is either
+    part of :math:`S` or adjacent to at least one node in :math:`S`. This function solves the problem using integer programming.
 
     Integer Programming Formulation:
-    Let x_v ∈ {0, 1} for all v ∈ V, where x_v = 1 if v is in the dominating set, and x_v = 0 otherwise.
+    Let :math:`x_v \in \{0, 1\}` for all :math:`v \in V`, where :math:`x_v = 1` if :math:`v` is in the dominating set, and :math:`x_v = 0` otherwise.
 
     Objective:
 
@@ -95,7 +95,7 @@ def minimum_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable
     .. math::
         x_v + \sum_{u \in N(v)} x_u \geq 1 \quad \forall v \in V
 
-    Here, *V* is the set of vertices in the graph, and *N(v)* is the open neighborhood of vertex *v*.
+    Here, :math:`V` is the set of vertices in the graph, and :math:`N(v)` is the open neighborhood of vertex :math:`v`.
 
 
     Parameters
