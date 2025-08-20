@@ -487,29 +487,56 @@ def outer_connected_domination_number(G: GraphLike) -> int:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
     r"""
-    Finds a Roman dominating function for the graph G using integer programming.
+    Compute a minimum Roman dominating function (RDF) via integer programming.
 
-    A Roman dominating function (RDF) is an assignment of values 0, 1, or 2 to the vertices of G such that:
-      1. Every vertex assigned 0 is adjacent to at least one vertex assigned 2.
-      2. The objective is to minimize the sum of vertex values.
+    A Roman dominating function on a graph :math:`G=(V,E)` is a map
+    :math:`f:V\to\{0,1,2\}` such that every vertex with label 0 has a neighbor
+    with label 2. The goal is to minimize :math:`\sum_{v\in V} f(v)`.
+
+    **Mixed-Integer Formulation**
+
+    Introduce binary variables for each vertex :math:`v\in V`:
+    :math:`x_v=1` iff :math:`f(v)=1`, and :math:`y_v=1` iff :math:`f(v)=2`
+    (so :math:`f(v)=x_v+2y_v`). Enforce exclusivity with :math:`x_v+y_v\le 1`.
+
+    Objective
+    ---------
+    .. math::
+       \min \sum_{v\in V} \bigl(x_v + 2\,y_v\bigr)
+
+    Constraints
+    -----------
+    Roman domination for every :math:`v\in V`:
+    .. math::
+       x_v + y_v + \sum_{u\in N(v)} y_u \;\ge\; 1,
+    where :math:`N(v)` is the open neighborhood of :math:`v`.
+
+    Exclusivity for every :math:`v\in V`:
+    .. math::
+       x_v + y_v \;\le\; 1.
 
     Parameters
     ----------
-    graph : networkx.Graph
-        The input graph.
+    graph : networkx.Graph or graphcalc.SimpleGraph
+        The input undirected graph.
 
     Returns
     -------
     dict
-        A dictionary containing the RDF values for each vertex and the total objective value.
+        A dictionary with keys:
+        - ``"x"``: ``{v: 0/1}`` indicators for vertices labeled 1,
+        - ``"y"``: ``{v: 0/1}`` indicators for vertices labeled 2,
+        - ``"objective"``: the minimum value :math:`\sum_v (x_v+2y_v)`.
+        The RDF itself is recovered as :math:`f(v)=x_v+2y_v`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
-    >>> solution = gc.minimum_roman_dominating_function(G)
+    >>> sol = gc.minimum_roman_dominating_function(G)
+    >>> sol["objective"]  # doctest: +SKIP
+    3.0
     """
     # Initialize the problem
     prob = pulp.LpProblem("RomanDomination", pulp.LpMinimize)
@@ -550,58 +577,114 @@ def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def roman_domination_number(graph: GraphLike) -> int:
     r"""
-    Calculates the Roman domination number of the graph G.
+    Compute the Roman domination number of a graph.
 
-    The Roman domination number is the minimum cost of a Roman dominating function (RDF) on G.
+    The **Roman domination number** :math:`\gamma_R(G)` of a graph
+    :math:`G=(V,E)` is the minimum weight of a Roman dominating function (RDF).
+    An RDF is a labeling :math:`f:V \to \{0,1,2\}` such that every vertex
+    assigned 0 has a neighbor assigned 2. The weight of :math:`f` is
+    :math:`\sum_{v \in V} f(v)`.
+
+    Thus,
+
+    .. math::
+       \gamma_R(G) = \min_{f} \sum_{v \in V} f(v)
+       \quad \text{s.t.}\quad
+       f(v)=0 \implies \exists u\in N(v): f(u)=2.
 
     Parameters
     ----------
-    graph : networkx.Graph
-        The input graph.
+    graph : networkx.Graph or graphcalc.SimpleGraph
+        The input undirected graph.
 
     Returns
     -------
     int
-        The Roman domination number of G.
+        The Roman domination number :math:`\gamma_R(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> gc.roman_domination_number(G)
-    3.0
+    3
     """
     solution = minimum_roman_dominating_function(graph)
-    return solution["objective"]
+    return int(solution["objective"])
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_double_roman_dominating_function(graph: GraphLike) -> Dict:
     r"""
-    Finds a double Roman dominating function for the graph G using integer programming.
+    Compute a minimum double Roman dominating function (DRDF) via integer programming.
 
-    A double Roman dominating function (DRDF) assigns values 0, 1, 2, or 3 to the vertices of G such that:
-      1. Every vertex assigned 0 is adjacent to at least one vertex assigned 3 or two vertices assigned 2.
-      2. The objective is to minimize the sum of vertex values.
+    A **double Roman dominating function** (DRDF) on a graph :math:`G=(V,E)` is a labeling
+    :math:`f:V \to \{0,1,2,3\}` such that:
+
+    1. Every vertex with :math:`f(v)=0` has either
+       - a neighbor with :math:`f(u)=3`, or
+       - at least two neighbors with :math:`f(u)=2`.
+    2. Every vertex with :math:`f(v)=1` has at least one neighbor with
+       :math:`f(u) \ge 2`.
+
+    The **double Roman domination number** is the minimum weight
+    :math:`\sum_{v\in V} f(v)` over all such labelings.
+
+    **Integer Programming Formulation**
+
+    Introduce binary variables for each :math:`v\in V`:
+
+    - :math:`x_v=1` if :math:`f(v)=1`
+    - :math:`y_v=1` if :math:`f(v)=2`
+    - :math:`z_v=1` if :math:`f(v)=3`
+
+    with exclusivity constraint :math:`x_v+y_v+z_v \le 1`.
+    Then :math:`f(v)=x_v+2y_v+3z_v`.
+
+    Objective
+    ---------
+    .. math::
+       \min \sum_{v\in V} \bigl(x_v + 2y_v + 3z_v\bigr)
+
+    Constraints
+    -----------
+    - **Domination (0-labeled vertices covered)**: for all :math:`v \in V`,
+
+      .. math::
+         x_v + y_v + z_v + \tfrac{1}{2}\sum_{u\in N(v)} y_u + \sum_{u\in N(v)} z_u \;\ge\; 1.
+
+    - **Domination (1-labeled vertices covered)**: for all :math:`v \in V`,
+
+      .. math::
+         \sum_{u\in N(v)} (y_u+z_u) \;\ge\; x_v.
+
+    - **Exclusivity**: for all :math:`v \in V`,
+
+      .. math::
+         x_v + y_v + z_v \;\le\; 1.
 
     Parameters
     ----------
-    graph : networkx.Graph
-        The input graph.
+    graph : networkx.Graph or graphcalc.SimpleGraph
+        The input undirected graph.
 
     Returns
     -------
     dict
-        A dictionary containing the DRDF values for each vertex and the total objective value.
+        A dictionary with keys:
+        - ``"x"``: vertices labeled 1,
+        - ``"y"``: vertices labeled 2,
+        - ``"z"``: vertices labeled 3,
+        - ``"objective"``: the minimum weight of the DRDF.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
-    >>> solution = gc.minimum_double_roman_dominating_function(G)
+    >>> sol = gc.minimum_double_roman_dominating_function(G)
+    >>> sol["objective"]  # doctest: +SKIP
+    4.0
     """
     # Initialize the problem
     prob = pulp.LpProblem("DoubleRomanDomination", pulp.LpMinimize)
@@ -649,59 +732,101 @@ def minimum_double_roman_dominating_function(graph: GraphLike) -> Dict:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def double_roman_domination_number(graph: GraphLike) -> int:
     r"""
-    Calculates the double Roman domination number of the graph G.
+    Compute the double Roman domination number of a graph.
 
-    The double Roman domination number is the minimum cost of a double Roman dominating function (DRDF) on G.
+    The **double Roman domination number** :math:`\gamma_{dR}(G)` of a graph
+    :math:`G=(V,E)` is the minimum weight of a double Roman dominating function (DRDF).
+    A DRDF is a labeling :math:`f:V \to \{0,1,2,3\}` such that:
+
+    1. If :math:`f(v)=0`, then either
+       - :math:`v` has a neighbor :math:`u` with :math:`f(u)=3`, or
+       - :math:`v` has at least two neighbors :math:`u,w` with :math:`f(u)=f(w)=2`.
+    2. If :math:`f(v)=1`, then :math:`v` has a neighbor :math:`u` with :math:`f(u)\ge 2`.
+
+    The weight of :math:`f` is :math:`\sum_{v\in V} f(v)`.
+    Then
+
+    .. math::
+       \gamma_{dR}(G) = \min_f \sum_{v \in V} f(v).
 
     Parameters
     ----------
-    graph : networkx.Graph
-        The input graph.
+    graph : networkx.Graph or graphcalc.SimpleGraph
+        The input undirected graph.
 
     Returns
     -------
     int
-        The double Roman domination number of G.
+        The double Roman domination number :math:`\gamma_{dR}(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> gc.double_roman_domination_number(G)
-    5.0
+    5
     """
     solution = minimum_double_roman_dominating_function(graph)
-    return solution["objective"]
+    return int(solution["objective"])
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
     r"""
-    Finds a rainbow dominating function for the graph G with k colors using integer programming.
+    Compute a minimum rainbow dominating function (RDF) via integer programming.
 
-    A rainbow dominating set is a set of nodes such that every uncolored node is adjacent to nodes
-    of all k different colors.
+    A **rainbow dominating function** on a graph :math:`G=(V,E)` with parameter :math:`k`
+    assigns to each vertex either one of :math:`k` colors or leaves it uncolored, such that:
+
+    - Every uncolored vertex is adjacent to at least one vertex of each of the :math:`k` colors.
+    - The objective is to minimize the number of colored vertices.
+
+    **Integer Programming Formulation**
+
+    Introduce binary variables:
+
+    - :math:`f_{v,i} = 1` if vertex :math:`v` is colored with color :math:`i \in \{1,\dots,k\}`, else 0.
+    - :math:`x_v = 1` if vertex :math:`v` is left uncolored, else 0.
+
+    Objective
+    ---------
+    .. math::
+       \min \sum_{v \in V} \sum_{i=1}^k f_{v,i}
+
+    Constraints
+    -----------
+    - **Coloring/Uncolored choice** (every vertex is colored once or uncolored):
+
+      .. math::
+         \sum_{i=1}^k f_{v,i} + x_v = 1 \quad \forall v \in V.
+
+    - **Rainbow domination** (uncolored vertices see all colors):
+
+      .. math::
+         \sum_{u \in N(v)} f_{u,i} \;\ge\; x_v \quad \forall v \in V,\; \forall i=1,\dots,k.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input undirected graph.
     k : int
         The number of colors.
 
     Returns
     -------
     tuple
-        A tuple containing a list of colored vertices and a list of uncolored vertices.
+        A pair ``(colored_vertices, uncolored_vertices)`` where:
+        - ``colored_vertices`` is a list of ``(vertex, color)`` pairs,
+        - ``uncolored_vertices`` is a list of vertices assigned no color.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> colored, uncolored = gc.minimum_rainbow_dominating_function(G, 2)
+    >>> len(colored) + len(uncolored) == gc.order(G)
+    True
     """
     # Create a PuLP problem instance
     prob = pulp.LpProblem("Rainbow_Domination", pulp.LpMinimize)
@@ -745,28 +870,37 @@ def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def rainbow_domination_number(G: GraphLike, k: int) -> int:
     r"""
-    Calculates the rainbow domination number of the graph G with k colors.
+    Compute the rainbow domination number of a graph.
 
-    The rainbow domination number is the minimum number of colored vertices required to ensure every uncolored
-    vertex is adjacent to vertices of all k different colors.
+    The **rainbow domination number** :math:`\gamma_{r,k}(G)` of a graph
+    :math:`G=(V,E)` with parameter :math:`k` is the minimum number of
+    colored vertices in a rainbow dominating function (RDF).
+    An RDF is an assignment of either one of :math:`k` colors or
+    "uncolored" to each vertex such that every uncolored vertex is
+    adjacent to at least one vertex of each of the :math:`k` colors.
+
+    Formally,
+
+    .. math::
+       \gamma_{r,k}(G) = \min \Bigl\{\, \bigl|\{v \in V : f(v) \neq 0\}\bigr| \;\Big|\;
+       f \text{ is a $k$-rainbow dominating function on } G \Bigr\}.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input undirected graph.
     k : int
         The number of colors.
 
     Returns
     -------
     int
-        The rainbow domination number of G.
+        The rainbow domination number :math:`\gamma_{r,k}(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> gc.rainbow_domination_number(G, 2)
     3
@@ -777,25 +911,35 @@ def rainbow_domination_number(G: GraphLike, k: int) -> int:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def two_rainbow_domination_number(G: GraphLike) -> int:
     r"""
-    Calculates the 2-rainbow domination number of the graph G.
+    Compute the 2-rainbow domination number of a graph.
 
-    The 2-rainbow domination number is a special case of the rainbow domination number where k = 2.
+    The **2-rainbow domination number** :math:`\gamma_{r,2}(G)` is the special case
+    of the rainbow domination number with :math:`k=2`. A 2-rainbow dominating function
+    assigns to each vertex either one of two colors or leaves it uncolored, such that
+    every uncolored vertex is adjacent to at least one vertex of each color.
+    The value :math:`\gamma_{r,2}(G)` is the minimum number of colored vertices
+    in such a labeling.
+
+    Formally,
+
+    .. math::
+       \gamma_{r,2}(G) = \min \Bigl\{\, \bigl|\{v \in V : f(v) \neq 0\}\bigr| \;\Big|\;
+       f \text{ is a 2-rainbow dominating function on } G \Bigr\}.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input undirected graph.
 
     Returns
     -------
     int
-        The 2-rainbow domination number of G.
+        The 2-rainbow domination number :math:`\gamma_{r,2}(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> gc.two_rainbow_domination_number(G)
     3
@@ -806,25 +950,35 @@ def two_rainbow_domination_number(G: GraphLike) -> int:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def three_rainbow_domination_number(G: GraphLike) -> int:
     r"""
-    Calculates the 3-rainbow domination number of the graph G.
+    Compute the 3-rainbow domination number of a graph.
 
-    The 3-rainbow domination number is a special case of the rainbow domination number where k = 3.
+    The **3-rainbow domination number** :math:`\gamma_{r,3}(G)` is the special case
+    of the rainbow domination number with :math:`k=3`. A 3-rainbow dominating function
+    assigns to each vertex either one of three colors or leaves it uncolored, such that
+    every uncolored vertex is adjacent to at least one vertex of each of the three colors.
+    The value :math:`\gamma_{r,3}(G)` is the minimum number of colored vertices
+    in such a labeling.
+
+    Formally,
+
+    .. math::
+       \gamma_{r,3}(G) = \min \Bigl\{\, \bigl|\{v \in V : f(v) \neq 0\}\bigr| \;\Big|\;
+       f \text{ is a 3-rainbow dominating function on } G \Bigr\}.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input undirected graph.
 
     Returns
     -------
     int
-        The 3-rainbow domination number of G.
+        The 3-rainbow domination number :math:`\gamma_{r,3}(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
     >>> gc.three_rainbow_domination_number(G)
     4
@@ -834,29 +988,56 @@ def three_rainbow_domination_number(G: GraphLike) -> int:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
     r"""
-    Finds a minimum restrained dominating set for the graph G using integer programming.
+    Compute a minimum restrained dominating set of a graph using integer programming.
 
-    A restrained dominating set of a graph G = (V, E) is a subset S ⊆ V such that:
-      1. Every vertex in V is either in S or adjacent to a vertex in S (domination condition).
-      2. The subgraph induced by V \ S has no isolated vertices (restraint condition).
+    A **restrained dominating set** (RDS) of a graph :math:`G=(V,E)` is a subset
+    :math:`S \subseteq V` such that:
+
+    1. (**Domination**) Every vertex in :math:`V \setminus S` is adjacent to at least one vertex in :math:`S`.
+    2. (**Restraint**) The induced subgraph :math:`G[V \setminus S]` has no isolated vertices.
+
+    The minimum restrained dominating set is the RDS of smallest cardinality.
+
+    **Integer Programming Formulation**
+
+    Introduce binary variables :math:`x_v \in \{0,1\}` for each :math:`v \in V`,
+    where :math:`x_v = 1` if :math:`v \in S` and :math:`0` otherwise.
+
+    Objective
+    ---------
+    .. math::
+       \min \sum_{v \in V} x_v
+
+    Constraints
+    -----------
+    - **Domination condition** (every vertex dominated):
+
+      .. math::
+         x_v + \sum_{u \in N(v)} x_u \;\geq\; 1 \quad \forall v \in V.
+
+    - **Restraint condition** (no isolates in complement):
+
+      .. math::
+         \sum_{u \in N(v)} (1 - x_u) \;\geq\; (1 - x_v) \quad \forall v \in V.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input undirected graph.
 
     Returns
     -------
-    list
-        A minimum restrained dominating set of nodes in G.
+    set
+        A minimum restrained dominating set of vertices in :math:`G`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(5)
     >>> restrained_dom_set = gc.minimum_restrained_dominating_set(G)
+    >>> isinstance(restrained_dom_set, set)
+    True
     """
     # Initialize the linear programming problem
     prob = pulp.LpProblem("MinimumRestrainedDomination", pulp.LpMinimize)
@@ -891,25 +1072,34 @@ def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def restrained_domination_number(G: GraphLike) -> int:
     r"""
-    Calculates the restrained domination number of the graph G.
+    Compute the restrained domination number of a graph.
 
-    The restrained domination number is the size of a minimum restrained dominating set.
+    The **restrained domination number** :math:`\gamma_r(G)` of a graph :math:`G=(V,E)`
+    is the minimum size of a restrained dominating set (RDS).
+    An RDS is a set :math:`S \subseteq V` such that:
+
+    1. (**Domination**) Every vertex in :math:`V \setminus S` is adjacent to at least one vertex in :math:`S`.
+    2. (**Restraint**) The induced subgraph :math:`G[V \setminus S]` has no isolated vertices.
+
+    Thus,
+
+    .. math::
+       \gamma_r(G) \;=\; \min\{\,|S| : S \subseteq V \text{ is a restrained dominating set}\,\}.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input undirected graph.
 
     Returns
     -------
     int
-        The restrained domination number of G.
+        The restrained domination number :math:`\gamma_r(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(5)
     >>> gc.restrained_domination_number(G)
     3

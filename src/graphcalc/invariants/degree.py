@@ -176,8 +176,8 @@ def minimum_degree(G: GraphLike) -> int:
 def sub_k_domination_number(G: GraphLike, k: int) -> float:
     r"""Return the sub-k-domination number of the graph.
 
-    The *sub-k-domination number* of a graph G with *n* nodes is defined as the
-    smallest positive integer t such that the following relation holds:
+    The *sub-k-domination number* of a graph :math:`G` with *n* nodes is defined as the
+    smallest positive integer :math:`t` such that the following relation holds:
 
     .. math::
         t + \frac{1}{k}\sum_{i=0}^t d_i \geq n
@@ -240,7 +240,7 @@ def slater(G: GraphLike) -> int:
     r"""
     Returns the Slater invariant for the graph.
 
-    The Slater invariant of a graph G is a lower bound for the domination
+    The Slater invariant of a graph :math:`G` is a lower bound for the domination
     number of a graph defined by:
 
     .. math::
@@ -252,10 +252,10 @@ def slater(G: GraphLike) -> int:
         {d_1 \geq d_2 \geq \cdots \geq d_n}
 
     is the degree sequence of the graph ordered in non-increasing order and *n*
-    is the order of G.
+    is the order of :math:`G`.
 
     Amos et al. rediscovered this invariant and generalized it into what is
-    now known as the sub-*k*-domination number.
+    now known as the sub-:math:`k`-domination number.
 
     Parameters
     ----------
@@ -290,8 +290,8 @@ def slater(G: GraphLike) -> int:
 
     References
     ----------
-    D. Amos, J. Asplund, B. Brimkov, and R. Davila, The sub-k-domination number
-    of a graph with applications to k-domination, *arXiv preprint
+    D. Amos, J. Asplund, B. Brimkov, and R. Davila, The sub-:math:`k`-domination number
+    of a graph with applications to :math:`k`-domination, *arXiv preprint
     arXiv:1611.02379*, (2016)
 
     P.J. Slater, Locating dominating sets and locating-dominating set, *Graph
@@ -367,7 +367,7 @@ def annihilation_number(G: GraphLike) -> int:
     r"""
     Returns the annihilation number of the graph.
 
-    The annihilation number of a graph *G* is defined as:
+    The annihilation number of a graph :math:`G` is defined as:
 
     .. math::
         a(G) = \max\{t : \sum_{i=1}^t d_i \leq m \}
@@ -378,7 +378,7 @@ def annihilation_number(G: GraphLike) -> int:
         d_1 \leq d_2 \leq \cdots \leq d_n
 
     is the degree sequence of the graph ordered in non-decreasing order, and
-    *m* is the number of edges in *G*.
+    :math:`m` is the number of edges in :math:`G`.
 
     Parameters
     ----------
@@ -434,8 +434,8 @@ def residue(G: GraphLike) -> int:
 
     **Havel-Hakimi Algorithm**:
     - Sort the degree sequence in non-increasing order.
-    - Remove the largest degree (say, `d`) from the sequence.
-    - Reduce the next `d` degrees by 1.
+    - Remove the largest degree (say, :math:`d`) from the sequence.
+    - Reduce the next :math:`d` degrees by 1.
     - Repeat until all degrees are zero (graphical) or a negative degree is encountered (non-graphical).
 
     The residue is the count of zeros in the sequence when the algorithm terminates.
