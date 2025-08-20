@@ -848,20 +848,28 @@ def claw_free(G: GraphLike) -> bool:
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import path_graph
+    >>> from graphcalc.generators import path_graph, star_graph
 
     >>> G = path_graph(4)
     >>> gc.claw_free(G)
     True
-    """
-    # Build a 4-vertex claw once
-    claw = nx.star_graph(3)  # nodes {0,1,2,3} with 0 connected to 1,2,3
 
-    # Check all 4-vertex induced subgraphs
-    for S in itertools.combinations(G.nodes(), 4):
-        H = G.subgraph(S)
-        if nx.is_isomorphic(H, claw):
-            return False
+    >>> H = star_graph(6)
+    >>> gc.claw_free(H)
+    False
+    """
+    for v in G:
+        N = list(G.neighbors(v))
+        if len(N) < 3:
+            continue
+        # Early reject if there exist a,b,c in N with no edges among them
+        # (i.e., independent triple in G[N])
+        GN = G.subgraph(N)
+        # Quick pruning: if there are too few edges, an independent triple must exist
+        # but we’ll just check triples directly (usually small neighborhoods).
+        for a, b, c in itertools.combinations(N, 3):
+            if not GN.has_edge(a, b) and not GN.has_edge(a, c) and not GN.has_edge(b, c):
+                return False
     return True
 
 def connected_and_claw_free(G: GraphLike) -> bool:
