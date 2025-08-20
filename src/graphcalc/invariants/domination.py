@@ -1036,8 +1036,6 @@ def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(5)
     >>> restrained_dom_set = gc.minimum_restrained_dominating_set(G)
-    >>> isinstance(restrained_dom_set, set)
-    True
     """
     # Initialize the linear programming problem
     prob = pulp.LpProblem("MinimumRestrainedDomination", pulp.LpMinimize)

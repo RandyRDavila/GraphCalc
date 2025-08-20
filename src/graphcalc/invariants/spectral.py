@@ -23,21 +23,33 @@ def adjacency_matrix(G: GraphLike) -> np.ndarray:
     r"""
     Compute the adjacency matrix of a graph.
 
+    For a simple graph :math:`G = (V,E)` with vertex set
+    :math:`V = \{0,1,\dots,n-1\}`, the **adjacency matrix**
+    :math:`A(G)` is the :math:`n \times n` matrix defined by:
+
+    .. math::
+       A_{ij} =
+       \begin{cases}
+           1 & \text{if } \{i,j\} \in E, \\
+           0 & \text{otherwise}.
+       \end{cases}
+
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input graph.
+        The input graph. Vertex labels will be relabeled
+        to consecutive integers :math:`0,1,\dots,n-1`
+        for the matrix representation.
 
     Returns
     -------
     numpy.ndarray
-        The adjacency matrix of the graph.
+        The adjacency matrix :math:`A(G)` as a dense NumPy array.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
-
     >>> G = cycle_graph(4)
     >>> gc.adjacency_matrix(G)
     array([[0, 1, 1, 0],
