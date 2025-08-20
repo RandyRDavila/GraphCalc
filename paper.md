@@ -82,8 +82,6 @@ Today, `GraphCalc` powers the latest version of *TxGraffiti* and its agentic cou
 
 ## Acknowledgements
 
-The authors gratefully acknowledge David Amos and Boris Brimkov for their foundational support during the development of `GraphCalc`. David Amos provided early technical insight and design feedback that shaped the architecture of the package, while Boris Brimkov contributed valuable mathematical guidance in selecting and implementing key graph invariants.
-
-We also thank the referees who provided detailed comments on the manuscript and codebase during the revision process. Their feedback significantly improved the quality, clarity, and functionality of both the `GraphCalc` library and this paper.
+The authors thank David Amos and Boris Brimkov for their foundational support during the development of `GraphCalc` and its predecessors. We also thank the referees for their valuable feedback, which greatly improved the clarity, functionality, and overall quality of both the library and this paper.
 
 ## References
