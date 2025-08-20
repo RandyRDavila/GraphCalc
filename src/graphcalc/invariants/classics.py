@@ -479,7 +479,7 @@ def matching_number(G: GraphLike) -> int:
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def triameter(G: GraphLike) -> int:
     """
-    Compute the triameter of a connected graph G.
+    Compute the triameter of a connected graph :math:`G`.
 
     The triameter is defined as:
 
@@ -487,7 +487,7 @@ def triameter(G: GraphLike) -> int:
 
         \max_{\{u,v,w\}} d(u,v) + d(v,w) + d(u,w)
 
-    where :math:`d(u,v)` is the shortest-path distance between u and v.
+    where :math:`d(u,v)` is the shortest-path distance between :math:`u` and :math:`v`.
 `
 
     Parameters
