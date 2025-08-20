@@ -43,15 +43,15 @@ By enabling high-resolution invariant datasets, `GraphCalc` complements automate
 
 `GraphCalc` offers a robust suite of tools for computing, analyzing, and visualizing graph-theoretic invariants. It combines an intuitive Python interface with solver-enhanced backends and supports both `NetworkX` graph objects and internal `SimpleGraph` and related types—making it versatile for everyday use, educational settings, and advanced mathematical experimentation. Key features include:
 
-- **Extensive invariant coverage:** Compute a broad range of exact graph invariants, including classical quantities such as chromatic number, maximum clique, vertex cover, and independence number, as well as structural and degree-based invariants like residue, Slater number, and annihilation number.
+- **Extensive invariant coverage:** Compute a broad range of exact graph invariants, including classical quantities such as chromatic, clique, vertex cover, and independence numbers, as well as structural and degree-based invariants like residue, Slater number, and annihilation number.
 
 - **Domination and forcing variants:** Includes over a dozen domination-type parameters (e.g., total, Roman, double Roman, restrained, outer-connected) and propagation-based parameters such as zero forcing, positive semidefinite zero forcing, and k-power domination. All are computed exactly using integer programming or exhaustive search.
 
 - **Spectral and structural analysis:** Supports spectral computations, including adjacency and Laplacian eigenvalues, spectral radius, and algebraic connectivity, along with Boolean predicates for structural properties such as planarity, claw-freeness, triangle-freeness, and subcubicity.
 
-- **Graph and polytope generators:** Provides built-in generators for classical graphs (derived from NetworkX) and convex 3D polytopes (e.g., tetrahedra, cubes, fullerenes)—useful for visualization, testing, and conjecture exploration.
+- **Graph and polytope generators:** Provides built-in generators for classical graphs and convex 3D polytopes (e.g., tetrahedra, cubes, fullerenes)—useful for visualization, testing, and conjecture exploration.
 
-- **Batch evaluation and knowledge tables:** Enables the evaluation of multiple invariants across entire graph collections using compute_graph_properties_dataframe, which returns results as structured knowledge tables. These tables integrate directly with automated conjecturing systems like TxGraffiti.
+- **Batch evaluation and knowledge tables:** Enables the evaluation of multiple invariants across entire graph collections using `compute_knowledge_table` (see previous section) or `all_properties`.
 
 - **Visualization and user experience:** Offers built-in rendering for graphs and polytopes, fully type-annotated functions, extensive test coverage, and online documentation designed to support both research and instructional use.
 
