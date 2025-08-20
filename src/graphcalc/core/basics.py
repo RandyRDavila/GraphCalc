@@ -854,12 +854,14 @@ def claw_free(G: GraphLike) -> bool:
     >>> gc.claw_free(G)
     True
     """
-    claw = nx.star_graph(3)
-    for S in set(itertools.combinations(G.nodes(), 3)):
-        H = G.subgraph(list(S))
+    # Build a 4-vertex claw once
+    claw = nx.star_graph(3)  # nodes {0,1,2,3} with 0 connected to 1,2,3
+
+    # Check all 4-vertex induced subgraphs
+    for S in itertools.combinations(G.nodes(), 4):
+        H = G.subgraph(S)
         if nx.is_isomorphic(H, claw):
             return False
-    # if the above loop completes, the graph is claw-free
     return True
 
 def connected_and_claw_free(G: GraphLike) -> bool:
