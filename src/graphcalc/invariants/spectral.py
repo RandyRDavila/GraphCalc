@@ -397,11 +397,12 @@ def second_largest_adjacency_eigenvalue(G: GraphLike) -> np.float64:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
     >>> G = cycle_graph(4)
-    >>> gc.second_largest_adjacency_eigenvalue(G)
-    0.0
+    >>> np.allclose(gc.second_largest_adjacency_eigenvalue(G), 0.0)
+    True
     """
     eigenvals = adjacency_eigenvalues(G)
     return eigenvals[-2]  # Second largest in sorted eigenvalues
