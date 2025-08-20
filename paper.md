@@ -23,7 +23,7 @@ bibliography: paper.bib
 
 `GraphCalc` is a Python library for computing an extensive collection of graph-theoretic invariants, designed to support research in combinatorics, network science, and automated reasoning. It implements more than 100 exact functions, covering classical measures (e.g., independence number, chromatic number, spectral radius) and many lesser-known invariants central to extremal graph theory and domination theory.
 
-Originally developed as the invariant engine for the automated conjecturing system *TxGraffiti* [@TxGraffiti], `GraphCalc` has grown into a general-purpose research tool for constructing large, structured datasets of graph invariants. These datasets—often organized into tabular *knowledge tables*—which enable symbolic pattern mining, hypothesis generation, and automated conjecture discovery. For example:
+Originally developed as the invariant engine for the automated conjecturing system *TxGraffiti* [@TxGraffiti], `GraphCalc` has grown into a general-purpose research tool for constructing large, structured datasets of graph invariants. These datasets—often organized into tabular *knowledge tables*—enable symbolic pattern mining, hypothesis generation, and automated conjecture discovery. For example:
 
 ```python
 >>> import graphcalc as gc
