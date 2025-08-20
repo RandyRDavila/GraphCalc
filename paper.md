@@ -21,9 +21,9 @@ bibliography: paper.bib
 
 ## Summary
 
-`GraphCalc` is a Python library for computing an extensive collection of graph-theoretic invariants, designed to support research in combinatorics, network science, and automated reasoning. It implements more than 100 exact functions, covering classical measures (e.g., independence number, chromatic number, spectral radius) alongside many lesser-known invariants central to extremal graph theory and domination theory.
+`GraphCalc` is a Python library for computing an extensive collection of graph-theoretic invariants, designed to support research in combinatorics, network science, and automated reasoning. It implements more than 100 exact functions, covering classical measures (e.g., independence number, chromatic number, spectral radius) and many lesser-known invariants central to extremal graph theory and domination theory.
 
-Originally developed as the invariant engine for the automated conjecturing system *TxGraffiti* [@TxGraffiti], `GraphCalc` has grown into a general-purpose research tool for constructing large, structured datasets of graph invariants. These datasets—often organized into tabular *knowledge tables*-enable symbolic pattern mining, hypothesis generation, and automated conjecture discovery. For example:
+Originally developed as the invariant engine for the automated conjecturing system *TxGraffiti* [@TxGraffiti], `GraphCalc` has grown into a general-purpose research tool for constructing large, structured datasets of graph invariants. These datasets—often organized into tabular *knowledge tables*- which enable symbolic pattern mining, hypothesis generation, and automated conjecture discovery. For example:
 
 ```python
 >>> import graphcalc as gc
@@ -35,18 +35,9 @@ Originally developed as the invariant engine for the automated conjecturing syst
 1      6    12              4.0                    2
 ```
 
-While general-purpose libraries like `NetworkX` [@osti_960616], `igraph` [@csardi2006igraph], and `SageMath` [@sagemath] provide broad graph functionality, they rarely support the wide range of nonstandard invariants used in combinatorics. GraphCalc fills this gap by offering exact implementations of many parameters unavailable elsewhere, including:
+While general-purpose libraries like `NetworkX` [@osti_960616], `igraph` [@csardi2006igraph], and `SageMath` [@sagemath] provide broad graph functionality, they rarely support the wide range of nonstandard invariants used in combinatorics. GraphCalc fills this gap by offering exact implementations of many parameters unavailable elsewhere. All functions are implemented exactly using integer programming, enumeration, or symbolic methods. For NP-hard invariants (e.g., independence number, chromatic number, domination variants), `GraphCalc` relies on mixed-integer programming models via `PuLP` [@mitchell2011pulp] and solvers such as `COIN-OR CBC`, ensuring exactness for small- to medium-sized graphs where symbolic relationships are most visible.
 
-- Classical invariants such as the independence, clique, and chromatic numbers,
-- Spectral properties of adjacency and Laplacian matrices,
-- Degree-sequence-based invariants (e.g., residue, annihilation number, Slater number),
-- Propagation parameters like zero forcing, k-forcing, and power domination,
-- Domination-type parameters including Roman, rainbow, and restrained domination,
-- Structural predicates (e.g., claw-free, triangle-free, cographs).
-
-All functions are implemented exactly using integer programming, enumeration, or symbolic methods. For NP-hard invariants (e.g., independence number, chromatic number, domination variants), `GraphCalc` relies on mixed-integer programming models via `PuLP` [@mitchell2011pulp] and solvers such as `COIN-OR CBC`, ensuring correctness while still supporting small to medium sized graphs where symbolic relationships are most visible.
-
-By enabling high-resolution invariant datasets, `GraphCalc` complements automated conjecturing systems like *TxGraffiti* and the *Optimist* [@optimist]. These systems analyze numerical patterns in `GraphCalc`’s output to generate new conjectures, many of which have already been proven as theorems. Thus, `GraphCalc` serves as both a comprehensive toolkit for graph theorists and a foundational component for symbolic discovery in modern mathematics.
+By enabling high-resolution invariant datasets, `GraphCalc` complements automated conjecturing systems like *TxGraffiti* and the *Optimist* [@optimist]. These systems analyze numerical patterns in `GraphCalc`’s output to generate new conjectures, many of which have already been proven as theorems. `GraphCalc` serves as both a comprehensive toolkit for graph theorists and a foundational component for symbolic discovery in modern mathematics.
 
 ## Features
 
