@@ -143,9 +143,9 @@ def minimum_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def domination_number(G: GraphLike) -> int:
     r"""
-    Calculates the domination number of the graph G.
+    Calculates the domination number of the graph :math:`G`.
 
-    The domination number is the size of the smallest dominating set in G. It represents the minimum number of nodes
+    The domination number is the size of the smallest dominating set in :math:`G`. It represents the minimum number of nodes
     required such that every node in the graph is either in the dominating set or adjacent to a node in the set.
 
     Parameters
@@ -174,11 +174,11 @@ def minimum_total_domination_set(G: GraphLike, verbose : bool = False) -> Set[Ha
     r"""
     Finds a minimum total dominating set for the graph G.
 
-    A total dominating set of a graph G = (V, E) is a subset of nodes S ⊆ V such that every node in V is adjacent
-    to at least one node in S. This function solves the problem using integer programming.
+    A total dominating set of a graph :math:`G = (V, E)` is a subset of nodes :math:`S \subseteq V` such that every node in :math:`V` is adjacent
+    to at least one node in :math:`S`. This function solves the problem using integer programming.
 
     Integer Programming Formulation:
-    Let x_v ∈ {0, 1} for all v ∈ V, where x_v = 1 if v is in the dominating set, and x_v = 0 otherwise.
+    Let :math:`x_v \in \{0, 1\}` for all :math:`v \in V`, where :math:`x_v = 1` if :math:`v` is in the dominating set, and :math:`x_v = 0` otherwise.
 
     Objective:
 
@@ -190,7 +190,7 @@ def minimum_total_domination_set(G: GraphLike, verbose : bool = False) -> Set[Ha
     .. math::
         \sum_{u \in N(v)} x_u \geq 1 \quad \forall v \in V
 
-    Here, *V* is the set of vertices in the graph, and *N(v)* is the open neighborhood of vertex *v*.
+    Here, :math:`V` is the set of vertices in the graph, and :math:`N(v)` is the open neighborhood of vertex :math:`v`.
 
     Parameters
     ----------
@@ -237,9 +237,9 @@ def minimum_total_domination_set(G: GraphLike, verbose : bool = False) -> Set[Ha
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def total_domination_number(G: GraphLike) -> int:
     r"""
-    Calculates the total domination number of the graph G.
+    Calculates the total domination number of the graph :math:`G`.
 
-    The total domination number is the size of the smallest total dominating set in G. It represents the minimum
+    The total domination number is the size of the smallest total dominating set in :math:`G`. It represents the minimum
     number of nodes required such that every node in the graph is adjacent to at least one node in the dominating set.
 
     Parameters
@@ -266,7 +266,7 @@ def total_domination_number(G: GraphLike) -> int:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_independent_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
     r"""
-    Finds a minimum independent dominating set for the graph G using integer programming.
+    Finds a minimum independent dominating set for the graph :math:`G` using integer programming.
 
     Parameters
     ----------
@@ -316,9 +316,9 @@ def minimum_independent_dominating_set(G: GraphLike, verbose : bool = False) -> 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def independent_domination_number(G: GraphLike) -> int:
     r"""
-    Finds a minimum independent dominating set for the graph G.
+    Finds a minimum independent dominating set for the graph :math:`G`.
 
-    An independent dominating set of a graph G = (V, E) is a dominating set that is also an independent set,
+    An independent dominating set of a graph :math:`G = (V, E)` is a dominating set that is also an independent set,
     meaning no two nodes in the set are adjacent. This function uses integer programming to find the smallest such set.
 
     Parameters
@@ -345,10 +345,10 @@ def independent_domination_number(G: GraphLike) -> int:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def complement_is_connected(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
     r"""
-    Checks if the complement of a set S in the graph G induces a connected subgraph.
+    Checks if the complement of a set :math:`S` in the graph :math:`G` induces a connected subgraph.
 
-    The complement of S is defined as the set of all nodes in G that are not in S. This function verifies
-    whether the subgraph induced by the complement of S is connected.
+    The complement of :math:`S` is defined as the set of all nodes in :math:`G` that are not in :math:`S`. This function verifies
+    whether the subgraph induced by the complement of :math:`S` is connected.
 
     Parameters
     ----------
@@ -383,10 +383,10 @@ def complement_is_connected(G: GraphLike, S: Union[Set[Hashable], List[Hashable]
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def is_outer_connected_dominating_set(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
     r"""
-    Checks if a given set S is an outer-connected dominating set in the graph G.
+    Checks if a given set :math:`S` is an outer-connected dominating set in the graph :math:`G`.
 
-    An outer-connected dominating set S ⊆ V of a graph G = (V, E) is a dominating set such that the subgraph
-    induced by the complement of S is connected.
+    An outer-connected dominating set :math:`S \subseteq V` of a graph :math:`G = (V, E)` is a dominating set such that the subgraph
+    induced by the complement of :math:`S` is connected.
 
     Parameters
     ----------
@@ -420,7 +420,7 @@ def is_outer_connected_dominating_set(G: GraphLike, S: Union[Set[Hashable], List
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def minimum_outer_connected_dominating_set(G: GraphLike) -> Set[Hashable]:
     r"""
-    Finds a minimum outer-connected dominating set for the graph G by trying all subset sizes.
+    Finds a minimum outer-connected dominating set for the graph :math:`G` by trying all subset sizes.
 
     Parameters
     ----------
@@ -450,11 +450,11 @@ def minimum_outer_connected_dominating_set(G: GraphLike) -> Set[Hashable]:
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def outer_connected_domination_number(G: GraphLike) -> int:
     r"""
-    Finds a minimum outer-connected dominating set for the graph G.
+    Finds a minimum outer-connected dominating set for the graph :math:`G`.
 
-    A minimum outer-connected dominating set is the smallest subset S ⊆ V of the graph G such that:
-      1. S is a dominating set.
-      2. The subgraph induced by the complement of S is connected.
+    A minimum outer-connected dominating set is the smallest subset :math:`S \subseteq V` of the graph :math:`G` such that:
+      1. :math:`S` is a dominating set.
+      2. The subgraph induced by the complement of :math:`S` is connected.
 
     This function tries all subset sizes to find the smallest outer-connected dominating set.
 
@@ -479,7 +479,7 @@ def outer_connected_domination_number(G: GraphLike) -> int:
 
     Notes
     -----
-    This implementation is exponential in complexity (O(2^n)), as it tries all subsets of nodes in the graph.
+    This implementation is exponential in complexity :math:`O(2^n)`, as it tries all subsets of nodes in the graph.
     It is not suitable for large graphs.
     """
     return len(minimum_outer_connected_dominating_set(G))
