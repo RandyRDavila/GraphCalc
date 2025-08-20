@@ -40,10 +40,10 @@ def is_dominating_set(
     S: Union[Set[Hashable], List[Hashable]],
 ) -> bool:
     r"""
-    Checks if a given set of nodes, S, is a dominating set in the graph G.
+    Checks if a given set of nodes, :math:`S\subseteq V`, is a dominating set in the graph :math:`G`.
 
-    A dominating set of a graph G = (V, E) is a subset of nodes S ⊆ V such that every node in V is either in S or
-    adjacent to a node in S. In other words, every node in the graph is either part of the dominating set or is
+    A dominating set of a graph :math:`G = (V, E)` is a subset of nodes :math:`S \subseteq V` such that every node in :math:`V` is either in :math:`S` or
+    adjacent to a node in :math:`S`. In other words, every node in the graph is either part of the dominating set or is
     "dominated" by a node in the dominating set.
 
     Parameters
@@ -56,7 +56,7 @@ def is_dominating_set(
     Returns
     -------
     bool
-        True if S is a dominating set, otherwise False.
+        True if :math:`S` is a dominating set, otherwise False.
 
     Examples
     --------
