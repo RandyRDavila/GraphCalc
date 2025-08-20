@@ -88,26 +88,50 @@ def maximum_independent_set(G: GraphLike, verbose : bool = False) -> Set[Hashabl
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def independence_number(G: GraphLike) -> int:
-    r"""Return the size of a largest independent set in *G*.
+    r"""
+    Return the size of a largest independent set in *G*.
+
+    An **independent set** in a graph :math:`G=(V,E)` is a subset
+    :math:`S \subseteq V` such that no two vertices in :math:`S`
+    are adjacent. The **independence number** :math:`\alpha(G)`
+    is defined as
+
+    .. math::
+        \alpha(G) = \max \{ |S| : S \subseteq V, \, S \text{ is independent} \}.
+
+    Notes
+    -----
+    * The independence number is NP-hard to compute in general.
+    * This implementation calls :func:`maximum_independent_set`,
+      which formulates the problem as a mixed integer program (MIP).
+    * It is related to other invariants:
+
+      - Complement relation: :math:`\alpha(G) = \omega(\overline{G})`,
+        where :math:`\omega(G)` is the clique number.
+      - Bounds: :math:`\alpha(G) \geq \frac{|V|}{\Delta(G)+1}` (Caro–Wei bound).
 
     Parameters
     ----------
-    G : NetworkX Graph or GraphCalc SimpleGraph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
 
     Returns
     -------
     int
-        The size of a largest independent set in *G*.
+        The independence number :math:`\alpha(G)` of the graph.
 
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import complete_graph
+    >>> from graphcalc.generators import complete_graph, cycle_graph
+
     >>> G = complete_graph(4)
     >>> gc.independence_number(G)
     1
 
+    >>> H = cycle_graph(5)
+    >>> gc.independence_number(H)
+    2
     """
     return len(maximum_independent_set(G))
 
@@ -186,7 +210,24 @@ def clique_number(G: GraphLike) -> int:
     r"""
     Compute the clique number of the graph.
 
-    The clique number is the size of the largest clique in the graph.
+    A **clique** in a graph :math:`G=(V,E)` is a subset
+    :math:`C \subseteq V` such that every pair of vertices in :math:`C`
+    is adjacent. The **clique number** :math:`\omega(G)` is defined as
+
+    .. math::
+        \omega(G) = \max \{ |C| : C \subseteq V, \, C \text{ induces a clique} \}.
+
+    Notes
+    -----
+    * The clique number is NP-hard to compute in general.
+    * This implementation calls :func:`maximum_clique`, which solves
+      a mixed integer program (MIP) to find a maximum clique.
+    * Relationship with other invariants:
+
+      - Complement relation: :math:`\omega(G) = \alpha(\overline{G})`,
+        where :math:`\alpha(G)` is the independence number.
+      - Bounds: :math:`\omega(G) \leq \Delta(G)+1`, where :math:`\Delta(G)`
+        is the maximum degree.
 
     Parameters
     ----------
@@ -196,15 +237,20 @@ def clique_number(G: GraphLike) -> int:
     Returns
     -------
     int
-        The clique number of the graph.
+        The clique number :math:`\omega(G)` of the graph.
 
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import complete_graph
+    >>> from graphcalc.generators import complete_graph, cycle_graph
+
     >>> G = complete_graph(4)
     >>> gc.clique_number(G)
     4
+
+    >>> H = cycle_graph(5)
+    >>> gc.clique_number(H)
+    2
     """
     return len(maximum_clique(G))
 
@@ -398,7 +444,7 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
     integer program:
 
     .. math::
-        \max \sum_{e \in E} x_e \text{ where } x_e \in \{0, 1\} \text{ for all } e \in E
+        \text{max} \sum_{e \in E} x_e \text{ where } x_e \in \{0, 1\} \text{ for all } e \in E
 
     subject to
 
@@ -407,7 +453,6 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
 
     where :math:`\delta(v)` is the set of edges incident to node :math:`v`, and
     :math:`E` and :math:`V` are the set of edges and nodes of :math:`G`, respectively.
-
 
     Parameters
     ----------
@@ -478,21 +523,20 @@ def matching_number(G: GraphLike) -> int:
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def triameter(G: GraphLike) -> int:
-    """
+    r"""
     Compute the triameter of a connected graph :math:`G`.
 
     The triameter is defined as:
 
     .. math::
 
-        \max_{\{u,v,w\}} d(u,v) + d(v,w) + d(u,w)
+        \text{max} \{ d(u,v) + d(v,w) + d(u,w) : u, v, w \in V \}
 
     where :math:`d(u,v)` is the shortest-path distance between :math:`u` and :math:`v`.
-`
 
     Parameters
     ----------
-    G : nx.Graph
+    G : NetworkX Graph or GraphCalc SimpleGraph
         An undirected, connected graph.
 
     Returns
