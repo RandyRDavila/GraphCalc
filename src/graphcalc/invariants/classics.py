@@ -481,8 +481,8 @@ def triameter(G: GraphLike) -> int:
     """
     Compute the triameter of a connected graph G.
 
-    The triameter is the maximum, over all triples :math`\{u,v,w\}`,
-    of :math`d(u,v) + d(v,w) + d(u,w)`.
+    The triameter is the maximum, over all triples $\{u,v,w\}$,
+    of $d(u,v) + d(v,w) + d(u,w)$.
 
     Parameters
     ----------
