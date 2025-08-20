@@ -3,6 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/graphcalc/badge/?version=latest)](https://graphcalc.readthedocs.io/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/graphcalc.svg?ts=20250726)](https://pypi.org/project/graphcalc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/888587732.svg)](https://doi.org/10.5281/zenodo.16907645)
 
 ## Overview
 
