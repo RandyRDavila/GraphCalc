@@ -177,12 +177,12 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
 
     Examples
     --------
+    >>> import numpy as np
     >>> import graphcalc as gc
     >>> from graphcalc.generators import cycle_graph
     >>> G = cycle_graph(4)
-    >>> eigenvals = gc.laplacian_eigenvalues(G)
-    >>> eigenvals
-    array([0., 2., 2., 4.])
+    >>> np.allclose(gc.laplacian_eigenvalues(G), np.array([0., 2., 2., 4.]))
+    True
     """
     L = laplacian_matrix(G)
     eigenvals = np.linalg.eigvals(L)
