@@ -213,7 +213,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     r"""Finds the optimal proper coloring of a graph using linear programming.
 
     This function uses integer linear programming to find the optimal (minimum) number of colors
-    required to color the graph :math`G` such that no two adjacent nodes have the same color. Each node
+    required to color the graph :math:`G` such that no two adjacent nodes have the same color. Each node
     is assigned a color represented by a binary variable.
 
     Parameters
@@ -224,7 +224,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     Returns
     -------
     dict:
-        A dictionary where keys are color indices and values are lists of nodes in :math`G` assigned that color.
+        A dictionary where keys are color indices and values are lists of nodes in :math:`G` assigned that color.
 
     Examples
     --------
@@ -269,7 +269,7 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def chromatic_number(G: GraphLike) -> int:
     r"""
-    The chromatic number of a graph is the smallest number of colors needed to color the vertices of :math`G` so that no two
+    The chromatic number of a graph is the smallest number of colors needed to color the vertices of :math:`G` so that no two
     adjacent vertices share the same color.
 
     Parameters
@@ -280,7 +280,7 @@ def chromatic_number(G: GraphLike) -> int:
     Returns
     -------
     int
-        The chromatic number of :math`G`.
+        The chromatic number of :math:`G`.
 
     Examples
     --------
@@ -296,7 +296,7 @@ def chromatic_number(G: GraphLike) -> int:
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_vertex_cover(G: GraphLike) -> set:
-    r"""Return a smallest vertex cover of the graph :math`G`.
+    r"""Return a smallest vertex cover of the graph :math:`G`.
 
     Parameters
     ----------
@@ -306,7 +306,7 @@ def minimum_vertex_cover(G: GraphLike) -> set:
     Returns
     -------
     set
-        A smallest vertex cover of :math`G`.
+        A smallest vertex cover of :math:`G`.
 
     Examples
     --------
@@ -344,7 +344,7 @@ def vertex_cover_number(G: GraphLike) -> int:
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_edge_cover(G: GraphLike):
-    r"""Return a smallest edge cover of the graph :math`G`.
+    r"""Return a smallest edge cover of the graph :math:`G`.
 
     Parameters
     ----------
@@ -354,7 +354,7 @@ def minimum_edge_cover(G: GraphLike):
     Returns
     -------
     set
-        A smallest edge cover of :math`G`.
+        A smallest edge cover of :math:`G`.
 
     Examples
     --------
@@ -367,7 +367,7 @@ def minimum_edge_cover(G: GraphLike):
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def edge_cover_number(G: GraphLike) -> int:
-    r"""Return the size of a smallest edge cover in the graph :math`G`.
+    r"""Return the size of a smallest edge cover in the graph :math:`G`.
 
     Parameters
     ----------
@@ -377,7 +377,7 @@ def edge_cover_number(G: GraphLike) -> int:
     Returns
     -------
     number
-        The size of a smallest edge cover of :math`G`.
+        The size of a smallest edge cover of :math:`G`.
 
     Examples
     --------
@@ -394,7 +394,7 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
     r"""Return a maximum matching in the graph G.
 
     A matching in a graph is a set of edges with no shared endpoint. This function uses
-    integer programming to solve for a maximum matching in the graph :math`G`. It solves the following
+    integer programming to solve for a maximum matching in the graph :math:`G`. It solves the following
     integer program:
 
     .. math::
@@ -405,8 +405,8 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
     .. math::
         \sum_{e \in \delta(v)} x_e \leq 1 \text{ for all } v \in V
 
-    where :math`\delta(v)` is the set of edges incident to node :math`v`, and
-    :math`E` and :math`V` are the set of edges and nodes of :math`G`, respectively.
+    where :math:`\delta(v)` is the set of edges incident to node :math:`v`, and
+    :math:`E` and :math:`V` are the set of edges and nodes of :math:`G`, respectively.
 
 
     Parameters
@@ -420,7 +420,7 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
     Returns
     -------
     set
-        A maximum matching of :math`G`.
+        A maximum matching of :math:`G`.
 
     Examples
     --------
@@ -452,7 +452,7 @@ def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def matching_number(G: GraphLike) -> int:
-    r"""Return the size of a maximum matching in the graph :math`G`.
+    r"""Return the size of a maximum matching in the graph :math:`G`.
 
     Parameters
     ----------
@@ -462,7 +462,7 @@ def matching_number(G: GraphLike) -> int:
     Returns
     -------
     number
-        The size of a maximum matching of :math`G`.
+        The size of a maximum matching of :math:`G`.
 
     Examples
     --------
