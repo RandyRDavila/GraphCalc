@@ -15,20 +15,19 @@ affiliations:
    index: 1
  - name: Department of Computational Applied Mathematics & Operations Research,Rice University, United States
    index: 2
-date: 7 May 2025
+date: 20 Aug 2025
 bibliography: paper.bib
 ---
 
 ## Summary
 
-`GraphCalc` is a Python library for computing a broad range of graph-theoretic invariants, purpose-built to support research in combinatorics, network science, and automated reasoning. It offers exact implementations of over 100 functions, spanning classical invariants (e.g., independence number, chromatic number, spectral radius) and a wide array of lesser-known parameters central to contemporary graph theory.
+`GraphCalc` is a Python library for computing an extensive collection of graph-theoretic invariants, designed to support research in combinatorics, network science, and automated reasoning. It implements more than 100 exact functions, covering classical measures (e.g., independence number, chromatic number, spectral radius) alongside many lesser-known invariants central to extremal graph theory and domination theory.
 
-Originally developed as the invariant engine for the automated conjecturing system TxGraffiti, `GraphCalc` has since matured into a general-purpose research tool that facilitates the large-scale construction of structured, high-resolution invariant datasets. These datasets, often organized into tabular “knowledge tables,” form the basis for symbolic pattern mining, hypothesis generation, and downstream machine reasoning. For example,
+Originally developed as the invariant engine for the automated conjecturing system *TxGraffiti* [@TxGraffiti], `GraphCalc` has grown into a general-purpose research tool for constructing large, structured datasets of graph invariants. These datasets—often organized into tabular *knowledge tables*-enable symbolic pattern mining, hypothesis generation, and automated conjecture discovery. For example:
 
 ```python
 >>> import graphcalc as gc
->>> from graphcalc.polytopes.generators import cube_graph, octahedron_graph
->>> graphs = [cube_graph(), octahedron_graph()]
+>>> graphs = [gc.cube_graph(), gc.octahedron_graph()]
 >>> functions = ["order", "size", "spectral_radius", "independence_number"]
 >>> gc.compute_knowledge_table(functions, graphs)
    order  size  spectral_radius  independence_number
@@ -36,30 +35,18 @@ Originally developed as the invariant engine for the automated conjecturing syst
 1      6    12              4.0                    2
 ```
 
-While general-purpose graph libraries such as `NetworkX` and `igraph` are widely used for network analysis and algorithmic exploration, they offer limited support for *lesser-known* invariants that often arise in extremal combinatorics and graph theory. `GraphCalc` fills this gap by providing exact implementations of over 100 graph-theoretic parameters—including many that are difficult to compute or entirely unavailable in other Python libraries. This expanded coverage makes it a valuable tool for researchers seeking to analyze symbolic relationships among invariants or generate conjectures from numerical data.
+While general-purpose libraries like `NetworkX` [@osti_960616], `igraph` [@csardi2006igraph], and `SageMath` [@sagemath] provide broad graph functionality, they rarely support the wide range of nonstandard invariants used in combinatorics. GraphCalc fills this gap by offering exact implementations of many parameters unavailable elsewhere, including:
 
- Its design is particularly suited to mathematical exploration on small to medium graphs, where symbolic relationships among invariants are often most visible and meaningful. By enabling fast, programmatic access to both standard and obscure graph parameters, `GraphCalc` lowers the barrier to large-scale experimentation and supports the discovery of new relationships in discrete mathematics. The library includes exact implementations of:
+- Classical invariants such as the independence, clique, and chromatic numbers,
+- Spectral properties of adjacency and Laplacian matrices,
+- Degree-sequence-based invariants (e.g., residue, annihilation number, Slater number),
+- Propagation parameters like zero forcing, k-forcing, and power domination,
+- Domination-type parameters including Roman, rainbow, and restrained domination,
+- Structural predicates (e.g., claw-free, triangle-free, cographs).
 
-- Fundamental quantities such as *independence number*, *clique number*, and *chromatic number*,
-Spectral properties related to graph energy, i.e., eigenvalues of adjacency and Laplacian matrices,
-- Degree-sequence-based invariants like *residue*, *annihilation number*, and *Slater number*,
-- Propagation-based parameters including *zero forcing*, *k-forcing*, and *power domination* variants,
-- Domination-type invariants such as *total domination*, *connected domination*, *Roman domination*, *rainbow domination*, and *restrained domination*,
-- Structural predicates for classes like claw-free, triangle-free, diamond-free, and bull-free graphs.
+All functions are implemented exactly using integer programming, enumeration, or symbolic methods. For NP-hard invariants (e.g., independence number, chromatic number, domination variants), `GraphCalc` relies on mixed-integer programming models via `PuLP` [@mitchell2011pulp] and solvers such as `COIN-OR CBC`, ensuring correctness while still supporting small to medium sized graphs where symbolic relationships are most visible.
 
-Together, these functions cover an expansive and often underrepresented space of graph invariants. Many of these are unavailable in other Python libraries, and all are computed exactly using a mix of solver-based optimization, enumeration, and symbolic methods. As such, `GraphCalc` serves not only as a comprehensive computational toolkit for graph theorists, but as a foundational component in modern systems for automated conjecture generation and symbolic discovery.
-
-Research in graph theory, combinatorics, and automated reasoning frequently relies on the accurate and efficient computation of graph invariants across large collections of discrete structures. Established tools such as `SageMath` [@sagemath], `NetworkX` [@osti_960616], and `igraph` [@csardi2006igraph] provide robust support for graph construction, algorithmic exploration, and many standard invariants. `GraphCalc` complements these systems by offering a research-focused interface tailored to conjecture generation and structural analysis—particularly through its extensive support for lesser-known invariants that are often used in extremal graph theory and related areas. This emphasis makes `GraphCalc` especially well-suited for applications in symbolic discovery and mathematical experimentation.
-
-The library implements over 100 exact functions, including many invariants that are unavailable or difficult to compute using existing packages. These span classical quantities, advanced domination-type parameters, spectral metrics, and structural graph properties. In addition to its broad invariant coverage, `GraphCalc` supports batch evaluation over graph collections, returning results as structured “knowledge tables”—tabular datasets suitable for downstream reasoning tasks. This workflow mirrors preprocessing pipelines in machine learning, where raw instances are transformed into rich feature representations.
-
-By integrating high-resolution numerical data with automated conjecturing systems such as `TxGraffiti`, `GraphCalc` enables symbolic pattern discovery at scale—supporting both empirical investigation and the generation of novel mathematical conjectures.
-
-To support this functionality, `GraphCalc` employs a hybrid computational strategy that blends solver-based optimization, exhaustive enumeration, and well-defined algorithms. Many NP-hard invariants—including the independence number, chromatic number, and total domination number—are computed exactly using integer programming models via the PuLP library [@mitchell2011pulp] and solvers such as the COIN-OR CBC solver, among others. This solver-enhanced foundation allows `GraphCalc` to compute dozens of invariants with provable guarantees, making it an essential tool for both mathematical experimentation and automated discovery.
-
-The utility of `GraphCalc` is most clearly demonstrated through its integration with systems such as `TxGraffiti` and Optimist [@TxGraffiti; @optimist], which generate conjectures by analyzing numerical patterns across large families of graphs. These symbolic patterns emerge directly from the invariant-rich data produced by `GraphCalc`. In this capacity, the library has facilitated the formulation of numerous conjectures—many of which have been rigorously proven as new theorems, while others remain unresolved open problems.
-
-Notably, these conjectures often connect well-studied invariants (e.g., *independence number*, *domination number*, and many generalizations) with less commonly explored parameters (e.g., *residue*, *Slater number*, *zero forcing number*), revealing structural relationships that had previously gone unrecognized. By providing exact and broad invariant coverage—including many parameters absent from `SageMath`, `NetworkX`, `igraph`, and `passagemath`-graphs—`GraphCalc` substantially expands the conjectural search space accessible to modern automated reasoning systems.
+By enabling high-resolution invariant datasets, `GraphCalc` complements automated conjecturing systems like *TxGraffiti* and the *Optimist* [@optimist]. These systems analyze numerical patterns in `GraphCalc`’s output to generate new conjectures, many of which have already been proven as theorems. Thus, `GraphCalc` serves as both a comprehensive toolkit for graph theorists and a foundational component for symbolic discovery in modern mathematics.
 
 ## Features
 
@@ -79,14 +66,12 @@ Notably, these conjectures often connect well-studied invariants (e.g., *indepen
 
 ## Example Usage
 
-The `GraphCalc` package supports both single-graph queries and batch evaluation over collections of graphs. Below is a basic example using the *Petersen graph*:
+The `GraphCalc` package supports both single-graph queries and batch evaluation over collections of graphs and polytopes (see the previous section). Below is a basic example using the *Petersen graph*:
 
 ```python
 >>> import graphcalc as gc
->>> from graphcalc import petersen_graph
->>>
 >>> # Create the Petersen graph
->>> G = petersen_graph()
+>>> G = gc.petersen_graph()
 >>> # Compute selected invariants
 >>> gc.independence_number(G)
 4
@@ -110,6 +95,6 @@ While not optimized for massive-scale network analysis, `GraphCalc` excels in th
 
 The authors gratefully acknowledge David Amos and Boris Brimkov for their foundational support during the development of `GraphCalc`. David Amos provided early technical insight and design feedback that shaped the architecture of the package, while Boris Brimkov contributed valuable mathematical guidance in selecting and implementing key graph invariants.
 
-We also thank the many individuals who provided detailed comments on the manuscript and codebase during the revision process. Their feedback significantly improved the quality, clarity, and functionality of both the `GraphCalc` library and this paper.
+We also thank the referees who provided detailed comments on the manuscript and codebase during the revision process. Their feedback significantly improved the quality, clarity, and functionality of both the `GraphCalc` library and this paper.
 
 ## References
