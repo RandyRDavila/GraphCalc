@@ -916,17 +916,33 @@ def K_4_free(G: GraphLike) -> bool:
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import complete_graph
+    >>> from graphcalc.generators import complete_graph, star_graph
 
     >>> G = complete_graph(4)
     >>> gc.K_4_free(G)
     False
+
+    >>> H = star_graph(6)
+    >>> gc.triangle_free(H)
+    True
     """
-    K_4 = nx.complete_graph(4)
-    for S in set(itertools.combinations(G.nodes(), 4)):
-        H = G.subgraph(list(S))
-        if nx.is_isomorphic(H, K_4):
-            return False
+    for v in G:
+        N = list(G.neighbors(v))
+        if len(N) < 3:
+            continue
+        H = G.subgraph(N)  # induced by neighbors of v
+        # Does H contain a triangle?
+        # Fast check: for each u in H, see if its neighbors within H have an edge among them.
+        # (equivalently, any two neighbors of u in H that are adjacent -> triangle)
+        adj = {u: set(H.neighbors(u)) for u in H}
+        for u in H:
+            # check if adj[u] contains an edge: i.e., any w,z in adj[u] with w in adj[z]
+            Au = list(adj[u])
+            for i in range(len(Au)):
+                w = Au[i]
+                # intersect once to avoid O(d^2) worst loops when small
+                if adj[u] & adj[w]:
+                    return False
     return True
 
 def connected_and_K_4_free(G: GraphLike) -> bool:
@@ -974,21 +990,25 @@ def triangle_free(G: GraphLike) -> bool:
     Examples
     --------
     >>> import graphcalc as gp
-    >>> from graphcalc.generators import complete_graph
+    >>> from graphcalc.generators import complete_graph, star_graph
 
     >>> G = complete_graph(4)
     >>> gc.triangle_free(G)
     False
-    """
-    # define a triangle graph, also known as the complete graph K_3
-    triangle = nx.complete_graph(3)
 
-    # enumerate over all possible combinations of 3 vertices contained in G
-    for S in set(itertools.combinations(G.nodes(), 3)):
-        H = G.subgraph(list(S))
-        if nx.is_isomorphic(H, triangle):
-            return False
-    # if the above loop completes, the graph is triangle free
+    >>> H = star_graph(6)
+    >>> gc.triangle_free(H)
+    True
+    """
+    adj = {u: set(G.neighbors(u)) for u in G}
+    deg = {u: len(adj[u]) for u in G}
+
+    for u in G:
+        Nu_forward = {v for v in adj[u] if (deg[u] < deg[v]) or (deg[u] == deg[v] and u < v)}
+        for v in Nu_forward:
+            # Intersect only with v's forward neighbors to keep sets small
+            if Nu_forward & ({w for w in adj[v] if (deg[v] < deg[w]) or (deg[v] == deg[w] and v < w)}):
+                return False
     return True
 
 def connected_and_triangle_free(G: GraphLike) -> bool:
