@@ -7,7 +7,7 @@ tags:
   - optimization
 authors:
   - name: Randy Davila
-    orcid: 0000-0002-9908-3760
+    orcid: 0000-0002-0471-8744
     # equal-contrib: true
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
 affiliations:
