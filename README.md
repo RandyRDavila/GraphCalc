@@ -7,7 +7,20 @@
 
 ## Overview
 
-`graphcalc` is a Python package for performing a variety of graph computations, including maximum clique detection, chromatic number calculation, and vertex cover identification. It is built on top of `networkx` and provides efficient implementations of fundamental graph theory algorithms.
+`GraphCalc` is a Python library for computing a broad range of graph-theoretic invariants, purpose-built to support research in combinatorics, network science, and automated reasoning. It offers exact implementations of over 100 functions, spanning classical invariants (e.g., independence number, chromatic number, spectral radius) and a wide array of lesser-known parameters central to contemporary graph theory.
+
+Originally developed as the invariant engine for the automated conjecturing system TxGraffiti, `GraphCalc` has since matured into a general-purpose research tool that facilitates the large-scale construction of structured, high-resolution invariant datasets. These datasets, often organized into tabular “knowledge tables,” form the basis for symbolic pattern mining, hypothesis generation, and downstream machine reasoning. For example,
+
+```python
+>>> import graphcalc as gc
+>>> from graphcalc.polytopes.generators import cube_graph, octahedron_graph
+>>> graphs = [cube_graph(), octahedron_graph()]
+>>> functions = ["order", "size", "spectral_radius", "independence_number"]
+>>> gc.compute_knowledge_table(functions, graphs)
+   order  size  spectral_radius  independence_number
+0      8    12              3.0                    4
+1      6    12              4.0                    2
+```
 
 ## Features
 
