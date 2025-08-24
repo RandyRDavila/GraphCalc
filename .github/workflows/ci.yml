@@ -10,6 +10,10 @@ jobs:
   test:
     name: Unit and Docstring
     runs-on: ubuntu-22.04
+    env:
+      # Force GraphCalc to pick CBC in CI
+      GRAPHCALC_SOLVER: cbc
+
     steps:
       - uses: actions/checkout@v4
 
@@ -18,10 +22,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install LP/MIP solvers (HiGHS, CBC, GLPK)
+      - name: Install CBC (and GLPK as fallback)
         run: |
           sudo apt-get update
-          sudo apt-get install -y highs coinor-cbc glpk-utils
+          sudo apt-get install -y coinor-cbc glpk-utils
 
       - name: Install Python dependencies
         run: |
