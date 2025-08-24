@@ -4,6 +4,8 @@
 [![PyPI version](https://badge.fury.io/py/graphcalc.svg?ts=20250726)](https://pypi.org/project/graphcalc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/888587732.svg)](https://doi.org/10.5281/zenodo.16907645)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.08383/status.svg)](https://doi.org/10.21105/joss.08383)
+
 
 ## Overview
 
