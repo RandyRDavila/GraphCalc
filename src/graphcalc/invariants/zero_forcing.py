@@ -5,6 +5,8 @@ from itertools import combinations
 import graphcalc as gc
 from math import ceil
 
+from graphcalc import SimpleGraph
+
 
 __all__ = [
     "is_k_forcing_vertex",
@@ -44,7 +46,7 @@ __all__ = [
 
 
 def is_k_forcing_vertex(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         v: Hashable,
         nodes: Union[Set[Hashable], List[Hashable]],
         k: int
@@ -100,7 +102,7 @@ def is_k_forcing_vertex(
 
 
 def is_k_forcing_active_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         nodes: Union[Set[Hashable], List[Hashable]],
         k: int
     ) -> bool:
@@ -139,7 +141,7 @@ def is_k_forcing_active_set(
 
 
 def is_k_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         nodes: Union[Set[Hashable], List[Hashable]],
         k: int
     ) -> bool:
@@ -184,7 +186,7 @@ def is_k_forcing_set(
 
 
 def minimum_k_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         k: int
     ) -> Set[Hashable]:
     r"""
@@ -220,7 +222,7 @@ def minimum_k_forcing_set(
                 return set(S)
 
 
-def k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> int:
+def k_forcing_number(G: Union[nx.Graph, SimpleGraph], k: int) -> int:
     r"""
     Calculates the *k*-forcing number of the graph.
 
@@ -251,7 +253,7 @@ def k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> int:
 
 
 def is_zero_forcing_vertex(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         v: Hashable,
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
@@ -288,7 +290,7 @@ def is_zero_forcing_vertex(
 
 
 def is_zero_forcing_active_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     r"""
@@ -322,7 +324,7 @@ def is_zero_forcing_active_set(
 
 
 def is_zero_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     r"""
@@ -355,7 +357,7 @@ def is_zero_forcing_set(
     return is_k_forcing_set(G, S, 1)
 
 
-def minimum_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
+def minimum_zero_forcing_set(G: Union[nx.Graph, SimpleGraph]) -> Set[Hashable]:
     r"""
     Finds a smallest zero forcing set in the graph using brute force.
 
@@ -381,7 +383,7 @@ def minimum_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable
     return minimum_k_forcing_set(G, 1)
 
 
-def zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
+def zero_forcing_number(G: Union[nx.Graph, SimpleGraph]) -> int:
     r"""
     Calculates the zero forcing number of the graph.
 
@@ -408,7 +410,7 @@ def zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     """
     return len(minimum_zero_forcing_set(G))
 
-def two_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
+def two_forcing_number(G: Union[nx.Graph, SimpleGraph]) -> int:
     r"""
     Calculates the 2-forcing number of the graph.
 
@@ -435,7 +437,7 @@ def two_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
 
 
 def is_total_zero_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     r"""
@@ -472,7 +474,7 @@ def is_total_zero_forcing_set(
     return is_zero_forcing_set(G, S)
 
 
-def minimum_total_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
+def minimum_total_zero_forcing_set(G: Union[nx.Graph, SimpleGraph]) -> Set[Hashable]:
     r"""
     Finds a smallest total zero forcing set in the graph G.
 
@@ -506,7 +508,7 @@ def minimum_total_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Ha
     return None
 
 
-def total_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
+def total_zero_forcing_number(G: Union[nx.Graph, SimpleGraph]) -> int:
     r"""
     Calculates the total zero forcing number of the graph G.
 
@@ -539,7 +541,7 @@ def total_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
 
 
 def is_connected_k_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         nodes: Union[Set[Hashable], List[Hashable]],
         k: int,
     ) -> bool:
@@ -584,7 +586,7 @@ def is_connected_k_forcing_set(
 
 
 def is_connected_zero_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     r"""
@@ -618,7 +620,7 @@ def is_connected_zero_forcing_set(
 
 
 def minimum_connected_k_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         k: int,
     ) -> Set[Hashable]:
     r"""
@@ -660,7 +662,7 @@ def minimum_connected_k_forcing_set(
                 return set(S)
 
 
-def minimum_connected_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],) -> Set[Hashable]:
+def minimum_connected_zero_forcing_set(G: Union[nx.Graph, SimpleGraph],) -> Set[Hashable]:
     r"""
     Finds the smallest connected zero forcing set in the graph G using brute force.
 
@@ -686,7 +688,7 @@ def minimum_connected_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],) -> S
     return minimum_connected_k_forcing_set(G, 1)
 
 
-def connected_k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> int:
+def connected_k_forcing_number(G: Union[nx.Graph, SimpleGraph], k: int) -> int:
     r"""
     Calculates the connected kforcing number of the graph G.
 
@@ -726,7 +728,7 @@ def connected_k_forcing_number(G: Union[nx.Graph, gc.SimpleGraph], k: int) -> in
         return len(Z)
 
 
-def connected_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
+def connected_zero_forcing_number(G: Union[nx.Graph, SimpleGraph],) -> int:
     r"""
     Calculates the connected zero forcing number of the graph G.
 
@@ -754,7 +756,7 @@ def connected_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
     return connected_k_forcing_number(G, 1)
 
 def is_psd_forcing_vertex(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         v: Hashable,
         component: Set[Hashable],
     ) -> bool:
@@ -800,7 +802,7 @@ def is_psd_forcing_vertex(
 
 
 def psd_color_change(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         black_set: Set[Hashable],
     ) -> Set[Hashable]:
     r"""
@@ -857,7 +859,7 @@ def psd_color_change(
 
 
 def is_psd_zero_forcing_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         black_set: Set[Hashable],
     ) -> bool:
     r"""
@@ -892,7 +894,7 @@ def is_psd_zero_forcing_set(
     return len(derived_set) == G.order()
 
 
-def minimum_psd_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],)-> Set[Hashable]:
+def minimum_psd_zero_forcing_set(G: Union[nx.Graph, SimpleGraph],)-> Set[Hashable]:
     r"""
     Finds a smallest PSD zero forcing set in the graph G.
 
@@ -924,7 +926,7 @@ def minimum_psd_zero_forcing_set(G: Union[nx.Graph, gc.SimpleGraph],)-> Set[Hash
             if is_psd_zero_forcing_set(G, black_set):
                 return set(black_set)
 
-def positive_semidefinite_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
+def positive_semidefinite_zero_forcing_number(G: Union[nx.Graph, SimpleGraph],) -> int:
     r"""
     Calculates the Positive Semidefinite (PSD) zero forcing number of the graph G.
 
@@ -954,7 +956,7 @@ def positive_semidefinite_zero_forcing_number(G: Union[nx.Graph, gc.SimpleGraph]
 
 
 def is_k_power_dominating_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         nodes: Union[Set[Hashable], List[Hashable]],
         k: int
     ) -> bool:
@@ -1002,7 +1004,7 @@ def is_k_power_dominating_set(
 
 
 def minimum_k_power_dominating_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         k: int,
     ) -> Set[Hashable]:
     r"""
@@ -1043,7 +1045,7 @@ def minimum_k_power_dominating_set(
 
 
 def k_power_domination_number(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         k: int,
     ) -> int:
     r"""
@@ -1081,7 +1083,7 @@ def k_power_domination_number(
 
 
 def is_power_dominating_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         nodes: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     r"""
@@ -1115,7 +1117,7 @@ def is_power_dominating_set(
     return is_k_power_dominating_set(G, nodes, 1)
 
 
-def minimum_power_dominating_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hashable]:
+def minimum_power_dominating_set(G: Union[nx.Graph, SimpleGraph]) -> Set[Hashable]:
     r"""
     Finds the smallest power dominating set in the graph :math:`G`.
 
@@ -1145,7 +1147,7 @@ def minimum_power_dominating_set(G: Union[nx.Graph, gc.SimpleGraph]) -> Set[Hash
     return minimum_k_power_dominating_set(G, 1)
 
 
-def power_domination_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
+def power_domination_number(G: Union[nx.Graph, SimpleGraph]) -> int:
     r"""
     Calculates the power domination number of the graph :math:`G`.
 
@@ -1173,7 +1175,7 @@ def power_domination_number(G: Union[nx.Graph, gc.SimpleGraph]) -> int:
     return k_power_domination_number(G, 1)
 
 def is_well_splitting_set(
-        G: Union[nx.Graph, gc.SimpleGraph],
+        G: Union[nx.Graph, SimpleGraph],
         S: Union[Set[Hashable], List[Hashable]],
     ) -> bool:
     """
@@ -1204,7 +1206,7 @@ def is_well_splitting_set(
             return False
     return True
 
-def compute_well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],):
+def compute_well_splitting_number(G: Union[nx.Graph, SimpleGraph],):
     r"""
     Compute the well-splitting number :math:`S_w(G)` of the graph :math:`G`.
 
@@ -1236,7 +1238,7 @@ def compute_well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],):
     # In worst-case the entire vertex set is needed.
     return n, []
 
-def well_splitting_number(G: Union[nx.Graph, gc.SimpleGraph],) -> int:
+def well_splitting_number(G: Union[nx.Graph, SimpleGraph],) -> int:
     r"""
     Compute the well-splitting number :math:`S_w(G)` of the graph :math:`G`. The well-splitting number
     of a graph is the minimum size of a well-splitting set, defined as a set :math:`S` of vertices

@@ -1,11 +1,13 @@
-from typing import Set, Hashable, Dict
+from typing import Set, Hashable, Dict, Tuple, Hashable
 import pulp
 import itertools
-
 import networkx as nx
-from graphcalc.core import SimpleGraph
-from graphcalc.utils import get_default_solver, enforce_type, GraphLike, _extract_and_report
 
+from graphcalc.core import SimpleGraph
+from graphcalc.utils import (
+    get_default_solver, enforce_type, GraphLike, _extract_and_report
+)
+from graphcalc.solvers import with_solver
 
 __all__ = [
     "maximum_independent_set",
@@ -24,10 +26,17 @@ __all__ = [
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_independent_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
+@with_solver
+def maximum_independent_set(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
     r"""Return a largest independent set of nodes in *G*.
 
-    This method uses integer programming to solve the following formulation:
+    This method formulates the maximum independent set problem as an integer
+    linear program:
 
     .. math::
         \max \sum_{v \in V} x_v
@@ -35,59 +44,68 @@ def maximum_independent_set(G: GraphLike, verbose : bool = False) -> Set[Hashabl
     subject to
 
     .. math::
-        x_u + x_v \leq 1 \quad \text{for all } \{u, v\} \in E
+        x_u + x_v \leq 1 \quad \text{for all } \{u, v\} \in E,
 
-    where *E* and *V* are the edge and vertex sets of *G*.
+    where *E* and *V* are the edge and vertex sets of *G*, and
+    :math:`x_v \in \{0,1\}` for each vertex.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected simple graph.
     verbose : bool, default=False
-        If True, print detailed solver output and intermediate results during
-        optimization. If False, run silently.
+        If True, print solver output (when supported) and intermediate results
+        during optimization. If False, run silently.
+
+    Notes
+    -----
+    This function also accepts the standard solver kwargs provided by
+    :func:`graphcalc.solvers.with_solver`, e.g. ``solver="highs"`` or
+    ``solver={"name":"GUROBI_CMD","options":{"timeLimit":10}}``.
 
     Returns
     -------
     set of hashable
         A set of nodes comprising a largest independent set in *G*.
 
+    Raises
+    ------
+    ValueError
+        If no optimal solution is found by the solver.
+
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
-    >>> solution = gc.maximum_independent_set(G)
+    >>> S = gc.maximum_independent_set(G)
+    >>> len(S)
+    1
+    >>> # Optionally choose a specific solver
+    >>> from pulp import HiGHS_CMD
+    >>> S = gc.maximum_independent_set(G, solver=HiGHS_CMD)
+    >>> len(S)
+    1
     """
-    # Initialize LP model
+    # Build IP
     prob = pulp.LpProblem("MaximumIndependentSet", pulp.LpMaximize)
 
-    # Decision variables: x_v ∈ {0, 1} for each node
-    variables = {
-        v: pulp.LpVariable(f"x_{v}", cat="Binary")
-        for v in G.nodes()
-    }
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
+    prob += pulp.lpSum(x[v] for v in G.nodes())
 
-    # Objective: maximize the number of selected nodes
-    prob += pulp.lpSum(variables[v] for v in G.nodes())
-
-    # Constraints: adjacent nodes cannot both be selected
     for u, v in G.edges():
-        prob += variables[u] + variables[v] <= 1, f"edge_{u}_{v}"
+        prob += x[u] + x[v] <= 1, f"edge_{u}_{v}"
 
-    # Solve using default solver
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Uniform solve (provided by @with_solver)
+    solve(prob)
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
-
-    # Extract solution
-    return _extract_and_report(prob, variables, verbose=verbose)
+    return _extract_and_report(prob, x, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def independence_number(G: GraphLike) -> int:
+def independence_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to MIS
+) -> int:
     r"""
     Return the size of a largest independent set in *G*.
 
@@ -104,16 +122,24 @@ def independence_number(G: GraphLike) -> int:
     * The independence number is NP-hard to compute in general.
     * This implementation calls :func:`maximum_independent_set`,
       which formulates the problem as a mixed integer program (MIP).
-    * It is related to other invariants:
+    * Relations:
 
-      - Complement relation: :math:`\alpha(G) = \omega(\overline{G})`,
-        where :math:`\omega(G)` is the clique number.
-      - Bounds: :math:`\alpha(G) \geq \frac{|V|}{\Delta(G)+1}` (Caro–Wei bound).
+      - Complement: :math:`\alpha(G) = \omega(\overline{G})`.
+      - Bound: :math:`\alpha(G) \ge \frac{|V|}{\Delta(G)+1}` (Caro–Wei).
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+        Passed through to the solver via :func:`graphcalc.solvers.with_solver`.
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+        Flexible solver spec handled by :func:`graphcalc.solvers.resolve_solver`.
+    solver_options : dict, optional
+        Extra kwargs used when constructing the solver if needed.
 
     Returns
     -------
@@ -124,25 +150,26 @@ def independence_number(G: GraphLike) -> int:
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph, cycle_graph
-
-    >>> G = complete_graph(4)
-    >>> gc.independence_number(G)
+    >>> gc.independence_number(complete_graph(4))
     1
-
-    >>> H = cycle_graph(5)
-    >>> gc.independence_number(H)
+    >>> gc.independence_number(cycle_graph(5))
     2
     """
-    return len(maximum_independent_set(G))
+    return len(maximum_independent_set(G, **solver_kwargs))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_clique(G: GraphLike, verbose: bool = False) -> Set[Hashable]:
+@with_solver
+def maximum_clique(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
     r"""
     Return a maximum clique of nodes in *G* using integer programming.
 
-    We select binary variables :math:`x_v \in \{0,1\}` for each vertex :math:`v`,
-    maximize the number of selected vertices, and forbid selecting two
-    non-adjacent vertices simultaneously:
+    We choose binary variables :math:`x_v \in \{0,1\}` for each vertex :math:`v`,
+    maximize the selected vertices, and forbid selecting non-adjacent pairs:
 
     Objective
     ---------
@@ -152,107 +179,118 @@ def maximum_clique(G: GraphLike, verbose: bool = False) -> Set[Hashable]:
     Constraints
     -----------
     .. math::
-        x_u + x_v \le 1 \quad \text{for every non-edge } \{u,v\} \notin E.
+        x_u + x_v \le 1 \quad \text{for every non-edge } \{u,v\} \notin E,
 
-    This enforces that the chosen vertices induce a complete subgraph, i.e., a clique.
+    which ensures the chosen vertices induce a clique.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected simple graph.
     verbose : bool, default=False
-        If True, print detailed solver/output information via the internal reporter.
-        If False, run silently.
+        If True, print solver output (when supported) and intermediate details.
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+        Specification of the solver backend. Same accepted forms as in
+        :func:`maximum_independent_set`. If None, uses :func:`get_default_solver`.
+    solver_options : dict, optional
+        Extra keyword arguments when constructing the solver if ``solver`` is a
+        string or class. Ignored if ``solver`` is an existing object.
 
     Returns
     -------
     set of hashable
         A set of nodes forming a maximum clique in *G*.
 
+    Raises
+    ------
+    ValueError
+        If no optimal solution is found by the solver.
+
     Examples
     --------
     >>> import graphcalc as gc
-    >>> from graphcalc.generators import complete_graph, cycle_graph
-    >>> gc.maximum_clique(complete_graph(4))
+    >>> from graphcalc.generators import complete_graph
+    >>> gc.maximum_clique(complete_graph(4)) == {0, 1, 2, 3}
+    True
+
+    Optionally specify a solver (skipped in doctest since availability varies):
+
+    >>> from pulp import HiGHS_CMD
+    >>> gc.maximum_clique(complete_graph(4), solver=HiGHS_CMD)
     {0, 1, 2, 3}
     """
     # MILP model
     prob = pulp.LpProblem("MaximumClique", pulp.LpMaximize)
 
     # Binary decision variables x_v for each vertex
-    variables = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
 
     # Objective: maximize number of selected vertices
-    prob += pulp.lpSum(variables.values())
-
-    # Precompute edge set for O(1) non-edge checks
-    E = {frozenset((u, v)) for (u, v) in G.edges()}
-    nodes = list(G.nodes())
+    prob += pulp.lpSum(x.values())
 
     # For every non-edge {u,v}, forbid selecting both: x_u + x_v <= 1
+    E = {frozenset((u, v)) for (u, v) in G.edges()}
+    nodes = list(G.nodes())
     for u, v in itertools.combinations(nodes, 2):
         if frozenset((u, v)) not in E:
-            prob += variables[u] + variables[v] <= 1, f"nonedge_{u}_{v}"
+            prob += x[u] + x[v] <= 1, f"nonedge_{u}_{v}"
 
-    # Solve
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Solve (same flexible API as MIS)
+    solve(prob)
 
     # Check status
     if pulp.LpStatus[prob.status] != "Optimal":
         raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
 
-    # Extract selected vertices (and optionally print if verbose)
-    return _extract_and_report(prob, variables, verbose=verbose)
+    # Extract solution
+    return _extract_and_report(prob, x, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def clique_number(G: GraphLike) -> int:
+def clique_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to MIS
+) -> int:
     r"""
-    Compute the clique number of the graph.
+    Compute the clique number :math:`\omega(G)`.
 
-    A **clique** in a graph :math:`G=(V,E)` is a subset
-    :math:`C \subseteq V` such that every pair of vertices in :math:`C`
-    is adjacent. The **clique number** :math:`\omega(G)` is defined as
+    A **clique** in :math:`G=(V,E)` is a subset :math:`C \subseteq V` such that
+    every pair of vertices in :math:`C` is adjacent. The **clique number** is
 
     .. math::
         \omega(G) = \max \{ |C| : C \subseteq V, \, C \text{ induces a clique} \}.
 
     Notes
     -----
-    * The clique number is NP-hard to compute in general.
-    * This implementation calls :func:`maximum_clique`, which solves
-      a mixed integer program (MIP) to find a maximum clique.
-    * Relationship with other invariants:
-
-      - Complement relation: :math:`\omega(G) = \alpha(\overline{G})`,
-        where :math:`\alpha(G)` is the independence number.
-      - Bounds: :math:`\omega(G) \leq \Delta(G)+1`, where :math:`\Delta(G)`
-        is the maximum degree.
+    * NP-hard in general.
+    * This implementation calls :func:`maximum_clique`, which solves a MIP.
+    * Relations:
+      - Complement: :math:`\omega(G) = \alpha(\overline{G})`.
+      - Trivial bound: :math:`\omega(G) \le \Delta(G)+1`.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         An undirected simple graph.
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+        Same solver options as :func:`maximum_clique`.
+    solver_options : dict, optional
+        Extra keyword arguments used when constructing the solver if needed.
 
     Returns
     -------
     int
-        The clique number :math:`\omega(G)` of the graph.
+        The clique number :math:`\omega(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph, cycle_graph
-
-    >>> G = complete_graph(4)
-    >>> gc.clique_number(G)
+    >>> gc.clique_number(complete_graph(4))
     4
-
-    >>> H = cycle_graph(5)
-    >>> gc.clique_number(H)
+    >>> gc.clique_number(cycle_graph(5))
     2
     """
-    return len(maximum_clique(G))
+    return len(maximum_clique(G, **solver_kwargs))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def optimal_proper_coloring(G: GraphLike) -> Dict:
@@ -341,17 +379,34 @@ def chromatic_number(G: GraphLike) -> int:
     return len(colors)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def minimum_vertex_cover(G: GraphLike) -> set:
-    r"""Return a smallest vertex cover of the graph :math:`G`.
+def minimum_vertex_cover(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to MIS
+) -> Set[Hashable]:
+    r"""Return a smallest vertex cover of :math:`G`.
+
+    A set :math:`X \subseteq V` is a **vertex cover** if every edge has at least
+    one endpoint in :math:`X`. By complementarity with independent sets,
+    a smallest vertex cover has size :math:`|V| - \alpha(G)` and equals
+    :math:`V \setminus S` for any maximum independent set :math:`S`.
 
     Parameters
     ----------
-    G : NetworkX Graph or GraphCalc SimpleGraph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+        Passed through to the solver used by :func:`maximum_independent_set`.
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+        Flexible solver spec handled by :func:`graphcalc.solvers.resolve_solver`.
+    solver_options : dict, optional
+        Extra kwargs used when constructing the solver if needed.
 
     Returns
     -------
-    set
+    set of hashable
         A smallest vertex cover of :math:`G`.
 
     Examples
@@ -359,34 +414,48 @@ def minimum_vertex_cover(G: GraphLike) -> set:
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
     >>> G = complete_graph(4)
-    >>> solution = gc.minimum_vertex_cover(G)
+    >>> len(gc.minimum_vertex_cover(G))  # any 3 vertices form a minimum cover
+    3
     """
-    X = maximum_independent_set(G)
-    return G.nodes() - X
+    S = set(maximum_independent_set(G, **solver_kwargs))
+    return set(G.nodes()) - S
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def vertex_cover_number(G: GraphLike) -> int:
-    r"""Return a the size of smallest vertex cover in the graph G.
+def vertex_cover_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards to independence_number (which forwards to MIS)
+) -> int:
+    r"""Return the size of a smallest vertex cover of :math:`G`.
+
+    Uses :math:`\tau(G) = |V| - \alpha(G)`.
 
     Parameters
     ----------
-    G : NetworkX Graph or GraphCalc SimpleGraph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+        Passed through to the solver used by :func:`independence_number`.
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+        Flexible solver spec handled by :func:`graphcalc.solvers.resolve_solver`.
+    solver_options : dict, optional
+        Extra kwargs used when constructing the solver if needed.
 
     Returns
     -------
-    number
-        The size of a smallest vertex cover of G.
+    int
+        The vertex cover number :math:`\tau(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
-    >>> G = complete_graph(4)
-    >>> gc.vertex_cover_number(G)
+    >>> gc.vertex_cover_number(complete_graph(4))
     3
     """
-    return G.order() - independence_number(G)
+    return G.order() - independence_number(G, **solver_kwargs)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_edge_cover(G: GraphLike):
@@ -436,90 +505,111 @@ def edge_cover_number(G: GraphLike) -> int:
     return len(nx.min_edge_cover(G))
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def maximum_matching(G: GraphLike, verbose : bool = False) -> set[Hashable]:
-    r"""Return a maximum matching in the graph G.
+@with_solver
+def maximum_matching(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Tuple[Hashable, Hashable]]:
+    r"""Return a maximum matching in :math:`G` via integer programming.
 
-    A matching in a graph is a set of edges with no shared endpoint. This function uses
-    integer programming to solve for a maximum matching in the graph :math:`G`. It solves the following
-    integer program:
+    A matching is a set of edges with no shared endpoint. We solve:
 
     .. math::
-        \text{max} \sum_{e \in E} x_e \text{ where } x_e \in \{0, 1\} \text{ for all } e \in E
-
-    subject to
-
-    .. math::
-        \sum_{e \in \delta(v)} x_e \leq 1 \text{ for all } v \in V
-
-    where :math:`\delta(v)` is the set of edges incident to node :math:`v`, and
-    :math:`E` and :math:`V` are the set of edges and nodes of :math:`G`, respectively.
+        \max \sum_{e \in E} x_e \quad \text{s.t. } \sum_{e \in \delta(v)} x_e \le 1 \;\; \forall v\in V,\;
+        x_e \in \{0,1\}.
 
     Parameters
     ----------
-    G : NetworkX Graph or GraphCalc SimpleGraph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
     verbose : bool, default=False
-        If True, print detailed solver output and intermediate results during
-        optimization. If False, run silently.
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    This function accepts the standard solver kwargs provided by
+    :func:`graphcalc.solvers.with_solver`, e.g. ``solver="highs"`` or
+    ``solver={"name":"GUROBI_CMD","options":{"timeLimit":10}}``.
 
     Returns
     -------
-    set
-        A maximum matching of :math:`G`.
+    set of tuple
+        A maximum matching as a set of edges ``(u, v)``.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(4)
-    >>> solution = gc.maximum_matching(G)
+    >>> M = gc.maximum_matching(G)
+    >>> len(M)
+    2
     """
-    prob = pulp.LpProblem("MaximumMatchingSet", pulp.LpMaximize)
-    variables = {edge: pulp.LpVariable(f"x_{edge}", 0, 1, pulp.LpBinary) for edge in G.edges()}
+    prob = pulp.LpProblem("MaximumMatching", pulp.LpMaximize)
 
-    # Set the maximum matching objective function
-    prob += pulp.lpSum(variables)
+    # Decision variables: one binary per edge (normalize key order for stability)
+    def ek(u, v):
+        a, b = sorted((u, v))
+        return (a, b)
 
-    # Set constraints
-    for node in G.nodes():
-        incident_edges = [variables[edge] for edge in variables if node in edge]
-        prob += sum(incident_edges) <= 1
+    edges = [ek(u, v) for (u, v) in G.edges()]
+    x = {e: pulp.LpVariable(f"x_{e[0]}_{e[1]}", cat="Binary") for e in edges}
 
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Objective
+    prob += pulp.lpSum(x[e] for e in edges)
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    # Degree constraints: each vertex incident to at most one chosen edge
+    inc = {v: [] for v in G.nodes()}
+    for (u, v) in G.edges():
+        e = ek(u, v)
+        inc[u].append(e)
+        inc[v].append(e)
+    for v in G.nodes():
+        prob += pulp.lpSum(x[e] for e in inc[v]) <= 1, f"deg_{v}"
 
-    # Extract the results
-    return _extract_and_report(prob, variables, verbose=verbose)
+    # Solve via the uniform hook
+    solve(prob)
+
+    # Extract selected edges
+    return {e for e in edges if pulp.value(x[e]) > 0.5}
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
-def matching_number(G: GraphLike) -> int:
-    r"""Return the size of a maximum matching in the graph :math:`G`.
+def matching_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to maximum_matching
+) -> int:
+    r"""Return the size of a maximum matching in :math:`G`.
 
     Parameters
     ----------
-    G : NetworkX Graph or GraphCalc SimpleGraph
+    G : networkx.Graph or graphcalc.SimpleGraph
         An undirected graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+        Passed through to the solver.
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+        Flexible solver spec handled by :func:`graphcalc.solvers.resolve_solver`.
+    solver_options : dict, optional
+        Extra kwargs used when constructing the solver if needed.
 
     Returns
     -------
-    number
-        The size of a maximum matching of :math:`G`.
+    int
+        The matching number :math:`\nu(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import complete_graph
-
-    >>> G = complete_graph(4)
-    >>> gc.matching_number(G)
+    >>> gc.matching_number(complete_graph(4))
     2
-
     """
-    return len(maximum_matching(G))
+    return len(maximum_matching(G, **solver_kwargs))
+
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def triameter(G: GraphLike) -> int:
