@@ -2,11 +2,9 @@ name: Run Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   test:
@@ -14,13 +12,16 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install HiGHS
-        run: sudo apt install -y coinor-cbc
+      - name: Install LP/MIP solvers (HiGHS, CBC, GLPK)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y highs coinor-cbc glpk-utils
 
       - name: Install Python dependencies
         run: |
@@ -31,5 +32,4 @@ jobs:
         run: pytest
 
       - name: Run docstring examples
-        run: |
-          pytest --doctest-modules -v src/
+        run: pytest --doctest-modules -v src/
