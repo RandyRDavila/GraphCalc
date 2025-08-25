@@ -2,6 +2,7 @@
 from typing import Hashable, List
 import networkx as nx
 import graphcalc as gc
+from graphcalc import SimpleGraph
 from graphcalc.utils import enforce_type, GraphLike
 
 
@@ -19,7 +20,7 @@ __all__= [
     "harmonic_index",
 ]
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def degree(G: GraphLike, v: Hashable) -> int:
     r"""
     Returns the degree of a vertex in a graph.
@@ -50,7 +51,7 @@ def degree(G: GraphLike, v: Hashable) -> int:
     """
     return G.degree(v)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def degree_sequence(G: GraphLike, nonincreasing=True) -> List[int]:
     r"""
     Returns the degree sequence of a graph.
@@ -87,7 +88,7 @@ def degree_sequence(G: GraphLike, nonincreasing=True) -> List[int]:
         degrees.sort()
     return degrees
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def average_degree(G: GraphLike) -> float:
     r"""
     Returns the average degree of a graph.
@@ -116,7 +117,7 @@ def average_degree(G: GraphLike) -> float:
     degrees = degree_sequence(G)
     return sum(degrees) / len(degrees)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def maximum_degree(G: GraphLike) -> int:
     r"""
     Returns the maximum degree of a graph.
@@ -144,7 +145,7 @@ def maximum_degree(G: GraphLike) -> int:
     degrees = degree_sequence(G)
     return max(degrees)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_degree(G: GraphLike) -> int:
     r"""
     Returns the minimum degree of a graph.
@@ -172,7 +173,7 @@ def minimum_degree(G: GraphLike) -> int:
     degrees = degree_sequence(G)
     return min(degrees)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def sub_k_domination_number(G: GraphLike, k: int) -> float:
     r"""Return the sub-k-domination number of the graph.
 
@@ -235,7 +236,7 @@ def sub_k_domination_number(G: GraphLike, k: int) -> float:
     # if above loop completes, return None
     return None
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def slater(G: GraphLike) -> int:
     r"""
     Returns the Slater invariant for the graph.
@@ -301,7 +302,7 @@ def slater(G: GraphLike) -> int:
     """
     return sub_k_domination_number(G, 1)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def sub_total_domination_number(G: GraphLike) -> int:
     r"""
     Returns the sub-total domination number of the graph.
@@ -362,7 +363,7 @@ def sub_total_domination_number(G: GraphLike) -> int:
     # if above loop completes, return None
     return None
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def annihilation_number(G: GraphLike) -> int:
     r"""
     Returns the annihilation number of the graph.
@@ -422,7 +423,7 @@ def annihilation_number(G: GraphLike) -> int:
         if sum(D[:i]) <= m:
             return i
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def residue(G: GraphLike) -> int:
     r"""
     Returns the residue of a graph.
@@ -488,7 +489,7 @@ def residue(G: GraphLike) -> int:
 
     return len(degrees)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def harmonic_index(G: GraphLike) -> float:
     r"""
     Returns the harmonic index of a graph.

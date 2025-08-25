@@ -2,25 +2,30 @@ name: Run Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   test:
     name: Unit and Docstring
     runs-on: ubuntu-22.04
+    env:
+      # Force GraphCalc to pick CBC in CI
+      GRAPHCALC_SOLVER: cbc
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install HiGHS
-        run: sudo apt install -y coinor-cbc
+      - name: Install CBC (and GLPK as fallback)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y coinor-cbc glpk-utils
 
       - name: Install Python dependencies
         run: |
@@ -31,5 +36,4 @@ jobs:
         run: pytest
 
       - name: Run docstring examples
-        run: |
-          pytest --doctest-modules -v src/
+        run: pytest --doctest-modules -v src/

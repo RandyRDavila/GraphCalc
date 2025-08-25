@@ -38,3 +38,4 @@ from graphcalc.generators import *
 from graphcalc.invariants import *
 from graphcalc.polytopes import *
 from graphcalc.utils import *
+from graphcalc.solvers import *

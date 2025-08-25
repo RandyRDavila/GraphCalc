@@ -1,5 +1,5 @@
 
-from typing import Union, Set, Hashable, Dict, List
+from typing import Union, Set, Hashable, Dict, List, Tuple
 import networkx as nx
 from itertools import combinations
 import pulp
@@ -7,7 +7,8 @@ from pulp import value
 
 import graphcalc as gc
 from graphcalc.core.neighborhoods import neighborhood, closed_neighborhood
-from graphcalc.utils import get_default_solver, enforce_type, GraphLike, _extract_and_report
+from graphcalc.utils import get_default_solver, enforce_type, GraphLike, _extract_and_report, SimpleGraph
+from graphcalc.solvers import with_solver
 
 __all__ = [
     "is_dominating_set",
@@ -34,7 +35,7 @@ __all__ = [
     "minimum_outer_connected_dominating_set",
 ]
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+@enforce_type(0, (nx.Graph, SimpleGraph))
 def is_dominating_set(
     G: GraphLike,
     S: Union[Set[Hashable], List[Hashable]],
@@ -74,74 +75,76 @@ def is_dominating_set(
     """
     return all(any(u in S for u in closed_neighborhood(G, v)) for v in G.nodes())
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_dominating_set(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
     r"""
-    Finds a minimum dominating set for the input graph :math:`G`.
+    Find a minimum dominating set of :math:`G` via integer programming.
 
-    The minimum dominating set is the smallest subset of nodes :math:`S \subseteq V` such that every node in the graph is either
-    part of :math:`S` or adjacent to at least one node in :math:`S`. This function solves the problem using integer programming.
-
-    Integer Programming Formulation:
-    Let :math:`x_v \in \{0, 1\}` for all :math:`v \in V`, where :math:`x_v = 1` if :math:`v` is in the dominating set, and :math:`x_v = 0` otherwise.
-
-    Objective:
+    Let :math:`x_v \in \{0,1\}` indicate whether :math:`v` is chosen. We solve:
 
     .. math::
-        \min \sum_{v \in V} x_v
+        \min \sum_{v \in V} x_v \quad \text{s.t. } \sum_{u \in N[v]} x_u \ge 1 \;\; \forall v\in V,
 
-    Constraints:
-
-    .. math::
-        x_v + \sum_{u \in N(v)} x_u \geq 1 \quad \forall v \in V
-
-    Here, :math:`V` is the set of vertices in the graph, and :math:`N(v)` is the open neighborhood of vertex :math:`v`.
-
+    where :math:`N[v]` is the **closed** neighborhood of :math:`v`.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     verbose : bool, default=False
-        If True, print detailed solver output and intermediate results during
-        optimization. If False, run silently.
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    Accepts the standard solver kwargs from :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"`` or ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Returns
     -------
-    set
-        A minimum dominating set of nodes in the graph.
+    set of hashable
+        A minimum dominating set of nodes.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
-    >>> solution = gc.minimum_dominating_set(G)
+    >>> S = gc.minimum_dominating_set(G)
+    >>> len(S)
+    2
     """
     prob = pulp.LpProblem("MinDominatingSet", pulp.LpMinimize)
-    variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
-    # Set the domination number objective function.
-    prob += pulp.lpSum([variables[n] for n in variables])
+    # One binary var per node
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
 
-    # Set domination number constraints.
-    for node in G.nodes():
-        combination = [variables[n] for n in variables if n in closed_neighborhood(G, node)]
-        prob += pulp.lpSum(combination) >= 1
+    # Objective
+    prob += pulp.lpSum(x.values())
 
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Coverage constraints using CLOSED neighborhood
+    for v in G.nodes():
+        Nclosed = closed_neighborhood(G, v)  # ensure this is imported
+        prob += pulp.lpSum(x[u] for u in Nclosed) >= 1, f"cover_{v}"
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    # Solve (raises if not Optimal)
+    solve(prob)
 
     # Extract solution
-    return _extract_and_report(prob, variables, verbose=verbose)
+    return _extract_and_report(prob, x, verbose=verbose)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def domination_number(G: GraphLike) -> int:
+def domination_number(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> int:
     r"""
     Calculates the domination number of the graph :math:`G`.
 
@@ -167,180 +170,230 @@ def domination_number(G: GraphLike) -> int:
     >>> gc.domination_number(G)
     2
     """
-    return len(minimum_dominating_set(G))
+    return len(minimum_dominating_set(G, verbose=verbose))
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_total_domination_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_total_domination_set(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
     r"""
-    Finds a minimum total dominating set for the graph G.
+    Find a minimum **total** dominating set of :math:`G` via integer programming.
 
-    A total dominating set of a graph :math:`G = (V, E)` is a subset of nodes :math:`S \subseteq V` such that every node in :math:`V` is adjacent
-    to at least one node in :math:`S`. This function solves the problem using integer programming.
-
-    Integer Programming Formulation:
-    Let :math:`x_v \in \{0, 1\}` for all :math:`v \in V`, where :math:`x_v = 1` if :math:`v` is in the dominating set, and :math:`x_v = 0` otherwise.
-
-    Objective:
+    Let :math:`x_v \in \{0,1\}` indicate whether :math:`v` is chosen. We solve
 
     .. math::
         \min \sum_{v \in V} x_v
+        \quad \text{s.t.} \quad
+        \sum_{u \in N(v)} x_u \ge 1 \;\; \forall v \in V,
 
-    Constraints:
+    where :math:`N(v)` is the **open** neighborhood of :math:`v`
+    (no vertex dominates itself).
 
-    .. math::
-        \sum_{u \in N(v)} x_u \geq 1 \quad \forall v \in V
-
-    Here, :math:`V` is the set of vertices in the graph, and :math:`N(v)` is the open neighborhood of vertex :math:`v`.
+    Notes
+    -----
+    * If :math:`G` has an isolated vertex (degree 0), no total dominating set exists.
+      This function raises ``ValueError`` in that case.
+    * Accepts standard solver kwargs via :func:`graphcalc.solvers.with_solver`
+      (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     verbose : bool, default=False
-        If True, print detailed solver output and intermediate results during
-        optimization. If False, run silently.
+        If True, print solver output (when supported).
 
     Returns
     -------
-    set
-        A minimum total dominating set of nodes in the graph.
+    set of hashable
+        A minimum total dominating set.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
-    >>> optimal_set = gc.minimum_total_domination_set(G)
+    >>> S = gc.minimum_total_domination_set(G)
+    >>> len(S)
+    2
     """
+    # Infeasible if any isolated vertices exist
+    iso = [v for v, d in G.degree() if d == 0]
+    if iso:
+        raise ValueError(f"Total domination is undefined: graph has isolated vertices {iso!r}.")
+
     prob = pulp.LpProblem("MinTotalDominatingSet", pulp.LpMinimize)
-    variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
-    # Set the total domination number objective function.
-    prob += pulp.lpSum([variables[n] for n in variables])
+    # Binary variable per vertex
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
 
-    # Set total domination constraints.
-    for node in G.nodes():
-        combination = [variables[n] for n in variables if n in neighborhood(G, node)]
-        prob += pulp.lpSum(combination) >= 1
+    # Objective
+    prob += pulp.lpSum(x.values())
 
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Coverage constraints using OPEN neighborhood
+    for v in G.nodes():
+        Nv = neighborhood(G, v)  # must be open neighborhood: neighbors of v
+        # Nv is non-empty because we ruled out isolates
+        prob += pulp.lpSum(x[u] for u in Nv) >= 1, f"cover_{v}"
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    # Solve (raises if not Optimal)
+    solve(prob)
 
-    # Extract solution
-    return _extract_and_report(prob, variables, verbose=verbose)
+    # Extract chosen vertices
+    return _extract_and_report(prob, x, verbose=verbose)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def total_domination_number(G: GraphLike) -> int:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def total_domination_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to the MIP
+) -> int:
     r"""
-    Calculates the total domination number of the graph :math:`G`.
+    Return the **total domination number** of :math:`G`.
 
-    The total domination number is the size of the smallest total dominating set in :math:`G`. It represents the minimum
-    number of nodes required such that every node in the graph is adjacent to at least one node in the dominating set.
+    The total domination number is the size of the smallest set :math:`S`
+    such that every vertex is adjacent to some vertex in :math:`S`
+    (no vertex may dominate itself).
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_total_domination_set`.
 
     Returns
     -------
     int
-        The total domination number of G.
+        The total domination number.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
-    >>> G = path_graph(4)
-    >>> gc.total_domination_number(G)
+    >>> gc.total_domination_number(path_graph(4))
     2
     """
-    return len(minimum_total_domination_set(G))
+    return len(minimum_total_domination_set(G, **solver_kwargs))
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_independent_dominating_set(G: GraphLike, verbose : bool = False) -> Set[Hashable]:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_independent_dominating_set(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
     r"""
-    Finds a minimum independent dominating set for the graph :math:`G` using integer programming.
+    Find a minimum **independent dominating set** of :math:`G` via integer programming.
+
+    Let :math:`x_v \in \{0,1\}` indicate whether :math:`v` is chosen. We solve
+
+    .. math::
+        \min \sum_{v \in V} x_v
+
+    subject to the **independence** constraints
+    .. math::
+        x_u + x_v \le 1 \quad \forall \{u,v\}\in E,
+
+    and the **domination** constraints (using the closed neighborhood)
+    .. math::
+        \sum_{u \in N[v]} x_u \ge 1 \quad \forall v \in V.
+
+    Notes
+    -----
+    Accepts the standard solver kwargs from :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
     verbose : bool, default=False
-        If True, print detailed solver output and intermediate results during
-        optimization. If False, run silently.
+        If True, print solver output (when supported).
 
     Returns
     -------
-    set: A minimum independent dominating set of nodes in G.
+    set of hashable
+        A minimum independent dominating set.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
     >>> G = path_graph(4)
-    >>> optimal_set = gc.minimum_independent_dominating_set(G)
+    >>> S = gc.minimum_independent_dominating_set(G)
+    >>> len(S)
+    2
     """
     prob = pulp.LpProblem("MinIndependentDominatingSet", pulp.LpMinimize)
-    variables = {node: pulp.LpVariable("x{}".format(i + 1), 0, 1, pulp.LpBinary) for i, node in enumerate(G.nodes())}
 
-    # Set the objective function.
-    prob += pulp.lpSum([variables[n] for n in variables])
+    # One binary var per vertex
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
 
-    # Set constraints independent set constraint.
-    for e in G.edges():
-        prob += variables[e[0]] + variables[e[1]] <= 1
+    # Objective
+    prob += pulp.lpSum(x.values())
 
-    # Set domination constraints.
-    for node in G.nodes():
-        combination = [variables[n] for n in variables if n in closed_neighborhood(G, node)]
-        prob += pulp.lpSum(combination) >= 1
+    # Independence: adjacent vertices cannot both be chosen
+    for u, v in G.edges():
+        prob += x[u] + x[v] <= 1, f"indep_{u}_{v}"
 
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Domination: closed neighborhood covers each vertex
+    for v in G.nodes():
+        Nv_closed = closed_neighborhood(G, v)  # includes v itself
+        prob += pulp.lpSum(x[u] for u in Nv_closed) >= 1, f"dom_{v}"
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    # Solve (raises if not Optimal)
+    solve(prob)
 
-    # Extract solution
-    return _extract_and_report(prob, variables, verbose=verbose)
+    # Extract chosen vertices
+    return _extract_and_report(prob, x, verbose=verbose)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def independent_domination_number(G: GraphLike) -> int:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def independent_domination_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options)
+) -> int:
     r"""
-    Finds a minimum independent dominating set for the graph :math:`G`.
+    Return the **independent domination number** of :math:`G`.
 
-    An independent dominating set of a graph :math:`G = (V, E)` is a dominating set that is also an independent set,
-    meaning no two nodes in the set are adjacent. This function uses integer programming to find the smallest such set.
+    An independent dominating set is a dominating set that is also an
+    independent set. This wraps :func:`minimum_independent_dominating_set`.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         The input graph.
 
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_independent_dominating_set`.
+
     Returns
     -------
-    set
-        A minimum independent dominating set of nodes in G.
+    int
+        The independent domination number of :math:`G`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-
-    >>> G = path_graph(4)
-    >>> gc.independent_domination_number(G)
+    >>> gc.independent_domination_number(path_graph(4))
     2
     """
-    return len(minimum_independent_dominating_set(G))
+    return len(minimum_independent_dominating_set(G, **solver_kwargs))
+
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def complement_is_connected(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
@@ -484,50 +537,54 @@ def outer_connected_domination_number(G: GraphLike) -> int:
     """
     return len(minimum_outer_connected_dominating_set(G))
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_roman_dominating_function(
+    graph: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Dict[str, Dict[Hashable, int] | float]:
     r"""
     Compute a minimum Roman dominating function (RDF) via integer programming.
 
-    A Roman dominating function on a graph :math:`G=(V,E)` is a map
-    :math:`f:V\to\{0,1,2\}` such that every vertex with label 0 has a neighbor
-    with label 2. The goal is to minimize :math:`\sum_{v\in V} f(v)`.
-
-    **Mixed-Integer Formulation**
-
-    Introduce binary variables for each vertex :math:`v\in V`:
+    A Roman dominating function on :math:`G=(V,E)` is a map :math:`f:V\to\{0,1,2\}`
+    such that every vertex with label 0 has a neighbor with label 2. We minimize
+    :math:`\sum_{v\in V} f(v)` using binary indicators:
     :math:`x_v=1` iff :math:`f(v)=1`, and :math:`y_v=1` iff :math:`f(v)=2`
-    (so :math:`f(v)=x_v+2y_v`). Enforce exclusivity with :math:`x_v+y_v\le 1`.
+    (so :math:`f(v)=x_v+2y_v`).
 
-    Objective
-    ---------
-    .. math::
-       \min \sum_{v\in V} \bigl(x_v + 2\,y_v\bigr)
-
-    Constraints
+    Formulation
     -----------
-    Roman domination for every :math:`v\in V`:
     .. math::
-       x_v + y_v + \sum_{u\in N(v)} y_u \;\ge\; 1,
-    where :math:`N(v)` is the open neighborhood of :math:`v`.
+       \min \sum_{v\in V} (x_v + 2y_v)
 
-    Exclusivity for every :math:`v\in V`:
     .. math::
-       x_v + y_v \;\le\; 1.
+       x_v + y_v + \sum_{u\in N(v)} y_u \ge 1 \quad \forall v\in V
+
+    .. math::
+       x_v + y_v \le 1 \quad \forall v\in V
 
     Parameters
     ----------
     graph : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+    verbose : bool, default=False
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    Accepts the standard solver kwargs from :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Returns
     -------
     dict
-        A dictionary with keys:
-        - ``"x"``: ``{v: 0/1}`` indicators for vertices labeled 1,
-        - ``"y"``: ``{v: 0/1}`` indicators for vertices labeled 2,
-        - ``"objective"``: the minimum value :math:`\sum_v (x_v+2y_v)`.
-        The RDF itself is recovered as :math:`f(v)=x_v+2y_v`.
+        {
+          "x": {v: 0/1},   # vertices labeled 1
+          "y": {v: 0/1},   # vertices labeled 2
+          "objective": float  # min sum_v (x_v + 2 y_v)
+        }
 
     Examples
     --------
@@ -535,289 +592,279 @@ def minimum_roman_dominating_function(graph: GraphLike) -> Dict:
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(4)
     >>> sol = gc.minimum_roman_dominating_function(G)
-    >>> sol["objective"]  # doctest: +SKIP
-    3.0
+    >>> isinstance(sol["objective"], float)
+    True
     """
-    # Initialize the problem
     prob = pulp.LpProblem("RomanDomination", pulp.LpMinimize)
 
-    # Define variables x_v, y_v for each vertex v
-    x = {v: pulp.LpVariable(f"x_{v}", cat=pulp.LpBinary) for v in graph.nodes()}
-    y = {v: pulp.LpVariable(f"y_{v}", cat=pulp.LpBinary) for v in graph.nodes()}
+    # Binary variables per vertex
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in graph.nodes()}
+    y = {v: pulp.LpVariable(f"y_{v}", cat="Binary") for v in graph.nodes()}
 
-    # Objective function: min sum(x_v + 2*y_v)
-    prob += pulp.lpSum(x[v] + 2 * y[v] for v in graph.nodes()), "MinimizeCost"
+    # Objective: min sum(x_v + 2*y_v)
+    prob += pulp.lpSum(x[v] + 2 * y[v] for v in graph.nodes())
 
-    # Dominance Constraint: x_v + y_v + sum(y_u for u in N(v)) >= 1 for all v
+    # Roman domination constraints: x_v + y_v + sum_{u∈N(v)} y_u ≥ 1
     for v in graph.nodes():
-        neighbors = list(graph.neighbors(v))
-        prob += x[v] + y[v] + pulp.lpSum(y[u] for u in neighbors) >= 1, f"DominanceConstraint_{v}"
+        Nv = list(graph.neighbors(v))  # open neighborhood
+        prob += x[v] + y[v] + pulp.lpSum(y[u] for u in Nv) >= 1, f"dom_{v}"
 
-    # Mutual Exclusivity: x_v + y_v <= 1 for all v
+    # Exclusivity: x_v + y_v ≤ 1
     for v in graph.nodes():
-        prob += x[v] + y[v] <= 1, f"ExclusivityConstraint_{v}"
+        prob += x[v] + y[v] <= 1, f"excl_{v}"
 
-    # Solve the problem
-    solver = get_default_solver()
-    prob.solve(solver)
-
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    # Solve (raises if not Optimal)
+    solve(prob)
 
     # Extract solution
-    solution = {
-        "x": {v: value(x[v]) for v in graph.nodes()},
-        "y": {v: value(y[v]) for v in graph.nodes()},
-        "objective": value(prob.objective)
-    }
+    sol_x = {v: int(round(pulp.value(x[v]) or 0)) for v in graph.nodes()}
+    sol_y = {v: int(round(pulp.value(y[v]) or 0)) for v in graph.nodes()}
+    obj = float(pulp.value(prob.objective))
 
-    return solution
+    if verbose:
+        print(f"Objective: {obj}")
+        # (Optional) print a compact labeling summary
+        # print({v: sol_x[v] + 2*sol_y[v] for v in graph.nodes()})
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def roman_domination_number(graph: GraphLike) -> int:
+    return {"x": sol_x, "y": sol_y, "objective": obj}
+
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def roman_domination_number(
+    graph: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to the MIP
+) -> int:
     r"""
-    Compute the Roman domination number of a graph.
-
-    The **Roman domination number** :math:`\gamma_R(G)` of a graph
-    :math:`G=(V,E)` is the minimum weight of a Roman dominating function (RDF).
-    An RDF is a labeling :math:`f:V \to \{0,1,2\}` such that every vertex
-    assigned 0 has a neighbor assigned 2. The weight of :math:`f` is
-    :math:`\sum_{v \in V} f(v)`.
-
-    Thus,
-
-    .. math::
-       \gamma_R(G) = \min_{f} \sum_{v \in V} f(v)
-       \quad \text{s.t.}\quad
-       f(v)=0 \implies \exists u\in N(v): f(u)=2.
+    Return the Roman domination number :math:`\gamma_R(G)`.
 
     Parameters
     ----------
     graph : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_roman_dominating_function`.
 
     Returns
     -------
     int
-        The Roman domination number :math:`\gamma_R(G)`.
+        :math:`\gamma_R(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-    >>> G = path_graph(4)
-    >>> gc.roman_domination_number(G)
+    >>> gc.roman_domination_number(path_graph(4))
     3
     """
-    solution = minimum_roman_dominating_function(graph)
-    return int(solution["objective"])
+    sol = minimum_roman_dominating_function(graph, **solver_kwargs)
+    # objective is integer-valued; guard against tiny float noise
+    return int(round(sol["objective"]))
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_double_roman_dominating_function(graph: GraphLike) -> Dict:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_double_roman_dominating_function(
+    graph: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Dict[str, Dict[Hashable, int] | float]:
     r"""
     Compute a minimum double Roman dominating function (DRDF) via integer programming.
 
-    A **double Roman dominating function** (DRDF) on a graph :math:`G=(V,E)` is a labeling
-    :math:`f:V \to \{0,1,2,3\}` such that:
+    A DRDF is a labeling :math:`f:V \to \{0,1,2,3\}` such that:
+      1) If :math:`f(v)=0`, then either some neighbor has label 3, or at least
+         two neighbors have label 2.
+      2) If :math:`f(v)=1`, then some neighbor has label at least 2.
 
-    1. Every vertex with :math:`f(v)=0` has either
-       - a neighbor with :math:`f(u)=3`, or
-       - at least two neighbors with :math:`f(u)=2`.
-    2. Every vertex with :math:`f(v)=1` has at least one neighbor with
-       :math:`f(u) \ge 2`.
+    We use binary indicators per vertex :math:`v`:
+    :math:`x_v=1` iff :math:`f(v)=1`, :math:`y_v=1` iff :math:`f(v)=2`,
+    :math:`z_v=1` iff :math:`f(v)=3`, with exclusivity :math:`x_v+y_v+z_v\le 1`.
+    The weight is :math:`\sum_v (x_v+2y_v+3z_v)`.
 
-    The **double Roman domination number** is the minimum weight
-    :math:`\sum_{v\in V} f(v)` over all such labelings.
-
-    **Integer Programming Formulation**
-
-    Introduce binary variables for each :math:`v\in V`:
-
-    - :math:`x_v=1` if :math:`f(v)=1`
-    - :math:`y_v=1` if :math:`f(v)=2`
-    - :math:`z_v=1` if :math:`f(v)=3`
-
-    with exclusivity constraint :math:`x_v+y_v+z_v \le 1`.
-    Then :math:`f(v)=x_v+2y_v+3z_v`.
-
-    Objective
-    ---------
-    .. math::
-       \min \sum_{v\in V} \bigl(x_v + 2y_v + 3z_v\bigr)
-
-    Constraints
+    Formulation
     -----------
-    - **Domination (0-labeled vertices covered)**: for all :math:`v \in V`,
+    .. math::
+        \min \sum_{v\in V} (x_v + 2y_v + 3z_v)
 
-      .. math::
-         x_v + y_v + z_v + \tfrac{1}{2}\sum_{u\in N(v)} y_u + \sum_{u\in N(v)} z_u \;\ge\; 1.
+    Domination for 0-labeled vertices (linearized):
+    .. math::
+        x_v + y_v + z_v \;+\; \tfrac{1}{2}\!\sum_{u\in N(v)} y_u \;+\; \sum_{u\in N(v)} z_u \;\ge\; 1 \quad \forall v
 
-    - **Domination (1-labeled vertices covered)**: for all :math:`v \in V`,
+    Domination for 1-labeled vertices:
+    .. math::
+        \sum_{u\in N(v)} (y_u + z_u) \;\ge\; x_v \quad \forall v
 
-      .. math::
-         \sum_{u\in N(v)} (y_u+z_u) \;\ge\; x_v.
-
-    - **Exclusivity**: for all :math:`v \in V`,
-
-      .. math::
-         x_v + y_v + z_v \;\le\; 1.
+    Exclusivity:
+    .. math::
+        x_v + y_v + z_v \;\le\; 1 \quad \forall v
 
     Parameters
     ----------
     graph : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+    verbose : bool, default=False
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    Accepts standard solver kwargs via :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Returns
     -------
     dict
-        A dictionary with keys:
-        - ``"x"``: vertices labeled 1,
-        - ``"y"``: vertices labeled 2,
-        - ``"z"``: vertices labeled 3,
-        - ``"objective"``: the minimum weight of the DRDF.
+        {
+          "x": {v: 0/1},   # vertices labeled 1
+          "y": {v: 0/1},   # vertices labeled 2
+          "z": {v: 0/1},   # vertices labeled 3
+          "objective": float  # min sum_v (x_v + 2y_v + 3z_v)
+        }
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(4)
-    >>> sol = gc.minimum_double_roman_dominating_function(G)
-    >>> sol["objective"]  # doctest: +SKIP
-    4.0
+    >>> sol = gc.minimum_double_roman_dominating_function(G)  # doctest: +ELLIPSIS
+    >>> isinstance(sol["objective"], float)
+    True
     """
-    # Initialize the problem
     prob = pulp.LpProblem("DoubleRomanDomination", pulp.LpMinimize)
 
-    # Define variables x_v, y_v, z_v for each vertex v
-    x = {v: pulp.LpVariable(f"x_{v}", cat=pulp.LpBinary) for v in graph.nodes()}
-    y = {v: pulp.LpVariable(f"y_{v}", cat=pulp.LpBinary) for v in graph.nodes()}
-    z = {v: pulp.LpVariable(f"z_{v}", cat=pulp.LpBinary) for v in graph.nodes()}
+    # Binary indicators per vertex
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in graph.nodes()}
+    y = {v: pulp.LpVariable(f"y_{v}", cat="Binary") for v in graph.nodes()}
+    z = {v: pulp.LpVariable(f"z_{v}", cat="Binary") for v in graph.nodes()}
 
-    # Objective function: min sum(x_v + 2*y_v + 3*z_v)
-    prob += pulp.lpSum(x[v] + 2 * y[v] + 3 * z[v] for v in graph.nodes()), "MinimizeCost"
+    # Objective
+    prob += pulp.lpSum(x[v] + 2 * y[v] + 3 * z[v] for v in graph.nodes())
 
-    # Constraint (1b): xv + yv + zv + 1/2 * sum(yu for u in N(v)) + sum(zu for u in N(v)) >= 1
+    # Constraints
     for v in graph.nodes():
-        neighbors = list(graph.neighbors(v))
-        prob += x[v] + y[v] + z[v] + 0.5 * pulp.lpSum(y[u] for u in neighbors) + pulp.lpSum(z[u] for u in neighbors) >= 1, f"Constraint_1b_{v}"
+        Nv = list(graph.neighbors(v))  # open neighborhood
+        # (1) 0-labeled coverage linearization
+        prob += (
+            x[v] + y[v] + z[v]
+            + 0.5 * pulp.lpSum(y[u] for u in Nv)
+            + pulp.lpSum(z[u] for u in Nv)
+            >= 1
+        ), f"dom0_{v}"
+        # (2) 1-labeled coverage
+        prob += pulp.lpSum(y[u] + z[u] for u in Nv) >= x[v], f"dom1_{v}"
+        # (3) exclusivity
+        prob += x[v] + y[v] + z[v] <= 1, f"excl_{v}"
 
-    # Constraint (1c): sum(yu + zu) >= xv for each vertex v
-    for v in graph.nodes():
-        neighbors = list(graph.neighbors(v))
-        prob += pulp.lpSum(y[u] + z[u] for u in neighbors) >= x[v], f"Constraint_1c_{v}"
+    # Solve (raises if not Optimal)
+    solve(prob)
 
-    # Constraint (1d): xv + yv + zv <= 1
-    for v in graph.nodes():
-        prob += x[v] + y[v] + z[v] <= 1, f"Constraint_1d_{v}"
+    # Extract solution (guarding against tiny float noise)
+    sol_x = {v: int(round(pulp.value(x[v]) or 0)) for v in graph.nodes()}
+    sol_y = {v: int(round(pulp.value(y[v]) or 0)) for v in graph.nodes()}
+    sol_z = {v: int(round(pulp.value(z[v]) or 0)) for v in graph.nodes()}
+    obj = float(pulp.value(prob.objective))
 
-    # Solve the problem
-    solver = get_default_solver()
-    prob.solve(solver)
+    if verbose:
+        print(f"Objective: {obj}")
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    return {"x": sol_x, "y": sol_y, "z": sol_z, "objective": obj}
 
-    # Extract solution
-    solution = {
-        "x": {v: value(x[v]) for v in graph.nodes()},
-        "y": {v: value(y[v]) for v in graph.nodes()},
-        "z": {v: value(z[v]) for v in graph.nodes()},
-        "objective": value(prob.objective)
-    }
-
-    return solution
-
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def double_roman_domination_number(graph: GraphLike) -> int:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def double_roman_domination_number(
+    graph: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options)
+) -> int:
     r"""
-    Compute the double Roman domination number of a graph.
-
-    The **double Roman domination number** :math:`\gamma_{dR}(G)` of a graph
-    :math:`G=(V,E)` is the minimum weight of a double Roman dominating function (DRDF).
-    A DRDF is a labeling :math:`f:V \to \{0,1,2,3\}` such that:
-
-    1. If :math:`f(v)=0`, then either
-       - :math:`v` has a neighbor :math:`u` with :math:`f(u)=3`, or
-       - :math:`v` has at least two neighbors :math:`u,w` with :math:`f(u)=f(w)=2`.
-    2. If :math:`f(v)=1`, then :math:`v` has a neighbor :math:`u` with :math:`f(u)\ge 2`.
-
-    The weight of :math:`f` is :math:`\sum_{v\in V} f(v)`.
-    Then
-
-    .. math::
-       \gamma_{dR}(G) = \min_f \sum_{v \in V} f(v).
+    Return the double Roman domination number :math:`\gamma_{dR}(G)`.
 
     Parameters
     ----------
     graph : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_double_roman_dominating_function`.
 
     Returns
     -------
     int
-        The double Roman domination number :math:`\gamma_{dR}(G)`.
+        :math:`\gamma_{dR}(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-    >>> G = path_graph(4)
-    >>> gc.double_roman_domination_number(G)
+    >>> gc.double_roman_domination_number(path_graph(4))
     5
     """
-    solution = minimum_double_roman_dominating_function(graph)
-    return int(solution["objective"])
+    sol = minimum_double_roman_dominating_function(graph, **solver_kwargs)
+    return int(round(sol["objective"]))
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
+
+# Type alias for return
+ColoredPairs = List[Tuple[Hashable, int]]
+UncoloredList = List[Hashable]
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_rainbow_dominating_function(
+    G: GraphLike,
+    k: int,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Tuple[ColoredPairs, UncoloredList]:
     r"""
-    Compute a minimum rainbow dominating function (RDF) via integer programming.
+    Compute a minimum $k$-rainbow dominating function (RDF) via integer programming.
 
-    A **rainbow dominating function** on a graph :math:`G=(V,E)` with parameter :math:`k`
-    assigns to each vertex either one of :math:`k` colors or leaves it uncolored, such that:
+    A rainbow dominating function on $G=(V,E)$ with parameter $k$ assigns to each
+    vertex either one of $k$ colors or leaves it uncolored, such that every
+    uncolored vertex is adjacent to at least one vertex of each of the $k$ colors.
+    The objective is to minimize the number of colored vertices.
 
-    - Every uncolored vertex is adjacent to at least one vertex of each of the :math:`k` colors.
-    - The objective is to minimize the number of colored vertices.
-
-    **Integer Programming Formulation**
-
-    Introduce binary variables:
-
-    - :math:`f_{v,i} = 1` if vertex :math:`v` is colored with color :math:`i \in \{1,\dots,k\}`, else 0.
-    - :math:`x_v = 1` if vertex :math:`v` is left uncolored, else 0.
+    Variables
+    ---------
+    - $f_{v,i} \in \{0,1\}$ — vertex $v$ is colored with color $i \in \{1,\dots,k\}$.
+    - $x_v \in \{0,1\}$ — vertex $v$ is uncolored.
 
     Objective
     ---------
-    .. math::
-       \min \sum_{v \in V} \sum_{i=1}^k f_{v,i}
+    .. math:: \min \sum_{v\in V} \sum_{i=1}^k f_{v,i}
 
     Constraints
     -----------
-    - **Coloring/Uncolored choice** (every vertex is colored once or uncolored):
-
-      .. math::
-         \sum_{i=1}^k f_{v,i} + x_v = 1 \quad \forall v \in V.
-
-    - **Rainbow domination** (uncolored vertices see all colors):
-
-      .. math::
-         \sum_{u \in N(v)} f_{u,i} \;\ge\; x_v \quad \forall v \in V,\; \forall i=1,\dots,k.
+    - Exactly one choice per vertex:
+      .. math:: \sum_{i=1}^k f_{v,i} + x_v = 1 \quad \forall v \in V.
+    - Rainbow domination (only applies when uncolored):
+      .. math:: \sum_{u \in N(v)} f_{u,i} \ge x_v \quad \forall v\in V,\; i=1,\dots,k.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
     k : int
-        The number of colors.
+        Number of colors (must be >= 1).
+    verbose : bool, default=False
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    Accepts the standard solver kwargs via :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Returns
     -------
-    tuple
-        A pair ``(colored_vertices, uncolored_vertices)`` where:
-        - ``colored_vertices`` is a list of ``(vertex, color)`` pairs,
-        - ``uncolored_vertices`` is a list of vertices assigned no color.
+    (colored_vertices, uncolored_vertices) : (list[tuple], list)
+        ``colored_vertices`` is a list of ``(vertex, color)`` pairs;
+        ``uncolored_vertices`` is a list of vertices with no color.
 
     Examples
     --------
@@ -828,74 +875,74 @@ def minimum_rainbow_dominating_function(G: GraphLike, k: int) -> Dict:
     >>> len(colored) + len(uncolored) == gc.order(G)
     True
     """
-    # Create a PuLP problem instance
+    if not isinstance(k, int) or k < 1:
+        raise ValueError("k must be a positive integer (k >= 1).")
+
+    nodes = list(G.nodes())
+    colors = range(1, k + 1)
+
     prob = pulp.LpProblem("Rainbow_Domination", pulp.LpMinimize)
 
-    # Create binary variables f_vi where f_vi = 1 if vertex v is colored with color i
-    f = pulp.LpVariable.dicts("f", ((v, i) for v in G.nodes for i in range(1, k+1)), cat='Binary')
+    # Decision variables
+    f = {(v, i): pulp.LpVariable(f"f_{v}_{i}", cat="Binary") for v in nodes for i in colors}
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in nodes}
 
-    # Create binary variables x_v where x_v = 1 if vertex v is uncolored
-    x = pulp.LpVariable.dicts("x", G.nodes, cat='Binary')
+    # Objective: minimize number of colored vertices
+    prob += pulp.lpSum(f[v_i] for v_i in f.keys())
 
-    # Objective function: Minimize the total number of colored vertices
-    prob += pulp.lpSum(f[v, i] for v in G.nodes for i in range(1, k+1)), "Minimize total colored vertices"
+    # Each vertex either colored with exactly one color or uncolored
+    for v in nodes:
+        prob += pulp.lpSum(f[(v, i)] for i in colors) + x[v] == 1, f"choice_{v}"
 
-    # Constraint 1: Each vertex is either colored with one of the k colors or remains uncolored
-    for v in G.nodes:
-        prob += pulp.lpSum(f[v, i] for i in range(1, k+1)) + x[v] == 1, f"Color or Uncolored constraint for vertex {v}"
+    # Uncolored vertex must see all colors in its open neighborhood
+    for v in nodes:
+        Nv = list(G.neighbors(v))
+        for i in colors:
+            prob += pulp.lpSum(f[(u, i)] for u in Nv) >= x[v], f"rainbow_{v}_{i}"
 
-    # Constraint 2: If a vertex is uncolored (x_v = 1), it must be adjacent to vertices colored with all k colors
-    for v in G.nodes:
-        for i in range(1, k+1):
-            # Ensure that uncolored vertex v is adjacent to a vertex colored with color i
-            prob += pulp.lpSum(f[u, i] for u in G.neighbors(v)) >= x[v], f"Rainbow domination for vertex {v} color {i}"
+    # Solve (raises if not Optimal)
+    solve(prob)
 
-    # Solve the problem using PuLP's default solver
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Extract solution
+    colored_vertices: ColoredPairs = [
+        (v, i) for v in nodes for i in colors if (pulp.value(f[(v, i)]) or 0) > 0.5
+    ]
+    uncolored_vertices: UncoloredList = [v for v in nodes if (pulp.value(x[v]) or 0) > 0.5]
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
-
-    # Output results
-    # print("Status:", pulp.LpStatus[prob.status])
-
-    # Print which vertices are colored and with what color
-    colored_vertices = [(v, i) for v in G.nodes for i in range(1, k+1) if value(f[v, i]) == 1]
-    uncolored_vertices = [v for v in G.nodes if value(x[v]) == 1]
+    if verbose:
+        obj = float(pulp.value(prob.objective))
+        print(f"Objective (number of colored vertices): {obj}")
 
     return colored_vertices, uncolored_vertices
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def rainbow_domination_number(G: GraphLike, k: int) -> int:
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def rainbow_domination_number(
+    G: GraphLike,
+    k: int,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options) to the MIP
+) -> int:
     r"""
-    Compute the rainbow domination number of a graph.
-
-    The **rainbow domination number** :math:`\gamma_{r,k}(G)` of a graph
-    :math:`G=(V,E)` with parameter :math:`k` is the minimum number of
-    colored vertices in a rainbow dominating function (RDF).
-    An RDF is an assignment of either one of :math:`k` colors or
-    "uncolored" to each vertex such that every uncolored vertex is
-    adjacent to at least one vertex of each of the :math:`k` colors.
-
-    Formally,
-
-    .. math::
-       \gamma_{r,k}(G) = \min \Bigl\{\, \bigl|\{v \in V : f(v) \neq 0\}\bigr| \;\Big|\;
-       f \text{ is a $k$-rainbow dominating function on } G \Bigr\}.
+    Return the rainbow domination number $\gamma_{r,k}(G)$.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
     k : int
-        The number of colors.
+        Number of colors (>= 1).
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_rainbow_dominating_function`.
 
     Returns
     -------
     int
-        The rainbow domination number :math:`\gamma_{r,k}(G)`.
+        $\gamma_{r,k}(G)$ — the minimum number of colored vertices.
 
     Examples
     --------
@@ -905,205 +952,181 @@ def rainbow_domination_number(G: GraphLike, k: int) -> int:
     >>> gc.rainbow_domination_number(G, 2)
     3
     """
-    colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, k)
-    return len(colored_vertices)
+    colored, _ = minimum_rainbow_dominating_function(G, k, **solver_kwargs)
+    return len(colored)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def two_rainbow_domination_number(G: GraphLike) -> int:
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def two_rainbow_domination_number(
+    G: GraphLike,
+    **solver_kwargs,
+) -> int:
     r"""
-    Compute the 2-rainbow domination number of a graph.
-
-    The **2-rainbow domination number** :math:`\gamma_{r,2}(G)` is the special case
-    of the rainbow domination number with :math:`k=2`. A 2-rainbow dominating function
-    assigns to each vertex either one of two colors or leaves it uncolored, such that
-    every uncolored vertex is adjacent to at least one vertex of each color.
-    The value :math:`\gamma_{r,2}(G)` is the minimum number of colored vertices
-    in such a labeling.
-
-    Formally,
-
-    .. math::
-       \gamma_{r,2}(G) = \min \Bigl\{\, \bigl|\{v \in V : f(v) \neq 0\}\bigr| \;\Big|\;
-       f \text{ is a 2-rainbow dominating function on } G \Bigr\}.
+    Return the 2-rainbow domination number $\gamma_{r,2}(G)$.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_rainbow_dominating_function`.
 
     Returns
     -------
     int
-        The 2-rainbow domination number :math:`\gamma_{r,2}(G)`.
+        $\gamma_{r,2}(G)$.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-    >>> G = path_graph(4)
-    >>> gc.two_rainbow_domination_number(G)
+    >>> gc.two_rainbow_domination_number(path_graph(4))
     3
     """
-    colored_vertices, uncolored_vertices = minimum_rainbow_dominating_function(G, 2)
-    return len(colored_vertices)
+    return rainbow_domination_number(G, 2, **solver_kwargs)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def three_rainbow_domination_number(G: GraphLike) -> int:
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def three_rainbow_domination_number(
+    G: GraphLike,
+    **solver_kwargs,
+) -> int:
     r"""
-    Compute the 3-rainbow domination number of a graph.
-
-    The **3-rainbow domination number** :math:`\gamma_{r,3}(G)` is the special case
-    of the rainbow domination number with :math:`k=3`. A 3-rainbow dominating function
-    assigns to each vertex either one of three colors or leaves it uncolored, such that
-    every uncolored vertex is adjacent to at least one vertex of each of the three colors.
-    The value :math:`\gamma_{r,3}(G)` is the minimum number of colored vertices
-    in such a labeling.
-
-    Formally,
-
-    .. math::
-       \gamma_{r,3}(G) = \min \Bigl\{\, \bigl|\{v \in V : f(v) \neq 0\}\bigr| \;\Big|\;
-       f \text{ is a 3-rainbow dominating function on } G \Bigr\}.
+    Return the 3-rainbow domination number $\gamma_{r,3}(G)$.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_rainbow_dominating_function`.
 
     Returns
     -------
     int
-        The 3-rainbow domination number :math:`\gamma_{r,3}(G)`.
+        $\gamma_{r,3}(G)$.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-    >>> G = path_graph(4)
-    >>> gc.three_rainbow_domination_number(G)
+    >>> gc.three_rainbow_domination_number(path_graph(4))
     4
     """
-    return rainbow_domination_number(G, 3)
+    return rainbow_domination_number(G, 3, **solver_kwargs)
 
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def minimum_restrained_dominating_set(G: GraphLike) -> Set[Hashable]:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_restrained_dominating_set(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
     r"""
-    Compute a minimum restrained dominating set of a graph using integer programming.
+    Compute a minimum **restrained dominating set** (RDS) via integer programming.
 
-    A **restrained dominating set** (RDS) of a graph :math:`G=(V,E)` is a subset
-    :math:`S \subseteq V` such that:
+    Let :math:`x_v \in \{0,1\}` indicate whether :math:`v` is in the set :math:`S`.
+    We minimize :math:`\sum_v x_v` subject to:
 
-    1. (**Domination**) Every vertex in :math:`V \setminus S` is adjacent to at least one vertex in :math:`S`.
-    2. (**Restraint**) The induced subgraph :math:`G[V \setminus S]` has no isolated vertices.
-
-    The minimum restrained dominating set is the RDS of smallest cardinality.
-
-    **Integer Programming Formulation**
-
-    Introduce binary variables :math:`x_v \in \{0,1\}` for each :math:`v \in V`,
-    where :math:`x_v = 1` if :math:`v \in S` and :math:`0` otherwise.
-
-    Objective
-    ---------
-    .. math::
-       \min \sum_{v \in V} x_v
-
-    Constraints
-    -----------
-    - **Domination condition** (every vertex dominated):
-
-      .. math::
-         x_v + \sum_{u \in N(v)} x_u \;\geq\; 1 \quad \forall v \in V.
-
-    - **Restraint condition** (no isolates in complement):
-
-      .. math::
-         \sum_{u \in N(v)} (1 - x_u) \;\geq\; (1 - x_v) \quad \forall v \in V.
+    - **Domination:** every vertex is dominated:
+      .. math:: x_v + \sum_{u \in N(v)} x_u \ge 1 \quad \forall v\in V.
+    - **Restraint:** no isolates in the complement :math:`V\setminus S`:
+      .. math:: \sum_{u \in N(v)} (1-x_u) \ge 1 - x_v \quad \forall v\in V.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+    verbose : bool, default=False
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    Accepts standard solver kwargs via :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Returns
     -------
-    set
-        A minimum restrained dominating set of vertices in :math:`G`.
+    set of hashable
+        A minimum restrained dominating set.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
     >>> G = path_graph(5)
-    >>> restrained_dom_set = gc.minimum_restrained_dominating_set(G)
+    >>> S = gc.minimum_restrained_dominating_set(G)
+    >>> len(S) >= 1
+    True
     """
-    # Initialize the linear programming problem
     prob = pulp.LpProblem("MinimumRestrainedDomination", pulp.LpMinimize)
 
-    # Decision variables: x_v is 1 if vertex v is in the restrained dominating set, 0 otherwise
+    # Decision vars: x_v = 1 if v in S
     x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in G.nodes()}
 
-    # Objective: Minimize the sum of x_v
-    prob += pulp.lpSum(x[v] for v in G.nodes()), "Objective"
+    # Objective
+    prob += pulp.lpSum(x.values())
 
-    # Constraint 1: Domination condition
+    # Domination constraints
     for v in G.nodes():
-        prob += x[v] + pulp.lpSum(x[u] for u in G.neighbors(v)) >= 1, f"Domination_{v}"
+        prob += x[v] + pulp.lpSum(x[u] for u in G.neighbors(v)) >= 1, f"dom_{v}"
 
-    # Constraint 2: No isolated vertices in the complement of the dominating set
+    # Restraint constraints: no isolates in complement
+    # (equivalently: deg(v) - sum_{u in N(v)} x_u >= 1 - x_v)
     for v in G.nodes():
-        prob += pulp.lpSum(1 - x[u] for u in G.neighbors(v)) >= (1 - x[v]), f"NoIsolated_{v}"
+        prob += pulp.lpSum(1 - x[u] for u in G.neighbors(v)) >= (1 - x[v]), f"rest_{v}"
 
-    # Solve the problem
-    solver = get_default_solver()
-    prob.solve(solver)
+    # Solve (raises if not Optimal)
+    solve(prob)
 
-    # Raise value error if solution not found
-    if pulp.LpStatus[prob.status] != 'Optimal':
-        raise ValueError(f"No optimal solution found (status: {pulp.LpStatus[prob.status]}).")
+    # Extract chosen vertices
+    return _extract_and_report(prob, x, verbose=verbose)
 
-    # Extract the solution
-    restrained_dom_set = [v for v in G.nodes() if value(x[v]) == 1]
-
-    return restrained_dom_set
-
-@enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def restrained_domination_number(G: GraphLike) -> int:
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def restrained_domination_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options)
+) -> int:
     r"""
-    Compute the restrained domination number of a graph.
-
-    The **restrained domination number** :math:`\gamma_r(G)` of a graph :math:`G=(V,E)`
-    is the minimum size of a restrained dominating set (RDS).
-    An RDS is a set :math:`S \subseteq V` such that:
-
-    1. (**Domination**) Every vertex in :math:`V \setminus S` is adjacent to at least one vertex in :math:`S`.
-    2. (**Restraint**) The induced subgraph :math:`G[V \setminus S]` has no isolated vertices.
-
-    Thus,
-
-    .. math::
-       \gamma_r(G) \;=\; \min\{\,|S| : S \subseteq V \text{ is a restrained dominating set}\,\}.
+    Return the restrained domination number :math:`\gamma_r(G)`.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        The input undirected graph.
+        Undirected input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_restrained_dominating_set`.
 
     Returns
     -------
     int
-        The restrained domination number :math:`\gamma_r(G)`.
+        :math:`\gamma_r(G)`.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph
-    >>> G = path_graph(5)
-    >>> gc.restrained_domination_number(G)
+    >>> gc.restrained_domination_number(path_graph(5))
     3
     """
-    restrained_dom_set = minimum_restrained_dominating_set(G)
-    return len(restrained_dom_set)
+    return len(minimum_restrained_dominating_set(G, **solver_kwargs))
+
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def min_maximal_matching_number(G: GraphLike) -> int:

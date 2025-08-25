@@ -1,95 +1,79 @@
+# src/graphcalc/utils.py
 """
-Solver and type-checking utilities for graph calculations.
+General utilities for GraphCalc.
 
-Functions
----------
-get_default_solver
-    Return the first available LP solver on the system.
-require_graph_like
-    Decorator to ensure the first argument is a graph-like object.
+This module intentionally avoids solver resolution/selection logic;
+that all lives in :mod:`graphcalc.solvers`.
+
+Exports
+-------
+GraphLike
+    Union of :class:`networkx.Graph` and :class:`graphcalc.core.SimpleGraph`.
 enforce_type
     Decorator factory to enforce the type of a positional argument.
+require_graph_like
+    Decorator ensuring the first argument is a graph-like object.
+_extract_and_report
+    Helper to read solution status/objective/variables from a solved PuLP model.
 
-Type Aliases
-------------
-GraphLike
-    Union of `networkx.Graph` and `SimpleGraph`.
+Convenience re-exports from :mod:`graphcalc.solvers`
+---------------------------------------------------
+get_default_solver, resolve_solver, with_solver, solve_or_raise, SolverSpec
 """
 
-from shutil import which
+from __future__ import annotations
+
 from functools import wraps
+from typing import Any, Dict, Hashable, Set, Union
+
 import networkx as nx
-from graphcalc.core import SimpleGraph
-from typing import Union, Dict, Set, Hashable
 import pulp
-from pulp import PULP_CBC_CMD, GLPK_CMD, HiGHS_CMD
+
+from graphcalc.core import SimpleGraph
+
+# Re-export solver utilities for convenience (no local solver code here)
+from graphcalc.solvers import (  # noqa: F401
+    get_default_solver,
+    resolve_solver,
+    with_solver,
+    solve_or_raise,
+    SolverSpec,
+)
 
 __all__ = [
-    'get_default_solver',
-    'require_graph_like',
-    'enforce_type',
-    'GraphLike',
-    '_extract_and_report',
+    # local
+    "GraphLike",
+    "require_graph_like",
+    "enforce_type",
+    "_extract_and_report",
+    # re-exports (public API)
+    "get_default_solver",
+    "resolve_solver",
+    "with_solver",
+    "solve_or_raise",
+    "SolverSpec",
 ]
 
+# --------------------------------------------------------------------------------------
+# Types
+# --------------------------------------------------------------------------------------
 GraphLike = Union[nx.Graph, SimpleGraph]
-"""Type alias for objects accepted as graphs in this module."""
+"""Type alias for objects accepted as graphs in GraphCalc."""
 
-def get_default_solver():
-    """
-    Return the first available linear-programming solver backend.
-
-    Checks for installed solver executables in this order:
-      1. `highs`  (HiGHS_CMD)
-      2. `cbc`    (PULP_CBC_CMD)
-      3. `glpsol` (GLPK_CMD)
-
-    Returns
-    -------
-    pulp.LpSolver_CMD
-        An instance of the solver command class, configured with `msg=False`.
-
-    Raises
-    ------
-    EnvironmentError
-        If none of the supported solver executables are found on the PATH.
-    """
-    if which("highs"):
-        return HiGHS_CMD(msg=False)
-    elif which("cbc"):
-        return PULP_CBC_CMD(msg=False)
-    elif which("glpsol"):
-        return GLPK_CMD(msg=False)
-    else:
-        raise EnvironmentError(
-            "No supported solver found. Please install one:\n"
-            "- brew install cbc or sudo apt install coinor-cbc  (classic)\n"
-            "- brew install glpk   (fallback)\n"
-            "- brew install highs  (fast, MIT license)\n"
-        )
-
+# --------------------------------------------------------------------------------------
+# Decorators
+# --------------------------------------------------------------------------------------
 def require_graph_like(func):
     """
     Decorator that enforces the first argument to be graph-like.
 
-    This decorator checks that the wrapped function’s first positional argument
-    is an instance of `networkx.Graph` or `graphcalc.core.SimpleGraph`.
-
-    Parameters
-    ----------
-    func : callable
-        The function to wrap.
-
-    Returns
-    -------
-    callable
-        A wrapped function that will raise `TypeError` if the first argument
-        is not a supported graph type.
+    Checks that the wrapped function’s first positional argument is an instance
+    of :class:`networkx.Graph` or :class:`graphcalc.core.SimpleGraph`.
 
     Raises
     ------
     TypeError
-        If the first argument is not a `networkx.Graph` or `SimpleGraph`.
+        If the first argument is not a supported graph type.
     """
     @wraps(func)
     def wrapper(G, *args, **kwargs):
@@ -101,27 +85,22 @@ def require_graph_like(func):
         return func(G, *args, **kwargs)
     return wrapper
 
-def enforce_type(arg_index, expected_types):
+
+def enforce_type(arg_index: int, expected_types):
     """
     Decorator factory to enforce the type of a specific positional argument.
 
     Parameters
     ----------
     arg_index : int
-        Index of the positional argument in `*args` to check.
-    expected_types : type or tuple of types
-        The expected type(s) for the argument at `arg_index`.
-
-    Returns
-    -------
-    decorator : callable
-        A decorator that wraps a function and raises `TypeError` if the
-        specified argument is not an instance of `expected_types`.
+        Index of the positional argument in ``*args`` to check.
+    expected_types : type or tuple[type, ...]
+        The expected type(s) for the argument at ``arg_index``.
 
     Raises
     ------
     TypeError
-        When the argument at `arg_index` is not of type `expected_types`.
+        When the argument at ``arg_index`` is not of type ``expected_types``.
     """
     def decorator(func):
         @wraps(func)
@@ -135,24 +114,39 @@ def enforce_type(arg_index, expected_types):
         return wrapper
     return decorator
 
-
+# --------------------------------------------------------------------------------------
+# Small helper for extracting model solutions
+# --------------------------------------------------------------------------------------
 def _extract_and_report(
     prob: pulp.LpProblem,
     variables: Dict[Hashable, pulp.LpVariable],
     *,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> Set[Hashable]:
     """
-    Pulls status, objective, and solution out of a solved LP,
-    prints details if verbose=True, and returns the solution set.
+    Extract a 0–1 solution from a solved PuLP model, optionally printing details.
+
+    Parameters
+    ----------
+    prob : pulp.LpProblem
+        A solved PuLP model.
+    variables : dict[hashable, pulp.LpVariable]
+        Decision variables keyed by the object they represent (node, edge, color, etc.).
+    verbose : bool, default=False
+        If True, print solver status, objective value, and the extracted set.
+
+    Returns
+    -------
+    set of hashable
+        Keys whose corresponding variable has value 1 (within a >0.5 threshold).
     """
-    status = pulp.LpStatus[prob.status]
+    status = pulp.LpStatus.get(prob.status, str(prob.status))
     obj_value = pulp.value(prob.objective)
-    solution = {v for v, var in variables.items() if pulp.value(var) == 1}
+    solution = {k for k, var in variables.items() if pulp.value(var) > 0.5}
 
     if verbose:
-        print(f"Solver status: {status}")
-        print(f"Objective value: {obj_value}")
-        print("Selected nodes in solution:", solution)
+        print(f"Solver status : {status}")
+        print(f"Objective     : {obj_value}")
+        print(f"Selected keys : {solution}")
 
     return solution
