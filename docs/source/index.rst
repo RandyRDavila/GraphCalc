@@ -14,6 +14,7 @@ Contents
 
    introduction
    installation
+   solvers
    usage
    api_reference
    examples

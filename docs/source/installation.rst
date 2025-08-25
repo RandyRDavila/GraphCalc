@@ -49,7 +49,7 @@ Solvers
 
 **Linear and Integer Programming Solvers**: Some features in GraphCalc depend on third-party solvers.
 
-   At least one of the following is required if you intend to use solver-based functions (e.g., `gc.solve_independent_set`):
+   At least one of the following is required if you intend to use solver-based functions (e.g., `gc.maximum_independent_set`):
 
     - **CBC** (recommended):
 
