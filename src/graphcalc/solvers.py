@@ -140,6 +140,18 @@ def _build_cmd_solver_from_path(solver_key: str, exec_path: Optional[str], *, ms
     raise ValueError(f"Unsupported command solver key for path binding: {solver_key!r}")
 
 
+def _is_available(solver: pulp.apis.core.LpSolver) -> bool:
+    """Return True if the solver is usable (CMD backends must find their binary)."""
+    avail = getattr(solver, "available", None)
+    if callable(avail):
+        try:
+            return bool(avail())
+        except Exception:
+            return False
+    # Non-CMD solvers (Python APIs) may not expose .available(); assume usable.
+    return True
+
+
 # --------------------------------------------------------------------------------------
 # Default solver discovery (Windows/Conda aware + env overrides)
 # --------------------------------------------------------------------------------------
@@ -165,6 +177,17 @@ def get_default_solver(msg: bool = False) -> pulp.apis.core.LpSolver_CMD:
     pulp.apis.core.LpSolver_CMD
         Configured with ``msg`` according to the argument.
     """
+    def _is_available(solver: pulp.apis.core.LpSolver) -> bool:
+        """True if the solver is usable (CMD backends must find their binary)."""
+        avail = getattr(solver, "available", None)
+        if callable(avail):
+            try:
+                return bool(avail())
+            except Exception:
+                return False
+        # Non-CMD solvers may not expose .available(); assume usable.
+        return True
+
     # 1) Read overrides
     forced = os.getenv("GRAPHCALC_SOLVER", "").strip()
     forced_key = forced or "auto"
@@ -175,11 +198,8 @@ def get_default_solver(msg: bool = False) -> pulp.apis.core.LpSolver_CMD:
     # 2) If a path is forced, try to bind it to the chosen (or default) solver
     if forced_path:
         # If no specific solver is forced, try HiGHS -> CBC -> GLPK against this path
-        trial_order = (
-            ["highs", "cbc", "glpsol"] if reg_name is None else [forced_key]
-        )
+        trial_order = (["highs", "cbc", "glpsol"] if reg_name is None else [forced_key])
         for key in trial_order:
-            # Attempt to instantiate with the provided path
             try:
                 return _build_cmd_solver_from_path(key, forced_path, msg=msg)
             except Exception:
@@ -187,36 +207,40 @@ def get_default_solver(msg: bool = False) -> pulp.apis.core.LpSolver_CMD:
 
     # 3) If solver name is forced (no path), try registry first (covers GUROBI/CPLEX etc.)
     if reg_name not in (None, ""):
+        solver_obj = None
         try:
-            solver = pulp.getSolver(reg_name, msg=msg)
-            return _ensure_pulp_solver(solver)
+            solver_obj = pulp.getSolver(reg_name, msg=msg)
+            if _is_available(solver_obj):
+                return _ensure_pulp_solver(solver_obj)
+            # else: try executable discovery for this forced key
         except Exception:
-            # If it was a friendly alias like "highs", also try executable discovery
-            exec_names = _exec_names_for(forced_key)
-            for p in _candidate_paths(exec_names):
-                try:
-                    return _build_cmd_solver_from_path(forced_key, p, msg=msg)
-                except Exception:
-                    pass
-            # Could not honor forced solver; fall back to auto below.
+            pass
 
-            # Note: we intentionally do not raise here—fallback keeps behavior robust.
-
-            ...
+        exec_names = _exec_names_for(forced_key)
+        for p in _candidate_paths(exec_names):
+            try:
+                return _build_cmd_solver_from_path(forced_key, p, msg=msg)
+            except Exception:
+                pass
+        # Could not honor forced solver; fall back to auto below.
 
     # 4) Auto-discovery in preferred order
     for key in ("highs", "cbc", "glpsol"):
         # Try registry first in case the user has a Python API solver installed
         try:
-            solver = pulp.getSolver(_PULP_ALIASES.get(key, key), msg=msg)
-            return _ensure_pulp_solver(solver)
+            reg = _PULP_ALIASES.get(key, key)
+            solver_obj = pulp.getSolver(reg, msg=msg)
+            if _is_available(solver_obj):
+                return _ensure_pulp_solver(solver_obj)
+            # else: try known executable locations for this key
         except Exception:
-            # Try known executable locations
-            for p in _candidate_paths(_exec_names_for(key)):
-                try:
-                    return _build_cmd_solver_from_path(key, p, msg=msg)
-                except Exception:
-                    continue
+            pass
+
+        for p in _candidate_paths(_exec_names_for(key)):
+            try:
+                return _build_cmd_solver_from_path(key, p, msg=msg)
+            except Exception:
+                continue
 
     # 5) Nothing found: assemble platform-specific guidance
     if sys.platform.startswith("win"):
