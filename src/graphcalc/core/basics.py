@@ -1147,15 +1147,15 @@ def cograph(G: GraphLike) -> bool:
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph, complete_graph, cycle_graph
 
-    # P4 is not a cograph
+    >>> # P4 is not a cograph
     >>> gc.cograph(path_graph(4))
     False
 
-    # Complete graphs are cographs
+    >>> # Complete graphs are cographs
     >>> gc.cograph(complete_graph(5))
     True
 
-    # C4 is P4-free, hence a cograph
+    >>> # C4 is P4-free, hence a cograph
     >>> gc.cograph(cycle_graph(4))
     True
     """
@@ -1214,15 +1214,15 @@ def connected_and_cograph(G: GraphLike) -> bool:
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph, complete_graph, cycle_graph
 
-    # P4 is not a cograph
+    >>> # P4 is not a cograph
     >>> gc.connected_and_cograph(path_graph(4))
     False
 
-    # Complete graphs are cographs
+    >>> # Complete graphs are cographs
     >>> gc.connected_and_cograph(complete_graph(5))
     True
 
-    # C4 is P4-free, hence a cograph
+    >>> # C4 is P4-free, hence a cograph
     >>> gc.connected_and_cograph(cycle_graph(4))
     True
     """
