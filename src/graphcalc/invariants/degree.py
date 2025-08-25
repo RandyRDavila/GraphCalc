@@ -1,5 +1,7 @@
 
 from typing import Hashable, List
+from typing import Iterable, List, Sequence, Tuple
+
 import networkx as nx
 import graphcalc as gc
 from graphcalc import SimpleGraph
@@ -16,7 +18,10 @@ __all__= [
     "slater",
     "sub_total_domination_number",
     "annihilation_number",
+    "residue_from_degrees",
+    "k_residue_from_degrees",
     "residue",
+    "k_residue",
     "harmonic_index",
 ]
 
@@ -423,6 +428,133 @@ def annihilation_number(G: GraphLike) -> int:
         if sum(D[:i]) <= m:
             return i
 
+
+# If you have these in your package:
+# from .simplegraph import SimpleGraph
+# from .typing import GraphLike
+# from .decorators import enforce_type
+# import graphcalc as gc
+ # replace with your union (nx.Graph | SimpleGraph)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Core: elimination sequence from a degree list
+# ──────────────────────────────────────────────────────────────────────────────
+
+def elimination_sequence_from_degrees(degrees: Sequence[int]) -> List[int]:
+    """
+    Compute the Havel–Hakimi elimination sequence E(D) from a degree sequence.
+
+    The elimination sequence records *every* removed entry (including trailing 0's)
+    as the HH process proceeds on a copy of the degree list.
+
+    Parameters
+    ----------
+    degrees : Sequence[int]
+        Nonnegative integer degree sequence (assumed graphical when coming from a graph).
+
+    Returns
+    -------
+    List[int]
+        The elimination sequence E(D), i.e., the list of popped values at each HH step.
+
+    Notes
+    -----
+    - For a genuine graph degree sequence, no negativity or length violations occur.
+    - We sort in non-increasing order at each step (standard HH).
+    """
+    seq = list(degrees)
+    if not seq:
+        return []
+
+    # Ensure non-increasing
+    seq.sort(reverse=True)
+    E: List[int] = []
+
+    while seq:
+        d = seq.pop(0)
+        E.append(d)
+
+        if d < 0:
+            raise ValueError("Negative entry encountered during Havel–Hakimi.")
+        if d > len(seq):
+            # This would signal non-graphical input if not from a graph.
+            raise ValueError("Degree too large for remaining sequence in Havel–Hakimi.")
+
+        # Decrement next d entries
+        for i in range(d):
+            seq[i] -= 1
+
+        # Keep sorted for next iteration
+        seq.sort(reverse=True)
+
+    return E
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# k-residue from degrees
+# ──────────────────────────────────────────────────────────────────────────────
+
+def k_residue_from_degrees(degrees: Sequence[int], k: int) -> int:
+    """
+    Compute the k-residue R_k from a degree sequence via its elimination sequence.
+
+    Definition
+    ----------
+    For elimination sequence E = E(D) and k >= 1,
+        R_k(E) = sum_{i=0}^{k-1} (k - i) * f_i(E),
+    where f_i(E) is the frequency of i in E.
+
+    Parameters
+    ----------
+    degrees : Sequence[int]
+        Nonnegative integer degree sequence (assumed graphical when from a graph).
+    k : int
+        Parameter k >= 1.
+
+    Returns
+    -------
+    int
+        The k-residue R_k(D).
+
+    See Also
+    --------
+    elimination_sequence_from_degrees
+    """
+    if k < 1:
+        raise ValueError("k must be an integer >= 1.")
+
+    E = elimination_sequence_from_degrees(degrees)
+    # Count only 0..k-1
+    freq = [0] * k
+    for x in E:
+        if 0 <= x < k:
+            freq[x] += 1
+    return int(sum((k - i) * freq[i] for i in range(k)))
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Graph wrappers that reuse the degree-sequence core
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Optional: a degree-sequence version of your classical residue for symmetry
+def residue_from_degrees(degrees: Sequence[int]) -> int:
+    """
+    Classical residue R(D): number of zeros in the elimination sequence E(D).
+
+    Parameters
+    ----------
+    degrees : Sequence[int]
+        Degree sequence.
+
+    Returns
+    -------
+    int
+        R(D) = f_0(E(D)).
+    """
+    E = elimination_sequence_from_degrees(degrees)
+    return E.count(0)
+
+
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def residue(G: GraphLike) -> int:
     r"""
@@ -488,6 +620,54 @@ def residue(G: GraphLike) -> int:
         degrees.sort(reverse=True)
 
     return len(degrees)
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@enforce_type(1, int)
+def k_residue(G: GraphLike, k: int) -> int:
+    r"""
+    Compute the k-residue R_k(G) from the Havel–Hakimi elimination sequence.
+
+    Definition (Jelen generalizing Favaron–Mahéo–Saclé, Griggs–Kleitman, Triesch)
+    ---------------------------------------------------------------------------
+    Let D be a graphic degree sequence and E = E(D) its Havel–Hakimi elimination
+    sequence (the list of values removed at each step, including trailing zeros).
+    For k ≥ 1,
+        R_k(E) = sum_{i=0}^{k-1} (k - i) * f_i(E),
+    where f_i(E) is the frequency of i in E. Since E is determined by D(G), we
+    write R_k(G).
+
+    Special case: k = 1 gives R_1(G) = f_0(E) = R(G) (the usual residue).
+
+    Parameters
+    ----------
+    G : nx.Graph or SimpleGraph
+        Input graph.
+    k : int
+        Parameter k ≥ 1.
+
+    Returns
+    -------
+    int
+        The k-residue R_k(G).
+
+    Notes
+    -----
+    We explicitly build the elimination sequence E by performing the Havel–Hakimi
+    process and recording the removed value at each step, including zeros at the
+    end. This ensures f_0(E) equals the classical residue.
+
+    Examples
+    --------
+    >>> from graphcalc.generators import path_graph, complete_graph
+    >>> G = path_graph(4)
+    >>> k_residue(G, 1) == residue(G)  # should match your residue()
+    True
+    >>> H = complete_graph(4)
+    >>> k_residue(H, 2)  # weighted count of 0s and 1s in E(H)
+    3
+    """
+    degrees = gc.degree_sequence(G)  # or list(dict(G.degree()).values())
+    return k_residue_from_degrees(degrees, k)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def harmonic_index(G: GraphLike) -> float:
