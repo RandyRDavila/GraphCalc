@@ -82,8 +82,7 @@ def maximum_independent_set(
     >>> len(S)
     1
     >>> # Optionally choose a specific solver
-    >>> from pulp import HiGHS_CMD
-    >>> S = gc.maximum_independent_set(G, solver=HiGHS_CMD)
+    >>> S = gc.maximum_independent_set(G, solver="cbc")  # doctest: +SKIP
     >>> len(S)
     1
     """
@@ -216,7 +215,7 @@ def maximum_clique(
     Optionally specify a solver (skipped in doctest since availability varies):
 
     >>> from pulp import HiGHS_CMD
-    >>> gc.maximum_clique(complete_graph(4), solver=HiGHS_CMD)
+    >>> gc.maximum_clique(complete_graph(4), solver=HiGHS_CMD) # doctest: +SKIP
     {0, 1, 2, 3}
     """
     # MILP model
