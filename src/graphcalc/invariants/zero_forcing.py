@@ -1,11 +1,22 @@
 
+from __future__ import annotations
+from typing import Dict, Hashable, List, Optional, Tuple
+import itertools
+import math
+
+
+
 from typing import Union, Set, List, Hashable
 import networkx as nx
 from itertools import combinations
 import graphcalc as gc
 from math import ceil
+import pulp
 
 from graphcalc import SimpleGraph
+from graphcalc.utils import enforce_type, GraphLike
+from graphcalc.core import SimpleGraph
+from graphcalc.solvers import with_solver
 
 
 __all__ = [
@@ -42,6 +53,7 @@ __all__ = [
     "is_well_splitting_set",
     "compute_well_splitting_number",
     "well_splitting_number",
+    "burning_number",
 ]
 
 
@@ -1270,3 +1282,204 @@ def well_splitting_number(G: Union[nx.Graph, SimpleGraph],) -> int:
     """
     r, _ = compute_well_splitting_number(G)
     return r
+
+# -------------------------
+# Utilities
+# -------------------------
+
+def _all_pairs_dist(G: nx.Graph) -> Dict[Hashable, Dict[Hashable, int]]:
+    """Shortest-path distances; disconnected pairs get +inf."""
+    dist: Dict[Hashable, Dict[Hashable, int]] = {
+        u: {v: (0 if u == v else math.inf) for v in G.nodes()} for u in G.nodes()
+    }
+    for u in G.nodes():
+        for v, d in nx.single_source_shortest_path_length(G, u).items():
+            dist[u][v] = d
+    return dist
+
+def _is_connected(G: nx.Graph) -> bool:
+    try:
+        return nx.is_connected(G)
+    except Exception:
+        # For empty graph, define as "connected" for our bounds logic
+        return G.number_of_nodes() <= 1
+
+
+# -------------------------
+# MIP feasibility for fixed T (uses injected solve)
+# -------------------------
+
+def _burning_feasible_MIP_with_solver(
+    G: nx.Graph,
+    T: int,
+    dist: Dict[Hashable, Dict[Hashable, int]],
+    solve,
+) -> Tuple[bool, List[Hashable]]:
+    """
+    Check feasibility of b(G) <= T via MIP; return (feasible, ignition_schedule).
+    schedule[i-1] is the vertex ignited at round i. Exactly one ignition per round.
+    """
+    V = list(G.nodes())
+    n = len(V)
+    if n == 0:
+        return True, []
+
+    # Precompute coverage index: for each (u, t) which v's cover u at round t
+    # Coverage radius at round t is (T - t).
+    cover_sets: Dict[Tuple[int, int], List[int]] = {}
+    for t in range(1, T + 1):
+        r = T - t
+        for u_idx, u in enumerate(V):
+            cover_sets[(u_idx, t)] = [v_idx for v_idx, v in enumerate(V) if dist[u][v] <= r]
+
+    # Pure feasibility model
+    model = pulp.LpProblem("GraphBurningDecision", pulp.LpMinimize)
+    model += 0  # zero objective
+
+    # x[v_idx][t] ∈ {0,1}: ignite v at round t
+    x = {
+        v_idx: {t: pulp.LpVariable(f"x_{v_idx}_{t}", lowBound=0, upBound=1, cat=pulp.LpBinary)
+                for t in range(1, T + 1)}
+        for v_idx in range(n)
+    }
+
+    # Exactly one ignition per round
+    for t in range(1, T + 1):
+        model += pulp.lpSum(x[v_idx][t] for v_idx in range(n)) == 1, f"one_ignition_round_{t}"
+
+    # Coverage at horizon T: every u must be within some started ball by time T
+    for u_idx in range(n):
+        model += (
+            pulp.lpSum(x[v_idx][t]
+                       for t in range(1, T + 1)
+                       for v_idx in cover_sets[(u_idx, t)]) >= 1,
+            f"cover_{u_idx}"
+        )
+
+    # Solve with your decorator-injected solver
+    try:
+        solve(model)
+    except ValueError as e:
+        # Your wrapper raises ValueError("... Infeasible") for non-optimal statuses
+        # Treat that as "not feasible for this T"
+        return False, []
+
+    if pulp.LpStatus[model.status] != "Optimal":
+        return False, []
+
+    # Extract a schedule: pick argmax x[:,t] for each round t
+    schedule: List[Hashable] = []
+    for t in range(1, T + 1):
+        chosen_idx = max(range(n), key=lambda v_idx: pulp.value(x[v_idx][t]))
+        schedule.append(V[chosen_idx])
+    return True, schedule
+
+
+# -------------------------
+# Public API (MIP only)
+# -------------------------
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def burning_number(
+    G: GraphLike,
+    *,
+    return_schedule: bool = False,
+    solve=None,   # injected by @with_solver
+    **solver_kwargs,  # accepted but consumed by @with_solver
+) -> int | Tuple[int, List[Hashable]]:
+    r"""
+    Compute the graph burning number :math:`b(G)` using a Mixed Integer Program (MIP).
+
+    Decision variables
+    ------------------
+    - :math:`x_{v,t} \in \{0,1\}` indicates vertex :math:`v` is chosen as a new fire
+      source at round :math:`t`.
+
+    Constraints
+    -----------
+    - Exactly one ignition per round:
+      :math:`\sum_{v \in V} x_{v,t} = 1 \ \ \forall t=1,\dots,T`.
+    - Coverage at the horizon :math:`T`:
+      for every vertex :math:`u`, at least one started fire covers it by time :math:`T`:
+      :math:`\sum_{t=1}^T \sum_{v: \, d(u,v) \le T - t} x_{v,t} \ge 1`.
+
+    Strategy
+    --------
+    Solve a sequence of feasibility MIPs for :math:`T=1,2,\dots,\text{UB}` and return
+    the smallest feasible :math:`T`. We use:
+      - lower bound :math:`\max(1, \text{number_of_components}(G))`
+      - upper bound :math:`\text{radius}(G) + 1` if :math:`G` is connected, otherwise :math:`n`.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        Undirected graph (not necessarily connected).
+    return_schedule : bool, default False
+        If True, also return a list ``[v1, ..., vT]`` giving the ignitions.
+
+    Other Parameters
+    ----------------
+    solve : callable, injected by :func:`graphcalc.solvers.with_solver`
+        The unified solve routine (handles HiGHS, Gurobi, CBC, etc.).
+    **solver_kwargs
+        Standard kwargs understood by :func:`graphcalc.solvers.with_solver`.
+
+    Returns
+    -------
+    int or (int, list[hashable])
+        The burning number :math:`b(G)`, and optionally a minimum ignition schedule.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from graphcalc import burning_number
+    >>> # Example (may require a MILP solver via your with_solver config):
+    >>> G = nx.path_graph(9)
+    >>> b, sched = burning_number(G, return_schedule=True)
+    >>> b
+    3
+    >>> len(sched) == b
+    True
+    """
+    H: nx.Graph = G  # NetworkX-compatible
+    n = H.number_of_nodes()
+    if n == 0:
+        return (0, []) if return_schedule else 0
+
+    dist = _all_pairs_dist(H)
+    comps = nx.number_connected_components(H)
+    LB = max(1, comps)
+    if _is_connected(H):
+        UB = min(n, nx.radius(H) + 1)
+    else:
+        # For disconnected graphs, radius(H)+1 is not a universal upper bound.
+        UB = n
+
+    # Find minimal feasible T
+    for T in range(LB, UB + 1):
+        feasible, schedule = _burning_feasible_MIP_with_solver(H, T, dist, solve)
+        if feasible:
+            return (T, schedule) if return_schedule else T
+
+    # As a last resort (shouldn't be needed if UB=n, but keep it robust)
+    for T in range(UB + 1, n + 1):
+        feasible, schedule = _burning_feasible_MIP_with_solver(H, T, dist, solve)
+        if feasible:
+            return (T, schedule) if return_schedule else T
+
+    # Should never happen
+    raise ValueError("Failed to find a feasible burning schedule up to n rounds.")
+
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def burning_schedule(
+    G: GraphLike,
+    *,
+    solve=None,
+    **solver_kwargs,
+) -> List[Hashable]:
+    """Return a minimum burning ignition schedule (MIP-only)."""
+    _, sched = burning_number(G, return_schedule=True, solve=solve, **solver_kwargs)
+    return sched

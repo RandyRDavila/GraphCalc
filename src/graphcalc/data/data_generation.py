@@ -239,6 +239,8 @@ GRAPHCALC_PROPERTY_LIST = [
     "positive_semidefinite_zero_forcing_number",
     "power_domination_number",
     "well_splitting_number",
+    "burning_number",
+    "vertex_clique_cover_number",
 ]
 
 def all_properties(graphs: list) -> pd.DataFrame:
