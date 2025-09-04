@@ -1,4 +1,4 @@
-from typing import Set, Hashable, Dict, Tuple, Hashable
+from typing import Set, Hashable, Dict, Tuple, Hashable, List
 import pulp
 import itertools
 import networkx as nx
@@ -8,6 +8,7 @@ from graphcalc.utils import (
     get_default_solver, enforce_type, GraphLike, _extract_and_report
 )
 from graphcalc.solvers import with_solver
+
 
 __all__ = [
     "maximum_independent_set",
@@ -23,6 +24,8 @@ __all__ = [
     "maximum_matching",
     "matching_number",
     "triameter",
+    "vertex_clique_cover_partition",
+    "vertex_clique_cover_number",
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
@@ -333,8 +336,8 @@ def optimal_proper_coloring(G: GraphLike) -> Dict:
     for node in G.nodes():
         prob += sum(node_colors[node]) == 1
 
-    for edge, i in itertools.product(G.edges(), range(G.order())):
-        prob += sum(node_colors[edge[0]][i] + node_colors[edge[1]][i]) <= 1
+    for (u, v), i in itertools.product(G.edges(), range(G.order())):
+        prob += node_colors[u][i] + node_colors[v][i] <= 1
 
     for node, i in itertools.product(G.nodes(), range(G.order())):
         prob += node_colors[node][i] <= colors[i]
@@ -376,6 +379,74 @@ def chromatic_number(G: GraphLike) -> int:
     coloring = optimal_proper_coloring(G)
     colors = [color for color in coloring if len(coloring[color]) > 0]
     return len(colors)
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def vertex_clique_cover_partition(G: GraphLike) -> Dict[int, List[Hashable]]:
+    r"""
+    Partition \(V(G)\) into the fewest number of cliques (a vertex clique cover),
+    returning the actual parts.
+
+    This uses the identity \(\theta(G) = \chi(\overline{G})\): we compute an
+    optimal proper coloring of the complement \(\overline{G}\), then interpret
+    each color class as a clique in \(G\).
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
+
+    Returns
+    -------
+    dict[int, list[hashable]]
+        A dictionary mapping color indices to vertex lists. Only nonempty parts
+        are returned. Each part induces a clique in \(G\).
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import cycle_graph
+    >>> G = cycle_graph(5)  # C5
+    >>> parts = gc.vertex_clique_cover_partition(G)
+    >>> sum(len(vs) for vs in parts.values()) == G.order()
+    True
+    """
+    G_comp = nx.complement(G)
+    coloring_comp = optimal_proper_coloring(G_comp)
+    # Keep only nonempty color classes
+    partition = {k: vs for k, vs in coloring_comp.items() if len(vs) > 0}
+    return partition
+
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def vertex_clique_cover_number(G: GraphLike) -> int:
+    r"""
+    Vertex clique cover number \(\theta(G)\): the fewest cliques needed to partition \(V(G)\).
+
+    Uses \(\theta(G) = \chi(\overline{G})\), i.e., the chromatic number of the complement.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
+
+    Returns
+    -------
+    int
+        The vertex clique cover number \(\theta(G)\).
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import complete_graph, cycle_graph
+    >>> gc.vertex_clique_cover_number(complete_graph(4))
+    1
+    >>> gc.vertex_clique_cover_number(cycle_graph(5))  # C5, complement is C5, χ=3
+    3
+    """
+    # If you prefer to reuse your chromatic_number API:
+    # return chromatic_number(nx.complement(G))
+    parts = vertex_clique_cover_partition(G)
+    return len(parts)
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
 def minimum_vertex_cover(
