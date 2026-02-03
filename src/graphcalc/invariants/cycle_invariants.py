@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Hashable, Iterable, Optional, Set, Tuple
-
+from typing import Any, Dict, Hashable, Optional, Set, Tuple
 
 import math
 import itertools
 import networkx as nx
-import graphcalc as gc
 
 __all__ = [
     "triangle_count",
@@ -356,6 +354,7 @@ def odd_girth(G):
             return 3
     return best
 
+
 def even_girth(G):
     r"""
     Compute the even girth of an undirected graph :math:`G` (length of a shortest even cycle).
@@ -455,6 +454,7 @@ def even_girth(G):
         if best == 4:
             return 4
     return best
+
 
 def circumference(G, max_n=16):
     r"""

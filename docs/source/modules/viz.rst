@@ -11,7 +11,7 @@ Visualization
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: graphcalc.viz.vertces
+.. automodule:: graphcalc.viz.vertices
    :members:
    :undoc-members:
    :show-inheritance:

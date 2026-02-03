@@ -1,6 +1,4 @@
-
-from typing import Hashable, List
-from typing import Iterable, List, Sequence, Tuple
+from typing import Iterable, Sequence, Tuple
 
 import math
 import networkx as nx

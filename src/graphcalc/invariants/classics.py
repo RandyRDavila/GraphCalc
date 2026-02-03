@@ -3,10 +3,14 @@ import pulp
 import itertools
 import networkx as nx
 import math
+from dataclasses import dataclass
 
 from graphcalc.core import SimpleGraph
 from graphcalc.utils import (
-    get_default_solver, enforce_type, GraphLike, _extract_and_report
+    get_default_solver,
+    enforce_type,
+    GraphLike,
+    _extract_and_report,
 )
 from graphcalc.solvers import with_solver
 
@@ -1229,7 +1233,6 @@ def arboricity(G: nx.Graph) -> int:
             hi = mid
     return lo
 
-from dataclasses import dataclass
 
 @dataclass
 class _DSURollback:
