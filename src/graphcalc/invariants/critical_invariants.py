@@ -4,6 +4,25 @@
 
 import graphcalc as gc
 
+__all__ = [
+    "vertex_deletion_deltas",
+    "vertex_critical_set",
+    "vertex_critical_number",
+    "vertex_deletion_max_jump",
+    "edge_deletion_deltas",
+    "edge_critical_number",
+    "domination_vertex_increase_number",
+    "domination_vertex_decrease_number",
+    "domination_vertex_change_number",
+    "domination_vertex_same_number",
+    "domination_vertex_max_jump",
+    "domination_edge_increase_number",
+    "domination_edge_decrease_number",
+    "domination_edge_change_number",
+    "domination_edge_same_number",
+    "domination_edge_max_jump",
+]
+
 def vertex_deletion_deltas(G, f):
     r"""
     Compute **single-vertex deletion deltas** for a graph parameter :math:`f`.
@@ -11,13 +30,11 @@ def vertex_deletion_deltas(G, f):
     For each vertex :math:`v \in V(G)`, form the induced vertex-deleted subgraph
 
     .. math::
-
         G - v \;:=\; G[V(G)\setminus\{v\}],
 
     and compute the deletion delta
 
     .. math::
-
         \Delta_v f(G) \;:=\; f(G - v) - f(G).
 
     The function returns the mapping :math:`v \mapsto \Delta_v f(G)` for all vertices of :math:`G`.
@@ -27,23 +44,27 @@ def vertex_deletion_deltas(G, f):
     G : networkx.Graph-like
         A finite graph.
     f : callable
-        A function ``f(H) -> number`` defined on graphs ``H``. Examples include invariants/parameters
-        such as order, size, independence number, clique number, domination number, chromatic number,
-        etc. The function is evaluated first on ``G`` and then on each induced subgraph ``G-v``.
+        A function ``f(H) -> number`` defined on graphs ``H``.
+
+        Examples include invariants/parameters such as ``order``, ``size``,
+        ``independence_number``, ``clique_number``, ``domination_number``,
+        and ``chromatic_number``.
+
+        The function is evaluated first on ``G`` and then on each induced
+        subgraph ``G - v``.
 
     Returns
     -------
     dict
-        A dictionary mapping each vertex ``v`` of ``G`` to the numeric value ``f(G - v) - f(G)``.
-        If :math:`|V(G)| = 0`, returns an empty dictionary ``{}``.
+        A dictionary mapping each vertex ``v`` of ``G`` to the numeric value
+        ``f(G - v) - f(G)``.
+
+        If :math:`|V(G)|=0`, returns the empty dictionary ``{}``.
 
     Notes
     -----
-    - These deltas are useful for **sensitivity** and **criticality** analyses, e.g. identifying
-      vertices whose deletion changes the parameter, and by how much.
-    - The induced subgraph ``G-v`` is passed to ``f`` as a ``.copy()`` to protect against accidental
-      mutation inside ``f``. If ``f`` is guaranteed to be pure/read-only, you may omit ``.copy()``
-      for speed.
+    - These deltas are useful for **sensitivity** and **criticality** analyses.
+    - The induced subgraph ``G - v`` is passed to ``f`` as a ``.copy()`` to protect against accidental mutation inside ``f``. If ``f`` is guaranteed to be read-only, you may omit ``.copy()`` for speed.
 
     Raises
     ------
@@ -51,28 +72,15 @@ def vertex_deletion_deltas(G, f):
         Propagates any exception raised by ``f`` when applied to ``G`` or to any vertex-deleted
         induced subgraph.
 
-    Complexity
-    ----------
-    Let :math:`n = |V(G)|`. This routine performs :math:`n+1` evaluations of ``f`` (once on ``G`` and
-    once on each of the :math:`n` induced subgraphs with one vertex removed). Thus the overall cost is
-    dominated by:
-
-    .. math::
-
-        O\!\left(n \cdot T_f(n-1)\right),
-
-    where :math:`T_f(\cdot)` denotes the time to evaluate ``f`` on a graph of the indicated size
-    (plus the overhead of building/copying induced subgraphs).
-
     Examples
     --------
     >>> import networkx as nx
     >>> import graphcalc as gc
+    >>> from graphcalc.invariants.critical_invariants import vertex_deletion_deltas
     >>> G = nx.path_graph(4)
-    >>> # Deltas for the independence number under single-vertex deletions:
-    >>> d = vertex_deletion_deltas(G, gc.independence_number)
-    >>> sorted(d.items())  # doctest: +ELLIPSIS
-    [...]
+    >>> d = vertex_deletion_deltas(G, gc.order)
+    >>> d[0], d[1], d[2], d[3]
+    (-1, -1, -1, -1)
     """
     n = gc.order(G)
     if n == 0:
@@ -136,12 +144,9 @@ def vertex_critical_set(G, f, *, kind="change"):
     Notes
     -----
     - This is a generic vertex-sensitivity / “criticality” selector. Terminology varies by context:
-        * For **maximization** parameters (e.g. :math:`\alpha`, :math:`\omega`), authors sometimes call
-          vertices with ``kind='decrease'`` *critical*, since deleting them reduces the optimum.
-        * For **minimization** parameters (e.g. :math:`\chi`, :math:`\gamma`), authors sometimes call
-          vertices with ``kind='increase'`` *critical*, since deleting them increases the minimum.
-      This function does not assume whether :math:`f` is a max or min parameter; it simply filters by
-      the sign of :math:`\Delta_v f(G)`.
+        * For **maximization** parameters (e.g. :math:`\alpha`, :math:`\omega`), authors sometimes call vertices with ``kind='decrease'`` *critical*, since deleting them reduces the optimum.
+        * For **minimization** parameters (e.g. :math:`\chi`, :math:`\gamma`), authors sometimes call vertices with ``kind='increase'`` *critical*, since deleting them increases the minimum.
+    - This function does not assume whether :math:`f` is a max or min parameter; it simply filters by the sign of :math:`\Delta_v f(G)`.
     - The deltas are computed by :func:`vertex_deletion_deltas`, which forms induced subgraphs and
       evaluates ``f`` on them.
 
@@ -431,19 +436,15 @@ def edge_critical_number(G, f, *, kind="change"):
     ValueError
         If ``kind`` is not one of ``{'change','increase','decrease','same'}``.
     Exception
-        Propagates any exception raised by ``f`` when evaluated on ``G`` or on any edge-deleted graph
-        (via :func:`edge_deletion_deltas`).
+        Propagates any exception raised by ``f`` when evaluated on ``G`` or on any edge-deleted graph (via :func:`edge_deletion_deltas`).
 
     Notes
     -----
-    - Terminology varies: some authors reserve “edge-critical” for a specific direction of change,
-      e.g.:
-        * for **maximization** parameters (such as :math:`\alpha` or :math:`\omega`), edges with
-          ``kind='decrease'``;
+    - Terminology varies: some authors reserve “edge-critical” for a specific direction of change, e.g.:
+        * for **maximization** parameters (such as :math:`\alpha` or :math:`\omega`), edges with ``kind='decrease'``;
         * for **minimization** parameters (such as :math:`\chi`), edges with ``kind='increase'``.
-      This function is agnostic and provides all four sign-based categories via ``kind``.
-    - This is a counting wrapper; if you want the edges themselves, define an analogous
-      ``edge_critical_set`` using the same delta predicate.
+    - This function is agnostic and provides all four sign-based categories via ``kind``.
+    - This is a counting wrapper; if you want the edges themselves, define an analogous ``edge_critical_set`` using the same delta predicate.
 
     Complexity
     ----------

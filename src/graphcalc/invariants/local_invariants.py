@@ -11,6 +11,7 @@ __all__ = [
     "local_zero_forcing_number",
     "local_residue",
     "local_harmonic_index",
+    "local_annihilation_number",
 ]
 
 # ============================================================
@@ -26,69 +27,57 @@ def local_parameter(G, f, *, neighborhood="open", agg="max"):
     evaluates a graph parameter :math:`f` on that induced subgraph, and then aggregates the local
     values over all vertices.
 
-    Formally, let
+    Formally, define
 
     .. math::
-
         S_v \;=\;
         \begin{cases}
         N(v), & \text{if neighborhood = 'open'},\\
         N[v], & \text{if neighborhood = 'closed'}.
         \end{cases}
 
-    This function computes:
+    This function computes
 
     .. math::
-
         \operatorname{Agg}_{v\in V(G)}\; f\!\left(G[S_v]\right),
 
-    where :math:`G[S_v]` is the induced subgraph on :math:`S_v`, and :math:`\operatorname{Agg}`
-    is one of ``max``, ``min``, ``sum``, or the arithmetic mean ``avg``.
+    where :math:`G[S_v]` is the induced subgraph on :math:`S_v` and :math:`\operatorname{Agg}` is one
+    of ``max``, ``min``, ``sum``, or the arithmetic mean ``avg``.
 
     Parameters
     ----------
     G : networkx.Graph-like
         A finite graph. Neighborhoods are defined using ``G.neighbors(v)``, so this is primarily
-        intended for **undirected graphs** under the standard adjacency notion. If ``G`` is a
-        directed graph, NetworkX defines ``neighbors`` as successors, which generally yields a
-        different “out-neighborhood” notion.
+        intended for **undirected graphs**. For directed graphs, NetworkX treats ``neighbors`` as
+        successors, yielding an out-neighborhood variant.
     f : callable
-        A function that accepts a graph ``H`` (a NetworkX graph) and returns a numeric value.
+        A function that accepts a graph ``H`` and returns a numeric value.
+
         Typical examples include invariant/parameter functions such as ``order``, ``size``,
-        independence number, clique number, domination number, zero forcing number, etc.
+        ``independence_number``, ``clique_number``, ``domination_number``, and
+        ``zero_forcing_number``.
 
         This implementation calls ``f`` on a **copy** of each induced subgraph to guard against
         accidental mutation inside ``f``.
-    neighborhood : {'open', 'closed'}, optional
-        Which neighborhood to use for the local induced subgraphs:
-        - ``'open'``: :math:`S_v = N(v)` (neighbors only)
-        - ``'closed'``: :math:`S_v = N[v]` (neighbors plus the vertex itself)
-    agg : {'max', 'min', 'sum', 'avg'}, optional
-        Aggregation operator applied to the multiset of local values
-        :math:`\{ f(G[S_v]) : v\in V(G)\}`.
+    neighborhood : {'open', 'closed'}, default='open'
+        Which neighborhood to use.
+
+        ``'open'`` means :math:`S_v = N(v)` (neighbors only).
+
+        ``'closed'`` means :math:`S_v = N[v]` (neighbors plus the vertex itself).
+    agg : {'max', 'min', 'sum', 'avg'}, default='max'
+        Aggregation operator applied to the multiset :math:`\{ f(G[S_v]) : v \in V(G)\}`.
 
     Returns
     -------
     number
-        The aggregated value. If :math:`|V(G)| = 0`, returns 0.
+        The aggregated value. If :math:`|V(G)|=0`, returns ``0``.
 
     Notes
     -----
-    - If :math:`v` is isolated, then :math:`N(v)=\varnothing`. In that case:
-        * with ``neighborhood='open'`` the induced graph is empty, ``G[∅]``;
-        * with ``neighborhood='closed'`` the induced graph is the single-vertex graph, ``G[{v}]``.
-      Ensure your parameter function ``f`` is defined on these graphs.
-    - The induced subgraphs are formed independently for each vertex; overlapping neighborhoods
-      are allowed and expected.
-    - If ``f`` is guaranteed to be pure/read-only, you may remove the ``.copy()`` calls for speed.
-
-    Complexity
-    ----------
-    This constructs one induced subgraph per vertex and evaluates ``f`` on each. The total runtime
-    is dominated by:
-      - the cost of forming induced subgraphs on :math:`N(v)` or :math:`N[v]`, and
-      - the cost of evaluating ``f`` on each such subgraph.
-    In symbols, the cost is roughly :math:`\sum_{v\in V(G)} T_f(|S_v|, |E(G[S_v])|)` plus overhead.
+    - If :math:`v` is isolated, then :math:`N(v)=\varnothing`. In that case, with ``neighborhood='open'`` the induced graph is empty, and with ``neighborhood='closed'`` the induced graph is a single vertex. Ensure your parameter function ``f`` is defined on these graphs.
+    - The induced subgraphs are formed independently for each vertex; overlapping neighborhoods are allowed.
+    - If ``f`` is guaranteed to be read-only, you may remove the ``.copy()`` calls for speed.
 
     Raises
     ------
@@ -101,13 +90,12 @@ def local_parameter(G, f, *, neighborhood="open", agg="max"):
     >>> import networkx as nx
     >>> import graphcalc as gc
     >>> G = nx.path_graph(5)
-    >>> # Max degree inside open neighborhoods: each open neighborhood is an induced subgraph
     >>> gc.local_parameter(G, gc.maximum_degree, neighborhood="open", agg="max")
     0
-    >>> # Max order of closed neighborhoods: max |N[v]| over v
-    >>> local_parameter(G, gc.order, neighborhood="closed", agg="max")
+    >>> gc.local_parameter(G, gc.order, neighborhood="closed", agg="max")
     3
     """
+
     n = gc.order(G)
     if n == 0:
         return 0
@@ -701,3 +689,68 @@ def local_chromatic_number(G):
     1
     """
     return local_parameter(G, gc.chromatic_number, neighborhood="open", agg="max")
+
+def local_annihilation_number(G):
+    r"""
+    Compute the **local annihilation number** of a graph :math:`G`
+    (with respect to open neighborhoods).
+
+    Let :math:`a(H)` denote the **annihilation number** of a graph :math:`H` (as implemented by
+    :func:`graphcalc.annihilation_number`). The **local annihilation number** is the maximum
+    annihilation number attained by an open-neighborhood induced subgraph:
+
+    .. math::
+        a_{\mathrm{loc}}(G) \;=\; \max_{v \in V(G)} a\!\bigl(G[N(v)]\bigr),
+
+    where :math:`N(v)` is the **open neighborhood** of :math:`v` and :math:`G[N(v)]` is the subgraph
+    induced by :math:`N(v)`.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        A finite graph. Neighborhoods are computed via ``G.neighbors(v)``, so this is primarily
+        intended for **undirected graphs**. For directed graphs, NetworkX interprets
+        ``neighbors`` as successors, yielding an out-neighborhood variant.
+
+    Returns
+    -------
+    int
+        The local annihilation number :math:`a_{\mathrm{loc}}(G)`. If :math:`G` has no vertices,
+        returns 0.
+
+    Notes
+    -----
+    - If :math:`v` is isolated, then :math:`N(v)=\varnothing` and :math:`G[N(v)]` is the empty graph.
+      The value contributed by such a vertex is :math:`a(\varnothing)` under the convention used by
+      :func:`graphcalc.annihilation_number` on the empty graph. (This only matters when :math:`G`
+      has isolated vertices.)
+    - This function is a “local” refinement: it measures how large the annihilation number can be
+      inside a vertex neighborhood, rather than on :math:`G` itself.
+    - Implementation: this is a thin wrapper around :func:`local_parameter` with
+      ``gc.annihilation_number``, ``neighborhood="open"``, and ``agg="max"``.
+
+    Complexity
+    ----------
+    Runtime is dominated by computing :func:`graphcalc.annihilation_number` on each neighborhood-induced
+    subgraph.
+
+    Examples
+    --------
+    Complete graphs: :math:`N(v)` induces :math:`K_{n-1}`.
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> K6 = nx.complete_graph(6)
+    >>> gc.local_annihilation_number(K6) == gc.annihilation_number(nx.complete_graph(5))
+    True
+
+    Bipartite graphs: each open neighborhood induces an independent set (no edges), so each
+    neighborhood subgraph is edgeless.
+
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> P6 = nx.path_graph(6)
+    >>> gc.local_annihilation_number(P6) == gc.annihilation_number(nx.empty_graph(2))
+    True
+    """
+    return local_parameter(G, gc.annihilation_number, neighborhood="open", agg="max")

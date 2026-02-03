@@ -16,6 +16,8 @@ __all__ = [
     "domination_number",
     "minimum_total_domination_set",
     "total_domination_number",
+    "minimum_connected_dominating_set",
+    "connected_domination_number",
     "minimum_independent_dominating_set",
     "independent_domination_number",
     "complement_is_connected",
@@ -295,16 +297,25 @@ def minimum_independent_dominating_set(
     r"""
     Find a minimum **independent dominating set** of :math:`G` via integer programming.
 
+    An **independent dominating set** is a set :math:`S \subseteq V(G)` such that:
+
+    - (**Independent**) no two vertices of :math:`S` are adjacent, and
+    - (**Dominating**) every vertex of :math:`G` is in :math:`S` or adjacent to a vertex in :math:`S`.
+
+    Equivalently, :math:`S` is both an independent set and a dominating set.
+
     Let :math:`x_v \in \{0,1\}` indicate whether :math:`v` is chosen. We solve
 
     .. math::
         \min \sum_{v \in V} x_v
 
     subject to the **independence** constraints
+
     .. math::
         x_u + x_v \le 1 \quad \forall \{u,v\}\in E,
 
     and the **domination** constraints (using the closed neighborhood)
+
     .. math::
         \sum_{u \in N[v]} x_u \ge 1 \quad \forall v \in V.
 
@@ -334,6 +345,7 @@ def minimum_independent_dominating_set(
     >>> len(S)
     2
     """
+
     prob = pulp.LpProblem("MinIndependentDominatingSet", pulp.LpMinimize)
 
     # One binary var per vertex
@@ -394,6 +406,182 @@ def independent_domination_number(
     """
     return len(minimum_independent_dominating_set(G, **solver_kwargs))
 
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@with_solver
+def minimum_connected_dominating_set(
+    G: GraphLike,
+    *,
+    verbose: bool = False,
+    solve=None,  # injected by @with_solver
+) -> Set[Hashable]:
+    r"""
+    Find a minimum connected dominating set of :math:`G` via integer programming.
+
+    A **connected dominating set** is a set :math:`S \subseteq V(G)` such that:
+
+    - (**Dominating**) every vertex is in :math:`S` or adjacent to a vertex in :math:`S`.
+    - (**Connected**) the induced subgraph :math:`G[S]` is connected.
+
+    Let :math:`x_v \in \{0,1\}` indicate whether :math:`v` is selected. Domination is enforced by
+
+    .. math::
+        \sum_{u \in N[v]} x_u \ge 1 \quad \forall v \in V,
+
+    where :math:`N[v]` is the closed neighborhood of :math:`v`.
+
+    Connectivity is enforced with a single-commodity flow formulation that chooses a root
+    among the selected vertices and sends one unit of flow to each other selected vertex.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+    verbose : bool, default=False
+        If True, print solver output (when supported).
+
+    Notes
+    -----
+    Accepts the standard solver kwargs from :func:`graphcalc.solvers.with_solver`
+    (e.g., ``solver="highs"`` or ``solver={"name":"GUROBI_CMD","options":{...}}``).
+
+    Conventions
+    -----------
+    - If :math:`|V(G)|=0`, returns the empty set.
+    - If :math:`G` is disconnected and nonempty, no connected dominating set exists and this function raises ``ValueError``.
+
+    Returns
+    -------
+    set of hashable
+        A minimum connected dominating set.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, cycle_graph
+    >>> len(gc.minimum_connected_dominating_set(path_graph(4)))
+    2
+    >>> len(gc.minimum_connected_dominating_set(cycle_graph(6)))
+    4
+    """
+    import pulp
+
+    n = G.number_of_nodes()
+    if n == 0:
+        return set()
+
+    # For disconnected graphs, no connected dominating set exists.
+    if not nx.is_connected(G):
+        raise ValueError(
+            "minimum_connected_dominating_set is defined only for connected graphs (or the empty graph)."
+        )
+
+    nodes = list(G.nodes())
+
+    prob = pulp.LpProblem("MinConnectedDominatingSet", pulp.LpMinimize)
+
+    # Selection variables
+    x = {v: pulp.LpVariable(f"x_{v}", cat="Binary") for v in nodes}
+
+    # Root choice among selected vertices
+    r = {v: pulp.LpVariable(f"r_{v}", cat="Binary") for v in nodes}
+    prob += pulp.lpSum(r.values()) == 1, "one_root"
+    for v in nodes:
+        prob += r[v] <= x[v], f"root_implies_selected_{v}"
+
+    # K = |S|
+    K = pulp.LpVariable("K", lowBound=1, upBound=n, cat="Integer")
+    prob += K == pulp.lpSum(x.values()), "K_def"
+
+    # Flow variables on directed arcs
+    arcs = []
+    for u, v in G.edges():
+        arcs.append((u, v))
+        arcs.append((v, u))
+
+    M = n  # big-M
+    f = {(u, v): pulp.LpVariable(f"f_{u}_{v}", lowBound=0, upBound=n, cat="Continuous") for (u, v) in arcs}
+
+    # Flow can traverse only selected vertices
+    for u, v in arcs:
+        prob += f[(u, v)] <= M * x[u], f"cap_tail_{u}_{v}"
+        prob += f[(u, v)] <= M * x[v], f"cap_head_{u}_{v}"
+
+    # Linearize z_v = K * r_v
+    z = {v: pulp.LpVariable(f"z_{v}", lowBound=0, upBound=n, cat="Continuous") for v in nodes}
+    for v in nodes:
+        prob += z[v] <= K, f"z_le_K_{v}"
+        prob += z[v] <= n * r[v], f"z_le_nrv_{v}"
+        prob += z[v] >= K - n * (1 - r[v]), f"z_ge_K_minus_n_{v}"
+        prob += z[v] >= 0, f"z_ge_0_{v}"
+
+    # Objective
+    prob += pulp.lpSum(x.values())
+
+    # Domination constraints (closed neighborhoods)
+    for v in nodes:
+        Nclosed = closed_neighborhood(G, v)
+        prob += pulp.lpSum(x[u] for u in Nclosed) >= 1, f"dom_{v}"
+
+    # Flow conservation: inflow - outflow = x[v] - z[v]
+    for v in nodes:
+        inflow = pulp.lpSum(f[(u, v)] for u in G.neighbors(v))
+        outflow = pulp.lpSum(f[(v, u)] for u in G.neighbors(v))
+        prob += inflow - outflow == x[v] - z[v], f"flow_{v}"
+
+    # Solve (raises if not Optimal)
+    solve(prob)
+
+    return _extract_and_report(prob, x, verbose=verbose)
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+def connected_domination_number(
+    G: GraphLike,
+    **solver_kwargs,  # forwards (verbose, solver, solver_options)
+) -> int:
+    r"""
+    Return the **connected domination number** :math:`\gamma_c(G)`.
+
+    The connected domination number is the minimum size of a connected dominating set:
+
+    .. math::
+        \gamma_c(G) = \min\{ |S| : S \subseteq V(G),\ S \text{ dominates } G,\ \text{and } G[S]\text{ is connected}\}.
+
+    This wraps :func:`minimum_connected_dominating_set`.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Other Parameters
+    ----------------
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Forwarded to :func:`minimum_connected_dominating_set`.
+
+    Returns
+    -------
+    int
+        The connected domination number :math:`\gamma_c(G)`.
+
+    Raises
+    ------
+    ValueError
+        If :math:`G` is disconnected and nonempty.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> from graphcalc.generators import path_graph, cycle_graph
+    >>> gc.connected_domination_number(path_graph(3))
+    1
+    >>> gc.connected_domination_number(path_graph(4))
+    2
+    >>> gc.connected_domination_number(cycle_graph(6))
+    4
+    """
+    return len(minimum_connected_dominating_set(G, **solver_kwargs))
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def complement_is_connected(G: GraphLike, S: Union[Set[Hashable], List[Hashable]]) -> bool:
@@ -548,22 +736,27 @@ def minimum_roman_dominating_function(
     r"""
     Compute a minimum Roman dominating function (RDF) via integer programming.
 
-    A Roman dominating function on :math:`G=(V,E)` is a map :math:`f:V\to\{0,1,2\}`
-    such that every vertex with label 0 has a neighbor with label 2. We minimize
-    :math:`\sum_{v\in V} f(v)` using binary indicators:
-    :math:`x_v=1` iff :math:`f(v)=1`, and :math:`y_v=1` iff :math:`f(v)=2`
-    (so :math:`f(v)=x_v+2y_v`).
+    A **Roman dominating function** on :math:`G=(V,E)` is a map :math:`f:V\to\{0,1,2\}`
+    such that every vertex with label 0 has a neighbor with label 2. The **weight** of
+    :math:`f` is :math:`\sum_{v\in V} f(v)`.
+
+    We minimize the weight using binary indicators:
+
+    - :math:`x_v=1` iff :math:`f(v)=1`
+    - :math:`y_v=1` iff :math:`f(v)=2`
+
+    so that :math:`f(v)=x_v+2y_v`.
 
     Formulation
     -----------
     .. math::
-       \min \sum_{v\in V} (x_v + 2y_v)
+        \min \sum_{v\in V} (x_v + 2y_v)
 
     .. math::
-       x_v + y_v + \sum_{u\in N(v)} y_u \ge 1 \quad \forall v\in V
+        x_v + y_v + \sum_{u\in N(v)} y_u \ge 1 \quad \forall v\in V
 
     .. math::
-       x_v + y_v \le 1 \quad \forall v\in V
+        x_v + y_v \le 1 \quad \forall v\in V
 
     Parameters
     ----------
@@ -580,11 +773,11 @@ def minimum_roman_dominating_function(
     Returns
     -------
     dict
-        {
-          "x": {v: 0/1},   # vertices labeled 1
-          "y": {v: 0/1},   # vertices labeled 2
-          "objective": float  # min sum_v (x_v + 2 y_v)
-        }
+        A dictionary with keys:
+
+        - ``"x"``: dict mapping ``v`` to 0/1 indicating whether :math:`f(v)=1`
+        - ``"y"``: dict mapping ``v`` to 0/1 indicating whether :math:`f(v)=2`
+        - ``"objective"``: float, the minimum weight :math:`\sum_v (x_v + 2y_v)`
 
     Examples
     --------
@@ -595,6 +788,7 @@ def minimum_roman_dominating_function(
     >>> isinstance(sol["objective"], float)
     True
     """
+
     prob = pulp.LpProblem("RomanDomination", pulp.LpMinimize)
 
     # Binary variables per vertex
@@ -676,32 +870,46 @@ def minimum_double_roman_dominating_function(
     r"""
     Compute a minimum double Roman dominating function (DRDF) via integer programming.
 
-    A DRDF is a labeling :math:`f:V \to \{0,1,2,3\}` such that:
-      1) If :math:`f(v)=0`, then either some neighbor has label 3, or at least
-         two neighbors have label 2.
-      2) If :math:`f(v)=1`, then some neighbor has label at least 2.
+    A **double Roman dominating function** is a labeling
+    :math:`f:V(G)\to\{0,1,2,3\}` such that:
 
-    We use binary indicators per vertex :math:`v`:
-    :math:`x_v=1` iff :math:`f(v)=1`, :math:`y_v=1` iff :math:`f(v)=2`,
-    :math:`z_v=1` iff :math:`f(v)=3`, with exclusivity :math:`x_v+y_v+z_v\le 1`.
-    The weight is :math:`\sum_v (x_v+2y_v+3z_v)`.
+    1. If :math:`f(v)=0`, then either some neighbor of :math:`v` has label 3, or at least
+    two neighbors of :math:`v` have label 2.
+    2. If :math:`f(v)=1`, then some neighbor of :math:`v` has label at least 2.
+
+    We use binary indicators for each vertex :math:`v`:
+
+    - :math:`x_v=1` iff :math:`f(v)=1`
+    - :math:`y_v=1` iff :math:`f(v)=2`
+    - :math:`z_v=1` iff :math:`f(v)=3`
+
+    with exclusivity :math:`x_v+y_v+z_v\le 1`. The objective is
+
+    .. math::
+        \min \sum_{v\in V} (x_v + 2y_v + 3z_v).
 
     Formulation
     -----------
-    .. math::
-        \min \sum_{v\in V} (x_v + 2y_v + 3z_v)
+    Domination constraint for vertices that may be labeled 0 (linearized):
 
-    Domination for 0-labeled vertices (linearized):
     .. math::
-        x_v + y_v + z_v \;+\; \tfrac{1}{2}\!\sum_{u\in N(v)} y_u \;+\; \sum_{u\in N(v)} z_u \;\ge\; 1 \quad \forall v
+        x_v + y_v + z_v
+        \;+\; \tfrac{1}{2}\sum_{u\in N(v)} y_u
+        \;+\; \sum_{u\in N(v)} z_u
+        \;\ge\; 1
+        \quad \forall v\in V.
 
-    Domination for 1-labeled vertices:
+    Domination constraint for vertices labeled 1:
+
     .. math::
-        \sum_{u\in N(v)} (y_u + z_u) \;\ge\; x_v \quad \forall v
+        \sum_{u\in N(v)} (y_u + z_u) \;\ge\; x_v
+        \quad \forall v\in V.
 
     Exclusivity:
+
     .. math::
-        x_v + y_v + z_v \;\le\; 1 \quad \forall v
+        x_v + y_v + z_v \;\le\; 1
+        \quad \forall v\in V.
 
     Parameters
     ----------
@@ -713,17 +921,17 @@ def minimum_double_roman_dominating_function(
     Notes
     -----
     Accepts standard solver kwargs via :func:`graphcalc.solvers.with_solver`
-    (e.g., ``solver="highs"``, ``solver={"name":"GUROBI_CMD","options":{...}}``).
+    (e.g., ``solver="highs"`` or ``solver={"name":"GUROBI_CMD","options":{...}}``).
 
     Returns
     -------
     dict
-        {
-          "x": {v: 0/1},   # vertices labeled 1
-          "y": {v: 0/1},   # vertices labeled 2
-          "z": {v: 0/1},   # vertices labeled 3
-          "objective": float  # min sum_v (x_v + 2y_v + 3z_v)
-        }
+        A dictionary with keys:
+
+        - ``"x"``: dict mapping ``v`` to 0/1 indicating whether :math:`f(v)=1`
+        - ``"y"``: dict mapping ``v`` to 0/1 indicating whether :math:`f(v)=2`
+        - ``"z"``: dict mapping ``v`` to 0/1 indicating whether :math:`f(v)=3`
+        - ``"objective"``: float, the minimum value :math:`\sum_v (x_v + 2y_v + 3z_v)`
 
     Examples
     --------

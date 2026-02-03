@@ -1389,59 +1389,74 @@ def burning_number(
     **solver_kwargs,  # accepted but consumed by @with_solver
 ) -> int | Tuple[int, List[Hashable]]:
     r"""
-    Compute the graph burning number :math:`b(G)` using a Mixed Integer Program (MIP).
+    Compute the **burning number** :math:`b(G)` using a mixed-integer program (MIP).
 
-    Decision variables
-    ------------------
-    - :math:`x_{v,t} \in \{0,1\}` indicates vertex :math:`v` is chosen as a new fire
-      source at round :math:`t`.
+    In the graph burning process, one vertex is ignited at each round, and fire spreads
+    one edge per round from every burning vertex. The **burning number** :math:`b(G)` is
+    the minimum number of rounds needed to burn all vertices.
 
-    Constraints
-    -----------
-    - Exactly one ignition per round:
-      :math:`\sum_{v \in V} x_{v,t} = 1 \ \ \forall t=1,\dots,T`.
-    - Coverage at the horizon :math:`T`:
-      for every vertex :math:`u`, at least one started fire covers it by time :math:`T`:
-      :math:`\sum_{t=1}^T \sum_{v: \, d(u,v) \le T - t} x_{v,t} \ge 1`.
+    MIP model for a fixed horizon :math:`T`
+    ---------------------------------------
+    Let :math:`x_{v,t}\in\{0,1\}` indicate that vertex :math:`v` is chosen as a new ignition
+    source at round :math:`t` (for :math:`t=1,\dots,T`).
 
-    Strategy
-    --------
-    Solve a sequence of feasibility MIPs for :math:`T=1,2,\dots,\text{UB}` and return
-    the smallest feasible :math:`T`. We use:
-      - lower bound :math:`\max(1, \text{number_of_components}(G))`
-      - upper bound :math:`\text{radius}(G) + 1` if :math:`G` is connected, otherwise :math:`n`.
+    Ignition constraints (one new source per round):
+
+    .. math::
+        \sum_{v\in V} x_{v,t} = 1 \quad \forall t\in\{1,\dots,T\}.
+
+    Coverage constraints (every vertex burned by time :math:`T`):
+    a vertex :math:`u` is burned by round :math:`T` if there exists an ignition :math:`(v,t)`
+    with :math:`d(u,v)\le T-t`, where :math:`d` is graph distance. This is enforced by
+
+    .. math::
+        \sum_{t=1}^{T}\;\sum_{\substack{v\in V:\\ d(u,v)\le T-t}} x_{v,t} \;\ge\; 1
+        \quad \forall u\in V.
+
+    Search strategy
+    ---------------
+    We solve a sequence of feasibility MIPs for :math:`T = \mathrm{LB}, \mathrm{LB}+1, \dots`
+    and return the smallest feasible :math:`T`.
+
+    - Lower bound: :math:`\max(1, \#\text{components}(G))`.
+    - Upper bound: if :math:`G` is connected, :math:`\mathrm{UB}=\min(n, \mathrm{radius}(G)+1)`; otherwise we use :math:`\mathrm{UB}=n`, which is always valid.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
         Undirected graph (not necessarily connected).
-    return_schedule : bool, default False
-        If True, also return a list ``[v1, ..., vT]`` giving the ignitions.
+    return_schedule : bool, default=False
+        If True, also return a list ``[v1, ..., vT]`` giving the ignition vertices in order.
 
     Other Parameters
     ----------------
-    solve : callable, injected by :func:`graphcalc.solvers.with_solver`
-        The unified solve routine (handles HiGHS, Gurobi, CBC, etc.).
-    **solver_kwargs
-        Standard kwargs understood by :func:`graphcalc.solvers.with_solver`.
+    verbose : bool, default=False
+    solver : str or dict or pulp.LpSolver or type or callable or None, optional
+    solver_options : dict, optional
+        Standard solver kwargs accepted by :func:`graphcalc.solvers.with_solver`.
 
     Returns
     -------
-    int or (int, list[hashable])
-        The burning number :math:`b(G)`, and optionally a minimum ignition schedule.
+    int or (int, list of hashable)
+        If ``return_schedule=False``, returns the burning number :math:`b(G)`.
+        If ``return_schedule=True``, returns ``(b(G), schedule)`` where ``schedule`` is a
+        minimum-length ignition sequence.
+
+    Notes
+    -----
+    This function requires a MILP-capable solver supported by your :func:`with_solver`
+    configuration.
 
     Examples
     --------
     >>> import networkx as nx
-    >>> from graphcalc import burning_number
-    >>> # Example (may require a MILP solver via your with_solver config):
+    >>> import graphcalc as gc
     >>> G = nx.path_graph(9)
-    >>> b, sched = burning_number(G, return_schedule=True)
-    >>> b
-    3
+    >>> b, sched = gc.burning_number(G, return_schedule=True)
     >>> len(sched) == b
     True
     """
+
     H: nx.Graph = G  # NetworkX-compatible
     n = H.number_of_nodes()
     if n == 0:

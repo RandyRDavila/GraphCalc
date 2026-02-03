@@ -1231,20 +1231,21 @@ def connected_and_cograph(G: GraphLike) -> bool:
     return connected(G) and cograph(G)
 
 def nontrivial(G: GraphLike) -> bool:
-    """
+    r"""
     Determine whether a graph is nontrivial.
 
-    A graph is nontrivial if it has at least two vertices, i.e., order(G) ≥ 2.
+    A graph is **nontrivial** if it has at least two vertices, i.e.,
+    :math:`|V(G)| \ge 2`.
 
     Parameters
     ----------
     G : networkx.Graph or graphcalc.SimpleGraph
-        An undirected graph.
+        The input graph.
 
     Returns
     -------
     bool
-        True if |V(G)| ≥ 2, False otherwise.
+        ``True`` if :math:`|V(G)| \ge 2`, and ``False`` otherwise.
 
     Examples
     --------
@@ -1256,7 +1257,6 @@ def nontrivial(G: GraphLike) -> bool:
     True
     """
     return order(G) >= 2
-
 
 def isolate_free(G: GraphLike) -> bool:
     """

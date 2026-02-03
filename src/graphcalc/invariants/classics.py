@@ -1080,57 +1080,73 @@ def path_cover_number(G, max_n=20):
     return best
 
 def arboricity(G: nx.Graph) -> int:
-    """
-    Compute the (undirected) arboricity a(G) exactly.
+    r"""
+    Compute the (undirected) arboricity :math:`a(G)` exactly.
 
     Arboricity measures how many forests are needed to cover the edges of a graph.
-    Formally, a(G) is the minimum integer k such that E(G) can be partitioned into
-    k forests.
+    Formally, :math:`a(G)` is the minimum integer :math:`k` such that :math:`E(G)` can be
+    partitioned into :math:`k` forests.
 
-    Nash–Williams / Tutte characterization (exact)
-    ----------------------------------------------
-    A classic theorem gives an exact formula:
+    Nash–Williams / Tutte characterization
+    --------------------------------------
+    A classical theorem gives the exact formula
 
-        a(G) = max_{H ⊆ G, |V(H)| >= 2} ceil( |E(H)| / (|V(H)| - 1) ).
+    .. math::
+        a(G) \;=\; \max_{H \subseteq G,\; |V(H)| \ge 2}\;
+        \left\lceil \frac{|E(H)|}{|V(H)| - 1} \right\rceil.
 
-    Equivalently, a(G) is the smallest k such that for every vertex subset S with |S|>=2:
-        |E(G[S])| <= k (|S| - 1).
+    Equivalently, :math:`a(G)` is the smallest :math:`k` such that for every vertex subset
+    :math:`S \subseteq V(G)` with :math:`|S| \ge 2`,
 
-    This function computes arboricity exactly by testing candidate k via a *min-cut*
-    reduction that decides whether there exists a violating subset S with:
-        |E(S)| > k(|S| - 1).
+    .. math::
+        |E(G[S])| \;\le\; k\,(|S| - 1).
+
+    This function computes arboricity exactly by testing candidate values of :math:`k` via a
+    min-cut reduction that detects whether there exists a violating subset :math:`S` with
+
+    .. math::
+        |E(G[S])| \;>\; k\,(|S| - 1).
 
     Min-cut oracle
     --------------
-    To test a given k, we solve:
+    For a fixed :math:`k`, consider the objective
 
-        max_S ( |E(S)| - k|S| )
+    .. math::
+        \max_{S \subseteq V(G)} \bigl(|E(G[S])| - k|S|\bigr).
 
-    (since |E(S)| - k(|S|-1) = (|E(S)| - k|S|) + k, a violation exists iff
-     max_S (|E(S)| - k|S|) > -k ).
+    Since
+    :math:`|E(G[S])| - k(|S|-1) = (|E(G[S])| - k|S|) + k`,
+    a violation exists if and only if
 
-    This objective can be optimized exactly by an s-t min-cut construction:
-      - Create a node for each original vertex (V-nodes).
-      - Create a node for each original edge (E-nodes).
-      - Add arc: source -> E-node with capacity 1.
-      - Add arcs: E-node -> its two endpoints (V-nodes) with capacity INF.
-      - Add arc: V-node -> sink with capacity k.
+    .. math::
+        \max_{S} \bigl(|E(G[S])| - k|S|\bigr) \;>\; -k.
 
-    If we take an s-side subset S of vertex nodes, then the cut cost corresponds to:
-        cut = m - |E(S)| + k|S|
-    so minimizing cut is maximizing |E(S)| - k|S|.
+    This maximum can be obtained via an :math:`s`–:math:`t` min-cut construction:
+
+    - Create a node for each original vertex (V-nodes).
+    - Create a node for each original edge (E-nodes).
+    - Add an arc ``source -> E-node`` with capacity 1.
+    - Add arcs ``E-node ->`` its two endpoint V-nodes with capacity ``INF``.
+    - Add an arc ``V-node -> sink`` with capacity :math:`k`.
+
+    If the :math:`s`-side contains a vertex subset :math:`S`, then the cut value is
+
+    .. math::
+        \text{cut} \;=\; m - |E(G[S])| + k|S|,
+
+    so minimizing the cut is equivalent to maximizing :math:`|E(G[S])| - k|S|`.
 
     Parameters
     ----------
-    G : nx.Graph
-        An undirected (simple) graph. Self-loops are ignored. Parallel edges in a MultiGraph
-        will increase |E(S)|; if you want multigraph arboricity, pass a simple projection or
-        be explicit about your convention.
+    G : networkx.Graph
+        An undirected graph. Self-loops are ignored. For a MultiGraph, parallel edges
+        increase :math:`|E(G[S])|`; if you want multigraph arboricity, be explicit about
+        the convention or pass a simple projection.
 
     Returns
     -------
     int
-        The exact arboricity a(G).
+        The exact arboricity :math:`a(G)`.
 
     Examples
     --------
@@ -1140,8 +1156,7 @@ def arboricity(G: nx.Graph) -> int:
     1
     >>> gc.arboricity(nx.complete_graph(6))
     3
-    >>> # K_{a,b} has arboricity ceil(ab/(a+b-1)) in many cases; this computes it exactly:
-    >>> gc.arboricity(nx.complete_bipartite_graph(3,4))
+    >>> gc.arboricity(nx.complete_bipartite_graph(3, 4))
     2
     """
     if G.is_directed():

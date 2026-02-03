@@ -43,4 +43,8 @@ from graphcalc.invariants.zero_forcing import *
 from graphcalc.invariants.core_invariants import *
 from graphcalc.invariants.critical_invariants import *
 from graphcalc.invariants.local_invariants import *
+from graphcalc.invariants.transversal_invariants import *
+from graphcalc.invariants.coloring_predicates import *
+from graphcalc.invariants.cycle_invariants import *
+from graphcalc.invariants.graph_indices import *
 

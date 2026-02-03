@@ -56,8 +56,7 @@ def core_set_minimum(G, k_func, is_valid_set):
 
         Conventions:
         - If :math:`|V(G)|=0`, returns the empty set.
-        - If :math:`k(G)=0`, returns the empty set (since the empty set is a minimum solution,
-          and the intersection over the family of minimum solutions is empty).
+        - If :math:`k(G)=0`, returns the empty set (since the empty set is a minimum solution, and the intersection over the family of minimum solutions is empty).
         - If the running intersection becomes empty during enumeration, the function returns early.
 
         If no valid set of size :math:`k(G)` is found (which indicates an inconsistency between
@@ -71,10 +70,8 @@ def core_set_minimum(G, k_func, is_valid_set):
 
     Notes
     -----
-    - **Exact brute force.** This routine enumerates all :math:`k`-subsets of :math:`V(G)` and
-      tests validity. It is intended only for small graphs and/or small :math:`k`.
-    - Correctness depends on consistency: ``k_func`` must return the true minimum size for the
-      property tested by ``is_valid_set``. If they disagree, the output is not meaningful.
+    - **Exact brute force.** This routine enumerates all :math:`k`-subsets of :math:`V(G)` and tests validity. It is intended only for small graphs and/or small :math:`k`.
+    - Correctness depends on consistency: ``k_func`` must return the true minimum size for the property tested by ``is_valid_set``. If they disagree, the output is not meaningful.
 
     Complexity
     ----------
@@ -121,24 +118,21 @@ def core_number_minimum(G, k_func, is_valid_set):
 
         c_{\min}(G) \;=\; \bigl|\operatorname{Core}_{\min}(G)\bigr|,
 
-    where :math:`\operatorname{Core}_{\min}(G)` is returned by
-    :func:`core_set_minimum`.
+    where :math:`\operatorname{Core}_{\min}(G)` is returned by :func:`core_set_minimum`.
 
     Parameters
     ----------
     G : networkx.Graph-like
         A finite graph.
     k_func : callable
-        A function ``k_func(G) -> int`` returning the optimal minimum size :math:`k(G)` for the
-        chosen property.
+        A function ``k_func(G) -> int`` returning the optimal minimum size :math:`k(G)` for the chosen property.
     is_valid_set : callable
         A predicate ``is_valid_set(G, S) -> bool`` deciding validity of a candidate vertex set.
 
     Returns
     -------
     int
-        The size of the minimum core, i.e. the number of vertices that appear in **every**
-        minimum solution. Returns 0 for the empty graph, and also returns 0 when :math:`k(G)=0`.
+        The size of the minimum core, i.e. the number of vertices that appear in **every** minimum solution. Returns 0 for the empty graph, and also returns 0 when :math:`k(G)=0`.
 
     Notes
     -----
@@ -179,16 +173,12 @@ def core_set_maximum_fast(G, f_max):
     where :math:`G - v` denotes the induced subgraph obtained by deleting :math:`v`.
 
     Intuition:
-    - If deleting :math:`v` does **not** decrease the optimum value, then there exists an optimal
-      solution contained entirely in :math:`V(G)\setminus\{v\}`; hence :math:`v` is not forced.
-    - If deleting :math:`v` **does** decrease the optimum value, then no optimal solution can avoid
-      :math:`v`, so :math:`v` lies in the intersection of all optimal solutions.
+    - If deleting :math:`v` does **not** decrease the optimum value, then there exists an optimal solution contained entirely in :math:`V(G)\setminus\{v\}`; hence :math:`v` is not forced.
+    - If deleting :math:`v` **does** decrease the optimum value, then no optimal solution can avoid :math:`v`, so :math:`v` lies in the intersection of all optimal solutions.
 
     For example, this equivalence holds for:
-    - :math:`\alpha(G)` (maximum independent set size): if :math:`\alpha(G-v) = \alpha(G)`, then
-      there is a maximum independent set avoiding :math:`v`.
-    - :math:`\omega(G)` (maximum clique size): if :math:`\omega(G-v) = \omega(G)`, then there is a
-      maximum clique avoiding :math:`v`.
+    - :math:`\alpha(G)` (maximum independent set size): if :math:`\alpha(G-v) = \alpha(G)`, then there is a maximum independent set avoiding :math:`v`.
+    - :math:`\omega(G)` (maximum clique size): if :math:`\omega(G-v) = \omega(G)`, then there is a maximum clique avoiding :math:`v`.
 
     Parameters
     ----------
@@ -219,11 +209,8 @@ def core_set_maximum_fast(G, f_max):
 
     Notes
     -----
-    - This method is exact **provided the stated equivalence holds** for your parameter.
-      It is not valid for arbitrary maximization invariants, especially those not realized by
-      vertex subsets in a straightforward induced-subgraph way.
-    - Compared to enumerating all maximum solutions, this is typically much faster: it performs
-      one deletion test per vertex.
+    - This method is exact **provided the stated equivalence holds** for your parameter. It is not valid for arbitrary maximization invariants, especially those not realized by vertex subsets in a straightforward induced-subgraph way.
+    - Compared to enumerating all maximum solutions, this is typically much faster: it performs one deletion test per vertex.
 
     Complexity
     ----------
@@ -513,27 +500,22 @@ def domination_core_set(G):
     Parameters
     ----------
     G : networkx.Graph-like
-        A finite graph. This is intended primarily for **simple undirected** graphs under the standard
-        adjacency notion.
+        A finite graph. This is intended primarily for **simple undirected** graphs under the standard adjacency notion.
 
     Returns
     -------
     set
         The domination core :math:`\operatorname{core}_\gamma(G)`.
 
-        Conventions:
-        - If :math:`|V(G)|=0`, returns the empty set.
-        - If :math:`\gamma(G)=0` (which occurs only for the empty graph under standard conventions),
-          returns the empty set.
-        - If the intersection of all minimum dominating sets is empty, returns the empty set.
+    Conventions:
+    - If :math:`|V(G)|=0`, returns the empty set.
+    - If :math:`\gamma(G)=0` (which occurs only for the empty graph under standard conventions), returns the empty set.
+    - If the intersection of all minimum dominating sets is empty, returns the empty set.
 
     Notes
     -----
-    - This function delegates to :func:`core_set_minimum` using:
-        * ``k_func = gc.domination_number`` and
-        * ``is_valid_set = gc.is_dominating_set``.
-    - The implementation is **exact** but may be expensive: it enumerates all :math:`\gamma(G)`-subsets
-      of :math:`V(G)` and tests which ones are dominating.
+    - This function delegates to :func:`core_set_minimum` using: ``k_func = gc.domination_number`` and ``is_valid_set = gc.is_dominating_set``.
+    - The implementation is **exact** but may be expensive: it enumerates all :math:`\gamma(G)`-subsets of :math:`V(G)` and tests which ones are dominating.
 
     Complexity
     ----------
@@ -618,8 +600,7 @@ def zero_forcing_core_set(G):
     Parameters
     ----------
     G : networkx.Graph-like
-        A finite graph. This is intended primarily for **simple undirected** graphs under the standard
-        adjacency notion.
+        A finite graph. This is intended primarily for **simple undirected** graphs under the standard adjacency notion.
 
     Returns
     -------
@@ -628,8 +609,7 @@ def zero_forcing_core_set(G):
 
         Conventions:
         - If :math:`|V(G)|=0`, returns the empty set.
-        - If :math:`Z(G)=0` (which occurs only for the empty graph under standard conventions),
-          returns the empty set.
+        - If :math:`Z(G)=0` (which occurs only for the empty graph under standard conventions), returns the empty set.
         - If the intersection of all minimum zero forcing sets is empty, returns the empty set.
 
     Notes
@@ -637,8 +617,7 @@ def zero_forcing_core_set(G):
     - This function delegates to :func:`core_set_minimum` using:
         * ``k_func = gc.zero_forcing_number`` and
         * ``is_valid_set = gc.is_zero_forcing_set``.
-    - The implementation is **exact** but may be expensive: it enumerates all :math:`Z(G)`-subsets of
-      :math:`V(G)` and tests which ones are zero forcing.
+    - The implementation is **exact** but may be expensive: it enumerates all :math:`Z(G)`-subsets of :math:`V(G)` and tests which ones are zero forcing.
 
     Complexity
     ----------
