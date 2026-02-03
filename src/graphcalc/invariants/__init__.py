@@ -40,3 +40,7 @@ from graphcalc.invariants.degree import *
 from graphcalc.invariants.domination import *
 from graphcalc.invariants.spectral import *
 from graphcalc.invariants.zero_forcing import *
+from graphcalc.invariants.core_invariants import *
+from graphcalc.invariants.critical_invariants import *
+from graphcalc.invariants.local_invariants import *
+

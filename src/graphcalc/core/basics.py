@@ -42,6 +42,8 @@ __all__= [
     'connected_and_cograph',
     'nontrivial',
     'isolate_free',
+    'is_C4_free',
+    'is_induced_C4_free',
 ]
 
 class SimpleGraph(nx.Graph):
@@ -1288,3 +1290,158 @@ def isolate_free(G: GraphLike) -> bool:
     if order(G) == 0:
         return True
     return all(deg > 0 for deg in gc.degree_sequence(G))
+
+def is_C4_free(G):
+    r"""
+    Test whether a graph is **C4-free** (contains no 4-cycle as a subgraph).
+
+    This function returns ``True`` iff :math:`G` contains **no** copy of the 4-cycle
+    :math:`C_4` as a (not-necessarily-induced) subgraph.
+
+    Characterization used
+    ---------------------
+    An undirected simple graph contains a (not necessarily induced) 4-cycle iff there exist
+    **distinct** vertices :math:`u \neq v` having at least **two distinct common neighbors**.
+    Indeed, if :math:`x` and :math:`y` are distinct common neighbors of :math:`u` and :math:`v`,
+    then the edges
+
+    .. math::
+
+        ux,\; xv,\; vy,\; yu
+
+    form a 4-cycle subgraph :math:`u-x-v-y-u`.
+
+    If additional edges among these four vertices exist (e.g. :math:`uv` or :math:`xy`),
+    they appear as chords; the 4-cycle is still present as a subgraph.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        Intended for **finite simple undirected graphs**. The test is based on common-neighbor
+        intersections computed via ``G.neighbors(u)`` and assumes undirected adjacency.
+
+        If you pass a directed graph, neighbors are interpreted according to NetworkX's directed
+        neighbor semantics (successors), which typically does *not* match the undirected notion of
+        a 4-cycle; convert first via ``G.to_undirected()`` if desired.
+
+    Returns
+    -------
+    bool
+        ``True`` iff :math:`G` contains no (not-necessarily-induced) :math:`C_4` subgraph.
+
+    Notes
+    -----
+    - This checks for :math:`C_4` as a **subgraph**, not as an induced subgraph. In particular,
+      graphs that contain a 4-cycle with one or both diagonals are **not** C4-free.
+    - Graphs with fewer than 4 vertices are vacuously C4-free.
+
+    Complexity
+    ----------
+    Let :math:`n=|V(G)|` and :math:`m=|E(G)|`. Building neighbor sets takes :math:`O(n+m)` time.
+    The code then checks all :math:`\binom{n}{2}` unordered vertex pairs and computes set
+    intersections. In the worst case (dense graphs) the runtime is :math:`O(n^3)`, and it is
+    typically faster on sparse graphs.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> gc.is_C4_free(nx.cycle_graph(4))
+    False
+    >>> gc.is_C4_free(nx.complete_graph(4))  # contains many C4 subgraphs (with chords)
+    False
+    >>> gc.is_C4_free(nx.path_graph(6))
+    True
+    """
+    nbrs = {u: set(G.neighbors(u)) for u in G.nodes()}
+    nodes = list(G.nodes())
+    for i in range(len(nodes)):
+        u = nodes[i]
+        for j in range(i + 1, len(nodes)):
+            v = nodes[j]
+            if len(nbrs[u] & nbrs[v]) >= 2:
+                return False
+    return True
+
+
+def is_induced_C4_free(G):
+    r"""
+    Test whether a graph is **induced-C4-free** (contains no induced 4-cycle).
+
+    This function returns ``True`` iff :math:`G` contains **no induced** subgraph isomorphic
+    to :math:`C_4`. Equivalently, there do not exist four vertices whose induced subgraph
+    is exactly a 4-cycle.
+
+    Characterization used
+    ---------------------
+    An undirected simple graph contains an induced :math:`C_4` iff there exist distinct vertices
+    :math:`u \neq v` (the opposite vertices of the cycle) such that:
+
+    1. :math:`u` and :math:`v` are **nonadjacent**,
+    2. :math:`u` and :math:`v` have two distinct common neighbors :math:`x` and :math:`y`, and
+    3. :math:`x` and :math:`y` are **nonadjacent**.
+
+    Then the induced subgraph on :math:`\{u,x,v,y\}` has edges :math:`ux, xv, vy, yu` and no chords,
+    hence it is exactly :math:`C_4`.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        Intended for **finite simple undirected graphs**. The test uses ``G.has_edge`` and
+        common-neighbor intersections from ``G.neighbors``.
+
+        If you pass a directed graph, adjacency and neighbor semantics follow NetworkX's directed
+        conventions and typically do not match the undirected induced-cycle notion; convert first via
+        ``G.to_undirected()`` if that matches your intent.
+
+    Returns
+    -------
+    bool
+        ``True`` iff :math:`G` contains no induced :math:`C_4`.
+
+    Notes
+    -----
+    - This property is **strictly weaker** than being C4-free as a subgraph: a graph may contain
+      4-cycles with chords (hence not be C4-free) yet still be induced-C4-free.
+      For example, :math:`K_4` contains many 4-cycles as subgraphs but has no induced :math:`C_4`.
+    - Graphs with fewer than 4 vertices are vacuously induced-C4-free.
+
+    Complexity
+    ----------
+    Building neighbor sets takes :math:`O(n+m)`. The outer loop considers all unordered pairs
+    :math:`\{u,v\}` (i.e. :math:`O(n^2)` pairs). For each nonadjacent pair, it inspects pairs
+    within the common-neighbor set; in the worst case this can be :math:`O(n^4)` for dense graphs,
+    though it is typically much faster on sparse graphs.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> gc.is_induced_C4_free(nx.cycle_graph(4))
+    False
+    >>> gc.is_induced_C4_free(nx.complete_graph(4))  # has C4 subgraphs but no induced C4
+    True
+    >>> gc.is_induced_C4_free(nx.path_graph(6))
+    True
+    """
+    nbrs = {u: set(G.neighbors(u)) for u in G.nodes()}
+    nodes = list(G.nodes())
+    for i in range(len(nodes)):
+        u = nodes[i]
+        for j in range(i + 1, len(nodes)):
+            v = nodes[j]
+            if G.has_edge(u, v):
+                continue  # opposite vertices in an induced C4 must be nonadjacent
+
+            common = list(nbrs[u] & nbrs[v])
+            if len(common) < 2:
+                continue
+
+            # Need two common neighbors that are not adjacent (to avoid chord x-y).
+            for a in range(len(common)):
+                x = common[a]
+                for b in range(a + 1, len(common)):
+                    y = common[b]
+                    if not G.has_edge(x, y):
+                        return False
+    return True
