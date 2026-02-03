@@ -1,3 +1,5 @@
+.. _using-custom-solvers:
+
 Using Custom Solvers
 ====================
 
@@ -205,7 +207,7 @@ Troubleshooting
 **“PuLP: cannot execute highs.”**
 
 - You selected ``HiGHS_CMD`` but the ``highs`` executable is not on ``PATH``.
-  Install it (see :doc:`Installation`) or use the Python package
+  Install it (see :doc:`installation`) or use the Python package
   ``highspy`` and set ``GRAPHCALC_SOLVER=highs``. As a quick fix,
   force CBC: ``GRAPHCALC_SOLVER=cbc``.
 
@@ -223,11 +225,11 @@ Troubleshooting
 
 - On Ubuntu 22.04 GitHub runners, install ``coinor-cbc`` and set
   ``GRAPHCALC_SOLVER=cbc``. Or install ``highspy`` and set
-  ``GRAPHCALC_SOLVER=highs``. See :doc:`Installation` for ready-to-use YAML.
+  ``GRAPHCALC_SOLVER=highs``. See :doc:`installation` for ready-to-use YAML.
 
 
 See Also
 --------
 
-- :doc:`Installation` — how to install solvers on your platform.
+- :doc:`installation` — how to install solvers on your platform.
 - PuLP solver docs for detailed option names/behavior.

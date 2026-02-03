@@ -17,12 +17,13 @@ from graphcalc.invariants.degree import (
     sub_total_domination_number,
     annihilation_number,
     residue,
-    harmonic_index,
     elimination_sequence_from_degrees,
     k_residue_from_degrees,
     residue_from_degrees,
     k_residue,
 )
+
+from graphcalc.invariants.graph_indices import harmonic_index
 
 @pytest.mark.parametrize("G, node, expected", [
     (complete_graph(4), 0, 3),  # Complete graph: degree is n-1

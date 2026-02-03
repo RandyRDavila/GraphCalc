@@ -1,6 +1,6 @@
 
 from typing import Hashable, List
-from typing import Iterable, List, Sequence, Tuple
+from typing import List, Sequence
 
 import networkx as nx
 import graphcalc as gc
@@ -22,7 +22,11 @@ __all__= [
     "k_residue_from_degrees",
     "residue",
     "k_residue",
-    "harmonic_index",
+    "irregularity",
+    "n1_degree_count",
+    "distinct_degree_count",
+    "count_of_maximum_degree_vertices",
+    "count_of_minimum_degree_vertices",
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
@@ -428,14 +432,6 @@ def annihilation_number(G: GraphLike) -> int:
         if sum(D[:i]) <= m:
             return i
 
-
-# If you have these in your package:
-# from .simplegraph import SimpleGraph
-# from .typing import GraphLike
-# from .decorators import enforce_type
-# import graphcalc as gc
- # replace with your union (nx.Graph | SimpleGraph)
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Core: elimination sequence from a degree list
 # ──────────────────────────────────────────────────────────────────────────────
@@ -495,42 +491,55 @@ def elimination_sequence_from_degrees(degrees: Sequence[int]) -> List[int]:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def k_residue_from_degrees(degrees: Sequence[int], k: int) -> int:
-    """
-    Compute the k-residue R_k from a degree sequence via its elimination sequence.
+    r"""
+    Compute the :math:`k`-residue :math:`R_k` from a degree sequence via its elimination sequence.
 
-    Definition
-    ----------
-    For elimination sequence E = E(D) and k >= 1,
-        R_k(E) = sum_{i=0}^{k-1} (k - i) * f_i(E),
-    where f_i(E) is the frequency of i in E.
+    Let :math:`D` be a (graphic) degree sequence and let :math:`E=E(D)` be its
+    Havel–Hakimi elimination sequence (including trailing zeros). For :math:`k \ge 1`,
+
+    .. math::
+        R_k(E) \;=\; \sum_{i=0}^{k-1} (k-i)\, f_i(E),
+
+    where :math:`f_i(E)` is the frequency of :math:`i` in :math:`E`. This function computes
+    :math:`R_k(E(D))` from the input degree sequence.
 
     Parameters
     ----------
-    degrees : Sequence[int]
-        Nonnegative integer degree sequence (assumed graphical when from a graph).
+    degrees : sequence of int
+        A sequence of nonnegative integers (assumed graphical when coming from a graph).
     k : int
-        Parameter k >= 1.
+        The parameter :math:`k \ge 1`.
 
     Returns
     -------
     int
-        The k-residue R_k(D).
+        The :math:`k`-residue :math:`R_k(D)`.
+
+    Raises
+    ------
+    ValueError
+        If ``k < 1``.
 
     See Also
     --------
-    elimination_sequence_from_degrees
+    elimination_sequence_from_degrees : Compute the elimination sequence :math:`E(D)`.
+    k_residue : Compute :math:`R_k(G)` directly from a graph.
+
+    Examples
+    --------
+    >>> import graphcalc as gc
+    >>> gc.k_residue_from_degrees([2, 2, 1, 1], 1) == gc.residue_from_degrees([2, 2, 1, 1])
+    True
     """
     if k < 1:
         raise ValueError("k must be an integer >= 1.")
 
     E = elimination_sequence_from_degrees(degrees)
-    # Count only 0..k-1
     freq = [0] * k
     for x in E:
         if 0 <= x < k:
             freq[x] += 1
     return int(sum((k - i) * freq[i] for i in range(k)))
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Graph wrappers that reuse the degree-sequence core
@@ -625,101 +634,318 @@ def residue(G: GraphLike) -> int:
 @enforce_type(1, int)
 def k_residue(G: GraphLike, k: int) -> int:
     r"""
-    Compute the k-residue R_k(G) from the Havel–Hakimi elimination sequence.
+    Compute the :math:`k`-residue :math:`R_k(G)` from the Havel–Hakimi elimination sequence.
 
-    Definition (Jelen generalizing Favaron–Mahéo–Saclé, Griggs–Kleitman, Triesch)
-    ---------------------------------------------------------------------------
-    Let D be a graphic degree sequence and E = E(D) its Havel–Hakimi elimination
-    sequence (the list of values removed at each step, including trailing zeros).
-    For k ≥ 1,
-        R_k(E) = sum_{i=0}^{k-1} (k - i) * f_i(E),
-    where f_i(E) is the frequency of i in E. Since E is determined by D(G), we
-    write R_k(G).
+    Let :math:`D` be a graphic degree sequence and let :math:`E=E(D)` be its
+    **Havel–Hakimi elimination sequence** (the list of values removed at each step,
+    including trailing zeros). For :math:`k \ge 1`, define
 
-    Special case: k = 1 gives R_1(G) = f_0(E) = R(G) (the usual residue).
+    .. math::
+        R_k(E) \;=\; \sum_{i=0}^{k-1} (k-i)\, f_i(E),
+
+    where :math:`f_i(E)` is the frequency of :math:`i` in :math:`E`. Since :math:`E`
+    is determined by the degree sequence of :math:`G`, we write :math:`R_k(G)`.
+
+    The special case :math:`k=1` gives the classical residue:
+
+    .. math::
+        R_1(G) \;=\; f_0(E) \;=\; R(G).
 
     Parameters
     ----------
-    G : nx.Graph or SimpleGraph
-        Input graph.
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
     k : int
-        Parameter k ≥ 1.
+        The parameter :math:`k \ge 1`.
 
     Returns
     -------
     int
-        The k-residue R_k(G).
+        The :math:`k`-residue :math:`R_k(G)`.
 
     Notes
     -----
-    We explicitly build the elimination sequence E by performing the Havel–Hakimi
-    process and recording the removed value at each step, including zeros at the
-    end. This ensures f_0(E) equals the classical residue.
-
-    Examples
-    --------
-    >>> from graphcalc.generators import path_graph, complete_graph
-    >>> G = path_graph(4)
-    >>> k_residue(G, 1) == residue(G)  # should match your residue()
-    True
-    >>> H = complete_graph(4)
-    >>> k_residue(H, 2)  # weighted count of 0s and 1s in E(H)
-    3
-    """
-    degrees = gc.degree_sequence(G)  # or list(dict(G.degree()).values())
-    return k_residue_from_degrees(degrees, k)
-
-@enforce_type(0, (nx.Graph, SimpleGraph))
-def harmonic_index(G: GraphLike) -> float:
-    r"""
-    Returns the harmonic index of a graph.
-
-    The harmonic index of a graph is defined as:
-
-    .. math::
-        H(G) = \sum_{uv \in E(G)} \frac{2}{d(u) + d(v)}
-
-    where:
-    - :math:`E(G)` is the edge set of the graph :math:`G`.
-    - :math:`d(u)` is the degree of vertex :math:`u`.
-
-    The harmonic index is commonly used in mathematical chemistry and network science
-    to measure structural properties of molecular and network graphs.
-
-    Parameters
-    ----------
-    G : nx.Graph
-        The graph.
-
-    Returns
-    -------
-    float
-        The harmonic index of the graph.
+    This function constructs the elimination sequence :math:`E` by running the
+    Havel–Hakimi process and recording the removed value at each step, including
+    trailing zeros. Including those zeros ensures :math:`f_0(E)` matches the
+    classical residue.
 
     Examples
     --------
     >>> import graphcalc as gc
     >>> from graphcalc.generators import path_graph, complete_graph
+    >>> G = path_graph(4)
+    >>> gc.k_residue(G, 1) == gc.residue(G)
+    True
 
-    >>> G = path_graph(4)  # Path graph with 4 vertices
-    >>> gc.harmonic_index(G)
-    1.8333333333333333
+    >>> H = complete_graph(4)
+    >>> gc.k_residue(H, 2)
+    3
+    """
+    degrees = gc.degree_sequence(G)  # or list(dict(G.degree()).values())
+    return k_residue_from_degrees(degrees, k)
 
-    >>> H = complete_graph(3)  # Complete graph with 3 vertices
-    >>> gc.harmonic_index(H)
-    1.5
+
+def irregularity(G):
+    r"""
+    Compute the **(Albertson) irregularity** of a graph :math:`G`.
+
+    The (Albertson) irregularity is the edge-sum of absolute degree differences:
+
+    .. math::
+
+        \operatorname{irr}(G) \;=\; \sum_{uv \in E(G)} \bigl| \deg(u) - \deg(v) \bigr|,
+
+    where :math:`\deg(u)` denotes the (undirected) degree of vertex :math:`u`.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        A finite graph. For standard usage in graph invariants, :math:`G` is typically a
+        simple undirected graph. Degrees are read from ``G.degree()`` and the sum ranges over
+        the edges returned by ``G.edges()``.
+
+        - If ``G`` is a MultiGraph, parallel edges are iterated with multiplicity and degrees
+          count multiplicity, so this computes the natural multigraph extension.
+        - If ``G`` is directed, ``G.degree()`` is the total degree (in-degree + out-degree),
+          so the result is the Albertson irregularity with respect to total degree unless you
+          replace it by ``G.in_degree()`` or ``G.out_degree()`` by convention.
+
+    Returns
+    -------
+    int
+        The value :math:`\operatorname{irr}(G)`. In particular, if :math:`G` has no edges,
+        the sum is empty and the function returns 0.
 
     Notes
     -----
-    - The harmonic index assumes all edge weights are equal to 1. If you want
-      to consider weighted graphs, modify the function to account for edge weights.
-    - The harmonic index is symmetric with respect to the graph's structure, making
-      it invariant under graph isomorphism.
+    - This invariant is commonly attributed to **Albertson** and is often called the
+      *Albertson irregularity*.
+    - :math:`\operatorname{irr}(G)=0` if and only if :math:`G` is **regular** on every edge,
+      i.e., every edge joins two vertices of equal degree. (For simple graphs, this holds
+      in particular for regular graphs.)
+    - The quantity is additive over components in the sense that it is a sum over edges; there
+      are no cross-component contributions.
 
-    References
+    Complexity
     ----------
-    S. Klavžar and I. Gutman, A comparison of the Schultz molecular topological
-    index and the Wiener index. *Journal of Chemical Information and Computer Sciences*,
-    33(6), 1006-1009 (1993).
+    Let :math:`n=|V(G)|` and :math:`m=|E(G)|`. Constructing the degree dictionary takes
+    :math:`O(n+m)` time. The subsequent edge-sum takes :math:`O(m)` time. Memory usage is
+    :math:`O(n)` for the cached degrees.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> # Path P4 has degrees [1,2,2,1]; edge differences are 1,0,1 so irr=2
+    >>> G = nx.path_graph(4)
+    >>> gc.irregularity(G)
+    2
+
+    >>> # Any regular graph has irr=0
+    >>> H = nx.cycle_graph(6)
+    >>> gc.irregularity(H)
+    0
     """
-    return 2*sum((1/(degree(G, v) + degree(G, u)) for u, v in G.edges()))
+    deg = dict(G.degree())
+    return sum(abs(deg[u] - deg[v]) for u, v in G.edges())
+
+def n1_degree_count(G):
+    r"""
+    Compute :math:`n_1(G)`, the number of degree-1 vertices of a graph :math:`G`.
+
+    This invariant is the multiplicity of 1 in the degree multiset (degree sequence) of :math:`G`:
+
+    .. math::
+
+        n_1(G) \;=\; \bigl|\{\, v \in V(G) : \deg(v) = 1 \,\}\bigr|.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        A finite graph. Degrees are taken from ``G.degree()``, following NetworkX conventions:
+
+        - ``Graph``: undirected degree.
+        - ``DiGraph``: total degree (in-degree + out-degree).
+        - ``MultiGraph`` / ``MultiDiGraph``: degree counts edge multiplicity.
+
+    Returns
+    -------
+    int
+        The number of vertices :math:`v` with :math:`\deg(v)=1`. If :math:`G` has no vertices,
+        returns 0.
+
+    Notes
+    -----
+    - For simple undirected graphs, :math:`n_1(G)` is the number of **leaves**.
+    - Isolated vertices (degree 0) do not contribute.
+    - This quantity depends on the degree convention for directed/multi graphs as described above.
+
+    Complexity
+    ----------
+    :math:`O(|V(G)|)`, since it scans the degree view once.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> G = nx.path_graph(5)  # degrees: 1,2,2,2,1
+    >>> gc.n1_degree_count(G)
+    2
+    """
+    return sum(1 for _, d in G.degree() if d == 1)
+
+
+def distinct_degree_count(G):
+    r"""
+    Return the number of distinct vertex degrees attained in a graph :math:`G`.
+
+    Formally, this computes the cardinality of the set of degrees appearing among vertices:
+
+    .. math::
+
+        \bigl|\{\, \deg(v) : v \in V(G) \,\}\bigr|.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        A finite graph. Degrees are taken from ``G.degree()``, following NetworkX conventions:
+
+        - ``Graph``: undirected degree.
+        - ``DiGraph``: total degree (in-degree + out-degree).
+        - ``MultiGraph`` / ``MultiDiGraph``: degree counts edge multiplicity.
+
+    Returns
+    -------
+    int
+        The number of distinct degree values occurring in :math:`G`. For the empty graph
+        (no vertices), this returns 0.
+
+    Notes
+    -----
+    - For simple undirected graphs, this is the number of distinct entries in the degree sequence.
+    - This is sometimes used as a coarse measure of “degree heterogeneity”.
+    - If you want distinct *in-degrees* or *out-degrees* for a digraph, use ``G.in_degree()``
+      or ``G.out_degree()`` instead of ``G.degree()``.
+
+    Complexity
+    ----------
+    :math:`O(|V(G)|)` time and :math:`O(k)` additional space, where :math:`k` is the number of
+    distinct degrees (at most :math:`|V(G)|`).
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> G = nx.path_graph(5)  # degrees: {1,2}
+    >>> gc.distinct_degree_count(G)
+    2
+    >>> H = nx.empty_graph(4)  # degrees: {0}
+    >>> gc.distinct_degree_count(H)
+    1
+    >>> gc.distinct_degree_count(nx.empty_graph(0))
+    0
+    """
+    return len({d for _, d in G.degree()})
+
+
+def count_of_maximum_degree_vertices(G):
+    r"""
+    Count the vertices attaining the maximum degree in a graph :math:`G`.
+
+    Let :math:`\Delta(G) = \max\{\deg(v) : v \in V(G)\}` be the maximum degree. This function returns
+
+    .. math::
+
+        \bigl|\{\, v \in V(G) : \deg(v) = \Delta(G) \,\}\bigr|.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        A finite graph. Degrees are taken from ``G.degree()`` using NetworkX conventions for the
+        graph type (undirected degree for ``Graph``, total degree for ``DiGraph``, multiplicity for
+        ``MultiGraph``).
+
+    Returns
+    -------
+    int
+        The number of vertices of degree :math:`\Delta(G)`. If :math:`G` has no vertices,
+        returns 0.
+
+    Notes
+    -----
+    - For simple undirected graphs, this is the number of vertices with maximum degree.
+    - For directed graphs, this uses **total degree** unless you substitute ``G.in_degree()``
+      or ``G.out_degree()`` by convention.
+
+    Complexity
+    ----------
+    :math:`O(|V(G)|)` time to scan degrees (and :math:`O(|V(G)|)` auxiliary space in this
+    particular implementation due to materializing the degree list).
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> G = nx.star_graph(5)  # center degree 5, leaves degree 1
+    >>> gc.count_of_maximum_degree_vertices(G)
+    1
+    """
+    degs = [d for _, d in G.degree()]
+    if not degs:
+        return 0
+    dmax = max(degs)
+    return sum(1 for d in degs if d == dmax)
+
+
+def count_of_minimum_degree_vertices(G):
+    r"""
+    Count the vertices attaining the minimum degree in a graph :math:`G`.
+
+    Let :math:`\delta(G) = \min\{\deg(v) : v \in V(G)\}` be the minimum degree. This function returns
+
+    .. math::
+
+        \bigl|\{\, v \in V(G) : \deg(v) = \delta(G) \,\}\bigr|.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        A finite graph. Degrees are taken from ``G.degree()`` using NetworkX conventions for the
+        graph type (undirected degree for ``Graph``, total degree for ``DiGraph``, multiplicity for
+        ``MultiGraph``).
+
+    Returns
+    -------
+    int
+        The number of vertices of degree :math:`\delta(G)`. If :math:`G` has no vertices,
+        returns 0.
+
+    Notes
+    -----
+    - For simple undirected graphs, isolated vertices (degree 0) determine :math:`\delta(G)=0`
+      whenever they exist.
+    - For directed graphs, this uses **total degree** unless you substitute ``G.in_degree()``
+      or ``G.out_degree()`` by convention.
+
+    Complexity
+    ----------
+    :math:`O(|V(G)|)` time to scan degrees (and :math:`O(|V(G)|)` auxiliary space in this
+    particular implementation due to materializing the degree list).
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> G = nx.path_graph(5)  # min degree is 1, achieved by 2 endpoints
+    >>> gc.count_of_minimum_degree_vertices(G)
+    2
+    >>> H = nx.empty_graph(4)  # all degrees 0
+    >>> gc.count_of_minimum_degree_vertices(H)
+    4
+    """
+    degs = [d for _, d in G.degree()]
+    if not degs:
+        return 0
+    dmin = min(degs)
+    return sum(1 for d in degs if d == dmin)

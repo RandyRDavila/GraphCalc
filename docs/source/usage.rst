@@ -6,7 +6,7 @@ choose a solver, and build reusable analysis tables with pandas.
 
 All functions accept either a ``networkx.Graph`` or ``graphcalc.SimpleGraph``.
 Many invariants are NP-hard and use a MILP solver under the hood—see
-:doc:`Installation` and :doc:`Using-Custom-Solvers`.
+:doc:`installation` and :ref:`using-custom-solvers`.
 
 .. contents::
    :local:
@@ -43,7 +43,7 @@ Quick Start
 Choosing a Solver (optional)
 ----------------------------
 
-GraphCalc auto-detects a solver (see :doc:`Installation`). You can override per-call:
+GraphCalc auto-detects a solver (see :doc:`installation`). You can override per-call:
 
 .. code-block:: python
 
@@ -61,7 +61,7 @@ Or set an environment variable globally:
    export GRAPHCALC_SOLVER=cbc   # or: highs, glpk, auto
 
 For all supported forms (string / dict / class / instance / callable), see
-:doc:`Using-Custom-Solvers`.
+:ref:`using-custom-solvers`.
 
 
 Core Recipes
@@ -184,7 +184,7 @@ Compute a few selected properties for one graph
 
    Solver-backed invariants in this call use the **auto-detected** solver.
    To force a solver for batch runs, set ``GRAPHCALC_SOLVER`` (see
-   :doc:`Installation`) or call those functions directly with ``solver=...``.
+   :doc:`installation`) or call those functions directly with ``solver=...``.
 
 
 Compute a table for multiple graphs
@@ -273,12 +273,12 @@ Troubleshooting
 
 - **“No LP/MIP solver found.”**
   Install one solver (CBC / HiGHS / GLPK) or set ``GRAPHCALC_SOLVER``.
-  See :doc:`Installation`.
+  See :doc:`installation`.
 
 - **“PuLP: cannot execute highs.”**
   You selected ``HiGHS_CMD`` but the ``highs`` executable isn’t on ``PATH``.
   Install it, or install the Python package ``highspy`` and use ``solver="highs"``.
-  Or force CBC: ``solver="cbc"``. See :doc:`Installation`.
+  Or force CBC: ``solver="cbc"``. See :doc:`installation`.
 
 - **Long runtimes.**
   Use time limits (``solver_options={"timeLimit": ...}``) or switch to a faster solver.
@@ -287,5 +287,5 @@ Troubleshooting
 See Also
 --------
 
-- :doc:`Installation` — installing solvers and verifying detection.
-- :doc:`Using-Custom-Solvers` — every way to select/configure a solver.
+- :doc:`installation` — installing solvers and verifying detection.
+- :ref:`using-custom-solvers` — every way to select/configure a solver.

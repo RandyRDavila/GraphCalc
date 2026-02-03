@@ -142,28 +142,32 @@ def adjacency_eigenvalues(G: GraphLike) -> float:
     True
     """
     A = nx.to_numpy_array(G, dtype=int)  # Adjacency matrix
-    eigenvals = np.linalg.eigvals(A)
+    eigenvals = np.linalg.eigvalsh(A)
     return np.sort(eigenvals)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
-def laplacian_eigenvalues(G: GraphLike) -> float:
+def laplacian_eigenvalues(G: GraphLike):  # ideally -> np.ndarray
     r"""
-    Compute the eigenvalues of the Laplacian matrix of a graph.
+    Compute the eigenvalues of the (combinatorial) Laplacian matrix of a graph.
 
-    For a graph :math:`G=(V,E)` with Laplacian matrix
-    :math:`L(G) = D(G) - A(G)`, the **Laplacian eigenvalues**
-    are the roots of the characteristic polynomial
+    For a graph :math:`G=(V,E)`, the (combinatorial) Laplacian is
+
+    .. math::
+        L(G) \;=\; D(G) - A(G),
+
+    where :math:`A(G)` is the adjacency matrix and :math:`D(G)` is the diagonal matrix of
+    vertex degrees. The **Laplacian eigenvalues** are the eigenvalues of :math:`L(G)`,
+    equivalently the values :math:`\lambda` satisfying
 
     .. math::
         \det(\lambda I - L(G)) = 0.
 
-    These eigenvalues are always nonnegative and play a central role
-    in spectral graph theory. In particular:
-      * The multiplicity of 0 equals the number of connected components.
-      * The second-smallest eigenvalue (the **algebraic connectivity**)
-        measures how well the graph is connected.
-      * The largest eigenvalue provides bounds on graph invariants
-        such as the diameter.
+    Laplacian eigenvalues are real and nonnegative and play a central role in spectral
+    graph theory. In particular:
+
+    - The multiplicity of 0 equals the number of connected components of :math:`G`.
+    - The second-smallest eigenvalue is the **algebraic connectivity**.
+    - The largest eigenvalue provides bounds for various graph invariants.
 
     Parameters
     ----------
@@ -173,7 +177,7 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
     Returns
     -------
     numpy.ndarray
-        The sorted eigenvalues of the Laplacian matrix :math:`L(G)`.
+        The Laplacian eigenvalues of :math:`L(G)`, sorted in nondecreasing order.
 
     Examples
     --------
@@ -183,9 +187,20 @@ def laplacian_eigenvalues(G: GraphLike) -> float:
     >>> G = cycle_graph(4)
     >>> np.allclose(gc.laplacian_eigenvalues(G), np.array([0., 2., 2., 4.]))
     True
+
+    The number of zero eigenvalues equals the number of connected components:
+
+    >>> import numpy as np
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> H = nx.disjoint_union(nx.path_graph(3), nx.path_graph(2))  # 2 components
+    >>> eigs = gc.laplacian_eigenvalues(H)
+    >>> int(np.sum(np.isclose(eigs, 0.0)))
+    2
     """
+
     L = laplacian_matrix(G)
-    eigenvals = np.linalg.eigvals(L)
+    eigenvals = np.linalg.eigvalsh(L)
     return np.sort(eigenvals)
 
 @enforce_type(0, (nx.Graph, gc.SimpleGraph))
@@ -329,19 +344,17 @@ def zero_adjacency_eigenvalues_count(G: GraphLike) -> int:
     r"""
     Count the number of zero eigenvalues of the adjacency matrix.
 
-    For a graph :math:`G = (V,E)` with adjacency matrix :math:`A(G)`,
-    this function returns the multiplicity of the eigenvalue :math:`0` in the spectrum
-    of :math:`A(G)`:
+    For a graph :math:`G=(V,E)` with adjacency matrix :math:`A(G)`, this function returns
+    the multiplicity of the eigenvalue :math:`0` in the spectrum of :math:`A(G)`:
 
     .. math::
-        m_0(G) = |\{ i : \lambda_i(A(G)) = 0 \}|.
+        m_0(G) \;=\; \bigl|\{\, i : \lambda_i(A(G)) = 0 \,\}\bigr|.
 
     Properties
     ----------
-    * :math:`m_0(G)` is the **nullity** of the adjacency matrix.
-    * Closely related to the **rank**:
-      .. math:: \mathrm{rank}(A(G)) = |V| - m_0(G).
-    * In some cases, reflects structural redundancy and graph symmetry.
+    - :math:`m_0(G)` is the **nullity** of the adjacency matrix :math:`A(G)`.
+    - It is related to rank by :math:`\mathrm{rank}(A(G)) = |V(G)| - m_0(G)`.
+    - In many families of graphs, the nullity reflects structural redundancy.
 
     Parameters
     ----------
@@ -351,7 +364,7 @@ def zero_adjacency_eigenvalues_count(G: GraphLike) -> int:
     Returns
     -------
     int
-        The multiplicity of the zero eigenvalue of the adjacency matrix.
+        The multiplicity of the zero eigenvalue of :math:`A(G)`.
 
     Examples
     --------

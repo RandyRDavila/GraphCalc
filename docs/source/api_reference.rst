@@ -9,8 +9,9 @@ This section provides a detailed overview of all modules, classes, and functions
    modules/core
    modules/data
    modules/generators
-   modules/invariants
+   modules/invariants/index
    modules/polytopes
+   modules/viz
 
 .. Modules
 .. -------
