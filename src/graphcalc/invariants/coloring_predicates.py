@@ -55,7 +55,7 @@ def can_edge_color_with_k(G, k):
         return True
 
     # Quick necessary condition: k >= Δ(G)
-    if k < gc.max_degree(G):
+    if k < gc.maximum_degree(G):
         return False
 
     deg = dict(G.degree())
@@ -131,6 +131,20 @@ def is_class1(G, max_edges=40):
     ------
     ValueError
         If ``G`` is not a simple undirected graph, or if ``|E(G)| > max_edges``.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> # All bipartite graphs are class 1
+    >>> G = nx.cycle_graph(4)
+    >>> gc.is_class1(G)
+    True
+
+    >>> # The Petersen graph is class 2
+    >>> H = gc.petersen_graph()
+    >>> gc.is_class1(H)
+    False
     """
     if not _is_simple_graph(G):
         raise ValueError("Class 1/2 classification here is defined for undirected simple graphs (nx.Graph).")
@@ -142,7 +156,7 @@ def is_class1(G, max_edges=40):
     if m == 0:
         return True
 
-    Δ = gc.max_degree(G)
+    Δ = gc.maximum_degree(G)
     if Δ == 0:
         return True
 
@@ -176,5 +190,19 @@ def is_class2(G, max_edges=40):
     ------
     ValueError
         If ``G`` is not a simple undirected graph, or if ``|E(G)| > max_edges``.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc as gc
+    >>> # All bipartite graphs are class 1
+    >>> G = nx.cycle_graph(4)
+    >>> gc.is_class2(G)
+    False
+
+    >>> # The Petersen graph is class 2
+    >>> H = gc.petersen_graph()
+    >>> gc.is_class2(H)
+    True
     """
     return not is_class1(G, max_edges=max_edges)
