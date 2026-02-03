@@ -1,6 +1,6 @@
 
 from typing import Hashable, List
-from typing import Iterable, List, Sequence, Tuple
+from typing import List, Sequence
 
 import networkx as nx
 import graphcalc as gc
@@ -22,6 +22,11 @@ __all__= [
     "k_residue_from_degrees",
     "residue",
     "k_residue",
+    "irregularity",
+    "n1_degree_count",
+    "distinct_degree_count",
+    "count_of_maximum_degree_vertices",
+    "count_of_minimum_degree_vertices",
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
@@ -427,14 +432,6 @@ def annihilation_number(G: GraphLike) -> int:
         if sum(D[:i]) <= m:
             return i
 
-
-# If you have these in your package:
-# from .simplegraph import SimpleGraph
-# from .typing import GraphLike
-# from .decorators import enforce_type
-# import graphcalc as gc
- # replace with your union (nx.Graph | SimpleGraph)
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Core: elimination sequence from a degree list
 # ──────────────────────────────────────────────────────────────────────────────
@@ -543,8 +540,6 @@ def k_residue_from_degrees(degrees: Sequence[int], k: int) -> int:
         if 0 <= x < k:
             freq[x] += 1
     return int(sum((k - i) * freq[i] for i in range(k)))
-
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Graph wrappers that reuse the degree-sequence core
@@ -741,14 +736,15 @@ def irregularity(G):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> # Path P4 has degrees [1,2,2,1]; edge differences are 1,0,1 so irr=2
     >>> G = nx.path_graph(4)
-    >>> irregularity(G)
+    >>> gc.irregularity(G)
     2
 
     >>> # Any regular graph has irr=0
     >>> H = nx.cycle_graph(6)
-    >>> irregularity(H)
+    >>> gc.irregularity(H)
     0
     """
     deg = dict(G.degree())
@@ -792,8 +788,9 @@ def n1_degree_count(G):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.path_graph(5)  # degrees: 1,2,2,2,1
-    >>> n1_degree_count(G)
+    >>> gc.n1_degree_count(G)
     2
     """
     return sum(1 for _, d in G.degree() if d == 1)
@@ -839,13 +836,14 @@ def distinct_degree_count(G):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.path_graph(5)  # degrees: {1,2}
-    >>> distinct_degree_count(G)
+    >>> gc.distinct_degree_count(G)
     2
     >>> H = nx.empty_graph(4)  # degrees: {0}
-    >>> distinct_degree_count(H)
+    >>> gc.distinct_degree_count(H)
     1
-    >>> distinct_degree_count(nx.empty_graph(0))
+    >>> gc.distinct_degree_count(nx.empty_graph(0))
     0
     """
     return len({d for _, d in G.degree()})
@@ -888,8 +886,9 @@ def count_of_maximum_degree_vertices(G):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.star_graph(5)  # center degree 5, leaves degree 1
-    >>> count_of_maximum_degree_vertices(G)
+    >>> gc.count_of_maximum_degree_vertices(G)
     1
     """
     degs = [d for _, d in G.degree()]
@@ -937,11 +936,12 @@ def count_of_minimum_degree_vertices(G):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> G = nx.path_graph(5)  # min degree is 1, achieved by 2 endpoints
-    >>> count_of_minimum_degree_vertices(G)
+    >>> gc.count_of_minimum_degree_vertices(G)
     2
     >>> H = nx.empty_graph(4)  # all degrees 0
-    >>> count_of_minimum_degree_vertices(H)
+    >>> gc.count_of_minimum_degree_vertices(H)
     4
     """
     degs = [d for _, d in G.degree()]
@@ -949,4 +949,3 @@ def count_of_minimum_degree_vertices(G):
         return 0
     dmin = min(degs)
     return sum(1 for d in degs if d == dmin)
-

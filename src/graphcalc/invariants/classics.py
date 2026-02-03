@@ -34,6 +34,8 @@ __all__ = [
     "arboricity",
     "linear_arboricity",
     "bipartite_number",
+    "average_distance",
+    "path_cover_number",
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
@@ -881,14 +883,15 @@ def average_distance(G):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> # Path on 4 vertices: distances are 1,2,3,1,2,1 (sum 10 over 6 pairs)
     >>> G = nx.path_graph(4)
-    >>> average_distance(G)
+    >>> gc.average_distance(G)
     1.6666666666666667
 
     >>> # Disconnected: average over pairs within components only
     >>> H = nx.disjoint_union(nx.path_graph(3), nx.path_graph(2))
-    >>> average_distance(H)
+    >>> gc.average_distance(H)
     1.25
     """
     n = G.number_of_nodes()
@@ -1016,14 +1019,11 @@ def path_cover_number(G, max_n=20):
 
     Notes
     -----
-    - This is **not** the standard “minimum path cover” problem for DAGs (which is polynomial-time
-      via maximum matching). Here the input is an **undirected** graph and the paths must be
-      vertex-disjoint and cover all vertices; this variant is NP-hard in general.
+    - This is **not** the standard “minimum path cover” problem for DAGs (which is polynomial-time via maximum matching). Here the input is an **undirected** graph and the paths must be vertex-disjoint and cover all vertices; this variant is NP-hard in general.
     - Implementation strategy:
         1. Enumerate candidate paths by their vertex sets using :func:`_all_simple_paths_vertex_sets`.
         2. Backtrack to choose a minimum number of these sets that form a partition of :math:`V(G)`.
-      The backtracking branches on an uncovered vertex :math:`v` and tries all candidate path-sets
-      containing :math:`v` that fit inside the remaining uncovered vertices.
+    - The backtracking branches on an uncovered vertex :math:`v` and tries all candidate path-sets containing :math:`v` that fit inside the remaining uncovered vertices.
 
     Complexity
     ----------
@@ -1034,19 +1034,20 @@ def path_cover_number(G, max_n=20):
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc as gc
     >>> # A path is coverable by a single path
     >>> G = nx.path_graph(6)
-    >>> path_cover_number(G)
+    >>> gc.path_cover_number(G)
     1
 
     >>> # An edgeless graph on n vertices needs n singleton paths
     >>> H = nx.empty_graph(5)
-    >>> path_cover_number(H)
+    >>> gc.path_cover_number(H)
     5
 
     >>> # Two disjoint paths need two paths in the cover
     >>> J = nx.disjoint_union(nx.path_graph(3), nx.path_graph(4))
-    >>> path_cover_number(J)
+    >>> gc.path_cover_number(J)
     2
     """
     n = G.number_of_nodes()

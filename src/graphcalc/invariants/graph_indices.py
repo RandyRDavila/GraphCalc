@@ -1,4 +1,3 @@
-from typing import Iterable, Sequence, Tuple
 
 import math
 import networkx as nx
