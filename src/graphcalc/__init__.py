@@ -30,7 +30,7 @@ GraphCalc relies on:
 
 """
 
-__version__ = "1.2.15"
+__version__ = "1.3.0"
 
 from graphcalc.core import *
 from graphcalc.data import *
