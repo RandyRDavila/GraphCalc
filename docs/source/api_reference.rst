@@ -1,65 +1,15 @@
 API Reference
 =============
 
-This section provides a detailed overview of all modules, classes, and functions in `graphcalc`.
+This section documents the public Python API of ``graphcalc``.
+
+The API is organized by mathematical domain and package structure.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
-   modules/core
-   modules/data
-   modules/generators
-   modules/invariants/index
-   modules/polytopes
-   modules/viz
-
-.. Modules
-.. -------
-
-.. .. The following modules are available in `graphcalc`:
-
-.. Core
-.. ----
-
-.. .. automodule:: graphcalc.core.basics
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
-..    :no-index:
-
-
-.. Data
-.. ----
-
-.. .. automodule:: graphcalc.data
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
-..    :no-index:
-
-.. Generators
-.. ----------
-
-.. .. automodule:: graphcalc.generators
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
-..    :no-index:
-
-.. Invariants
-.. ----------
-
-.. .. automodule:: graphcalc.invariants
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
-..    :no-index:
-
-.. Polytopes
-.. ---------
-
-.. .. automodule:: graphcalc.polytopes.core
-..    :members:
-..    :undoc-members:
-..    :show-inheritance:
-..    :no-index:
+   api/graphs/index
+   api/hypergraphs/index
+   api/quantum/index
+   api/solvers
+   api/utils

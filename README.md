@@ -6,7 +6,6 @@
 [![DOI](https://zenodo.org/badge/888587732.svg)](https://doi.org/10.5281/zenodo.16907645)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.08383/status.svg)](https://doi.org/10.21105/joss.08383)
 
-
 ## Overview
 
 `GraphCalc` is a Python library for computing a broad range of graph-theoretic invariants, purpose-built to support research in combinatorics, network science, and automated reasoning. It offers exact implementations of over 100 functions, spanning classical invariants (e.g., independence number, chromatic number, spectral radius) and a wide array of lesser-known parameters central to contemporary graph theory.
@@ -14,8 +13,8 @@
 Originally developed as the invariant engine for the automated conjecturing system TxGraffiti, `GraphCalc` has since matured into a general-purpose research tool that facilitates the large-scale construction of structured, high-resolution invariant datasets. These datasets, often organized into tabular “knowledge tables,” form the basis for symbolic pattern mining, hypothesis generation, and downstream machine reasoning. For example,
 
 ```python
->>> import graphcalc as gc
->>> from graphcalc.polytopes.generators import cube_graph, octahedron_graph
+>>> import graphcalc.graphs as gc
+>>> from graphcalc.graphs.polytopes.generators import cube_graph, octahedron_graph
 >>> graphs = [cube_graph(), octahedron_graph()]
 >>> functions = ["order", "size", "spectral_radius", "independence_number"]
 >>> gc.compute_knowledge_table(functions, graphs)
@@ -63,7 +62,7 @@ from graphcalc import (
     domination_number,
     zero_forcing_number,
 )
-from graphcalc.generators import petersen_graph
+from graphcalc.graphs.generators import petersen_graph
 
 # Calculate and print the independence number of the Petersen graph.
 G = petersen_graph()
@@ -79,8 +78,8 @@ print(f"Petersen graph zero forcing number = {zero_forcing_number(G)}")
 ## Example Polytope Usage
 
 ```python
-import graphcalc as gc
-from graphcalc.polytopes.generators import (
+import graphcalc.graphs as gc
+from graphcalc.graphs.polytopes.generators import (
     cube_graph,
     octahedron_graph,
     dodecahedron_graph,
@@ -128,7 +127,7 @@ df = gc.compute_knowledge_table(function_names, graphs)
 ## Creating Simple Graphs, Polytope Graphs, and Simple Polytope Graphs
 
 ```python
-import graphcalc as gc
+import graphcalc.graphs as gc
 
 # Draw a simple graph
 G = gc.SimpleGraph(name="Example Graph")

@@ -1,0 +1,1446 @@
+import networkx as nx
+# from graphcalc.utils import enforce_type
+
+import csv
+import itertools
+import numpy as np
+import matplotlib.pyplot as plt
+
+__all__= [
+    'order',
+    'size',
+    'connected',
+    'diameter',
+    'radius',
+    'average_shortest_path_length',
+    'bipartite',
+    'connected_and_bipartite',
+    'chordal',
+    'connected_and_chordal',
+    'cubic',
+    'connected_and_cubic',
+    'eulerian',
+    'connected_and_eulerian',
+    'planar',
+    'connected_and_planar',
+    'regular',
+    'connected_and_regular',
+    'subcubic',
+    'connected_and_subcubic',
+    'tree',
+    'SimpleGraph',
+    'K_4_free',
+    'connected_and_K_4_free',
+    'triangle_free',
+    'connected_and_triangle_free',
+    'claw_free',
+    'connected_and_claw_free',
+    'planar',
+    'connected_and_planar',
+    'cograph',
+    'connected_and_cograph',
+    'nontrivial',
+    'isolate_free',
+    'is_C4_free',
+    'is_induced_C4_free',
+]
+
+class SimpleGraph(nx.Graph):
+    r"""
+    A subclass of networkx.Graph with additional functionality.
+
+    Features:
+    - Optional `name` and `info` attributes for metadata.
+    - Default integer labels for nodes.
+    - Methods to read and write edge lists to/from CSV files.
+    - Method to draw the graph using Matplotlib.
+
+    Parameters
+    ----------
+    edges : list of tuple, optional
+        A list of edges to initialize the graph.
+    nodes : list, optional
+        A list of nodes to initialize the graph.
+    name : str, optional
+        An optional name for the graph.
+    info : str, optional
+        Additional information about the graph.
+    *args, **kwargs : arguments
+        Arguments passed to the base `networkx.Graph` class.
+    """
+
+    def __init__(self, edges=None, nodes=None, name=None, info=None, *args, **kwargs):
+        """
+        Initialize a SimpleGraph instance with optional edges and nodes.
+
+        Parameters
+        ----------
+        edges : list of tuple, optional
+            A list of edges to initialize the graph.
+        nodes : list, optional
+            A list of nodes to initialize the graph.
+        name : str, optional
+            An optional name for the graph.
+        info : str, optional
+            Additional information about the graph.
+        *args, **kwargs : arguments
+            Arguments passed to the base `networkx.Graph` class.
+
+        """
+        super().__init__(*args, **kwargs)
+        self.name = name
+        self.info = info
+
+        # Add nodes and edges if provided
+        if nodes:
+            self.add_nodes_from(nodes)
+
+        if edges:
+            self.add_edges_from(edges)
+
+    def write_edgelist_to_csv(self, filepath):
+        r"""
+        Write the edge list of the graph to a CSV file.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the CSV file where the edge list will be written.
+        """
+        with open(filepath, mode='w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Source", "Target"])
+            for edge in self.edges:
+                writer.writerow(edge)
+
+    def read_edge_list(self, filepath, delimiter=None):
+        r"""
+        Read an edge list from a file (CSV or TXT) and add edges to the graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the edge list.
+        delimiter : str, optional
+            The delimiter used in the file (default is ',' for CSV and whitespace for TXT).
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist.
+        ValueError
+            If the file format is invalid.
+
+        Notes
+        -----
+        - For CSV files, the file must have a header with "Source" and "Target".
+        - For TXT files, the file should contain one edge per line with node pairs separated by whitespace.
+        """
+        import os
+
+        # Determine the file type
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lower()
+
+        if ext == ".csv":
+            # Set default delimiter for CSV
+            delimiter = delimiter or ","
+            self._read_edge_list_csv(filepath, delimiter)
+        elif ext == ".txt":
+            # Set default delimiter for TXT
+            delimiter = delimiter or None  # Default for whitespace-separated files
+            self._read_edge_list_txt(filepath, delimiter)
+        else:
+            raise ValueError("Unsupported file format. Only .csv and .txt files are supported.")
+
+    def _read_edge_list_csv(self, filepath, delimiter):
+        """Internal method to read edge lists from a CSV file."""
+        import csv
+
+        try:
+            with open(filepath, mode="r") as csvfile:
+                reader = csv.reader(csvfile, delimiter=delimiter)
+                header = next(reader)  # Read the header
+                if header != ["Source", "Target"]:
+                    raise ValueError("CSV file must have 'Source' and 'Target' as headers.")
+                for row in reader:
+                    if len(row) != 2:
+                        raise ValueError(f"Invalid row in CSV file: {row}")
+                    u, v = map(int, row)  # Convert nodes to integers
+                    self.add_edge(u, v)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        except Exception as e:
+            raise Exception(f"Error reading edge list from '{filepath}': {e}")
+
+    def _read_edge_list_txt(self, filepath, delimiter):
+        """Internal method to read edge lists from a TXT file."""
+        try:
+            with open(filepath, mode="r") as txtfile:
+                for line in txtfile:
+                    if line.strip():  # Skip empty lines
+                        nodes = line.strip().split(delimiter)
+                        if len(nodes) != 2:
+                            raise ValueError(f"Invalid line in TXT file: {line.strip()}")
+                        u, v = map(int, nodes)  # Convert nodes to integers
+                        self.add_edge(u, v)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        except Exception as e:
+            raise Exception(f"Error reading edge list from '{filepath}': {e}")
+
+    def read_adjacency_matrix(self, filepath, delimiter=None):
+        r"""
+        Read an adjacency matrix from a file (CSV or TXT) and create the graph.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the file containing the adjacency matrix.
+        delimiter : str, optional
+            The delimiter used in the file (default is ',' for CSV and whitespace for TXT).
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist.
+        ValueError
+            If the file format is invalid or the adjacency matrix is not square.
+        """
+        import os
+
+        # Determine the file type
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lower()
+
+        # Set default delimiter
+        if ext == ".csv":
+            delimiter = delimiter or ","
+        elif ext == ".txt":
+            delimiter = delimiter or None  # Default for whitespace-separated files
+        else:
+            raise ValueError("Unsupported file format. Only .csv and .txt files are supported.")
+
+        try:
+            # Load the adjacency matrix
+            adjacency_matrix = np.loadtxt(filepath, delimiter=delimiter)
+
+            # Validate that the adjacency matrix is square
+            if adjacency_matrix.shape[0] != adjacency_matrix.shape[1]:
+                raise ValueError("The adjacency matrix must be square.")
+
+            # Create the graph from the adjacency matrix
+            G = nx.from_numpy_array(adjacency_matrix, create_using=type(self))
+            self.clear()  # Clear any existing edges/nodes in the current graph
+            self.add_edges_from(G.edges)
+
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        except Exception as e:
+            raise Exception(f"Error reading adjacency matrix from '{filepath}': {e}")
+
+    def get_adjacency_matrix(self, as_numpy_array=True):
+        r"""
+        Returns the adjacency matrix of the graph.
+
+        Parameters
+        ----------
+        as_numpy_array : bool, optional
+            If True (default), returns the adjacency matrix as a NumPy array.
+            If False, returns the adjacency matrix as a SciPy sparse matrix.
+
+        Returns
+        -------
+        numpy.ndarray or scipy.sparse.csr_matrix
+            The adjacency matrix of the graph.
+
+        Examples
+        --------
+        >>> import graphcalc.graphs as gc
+        >>> G = gc.SimpleGraph()
+        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+        >>> adjacency_matrix = G.get_adjacency_matrix()
+        >>> print(adjacency_matrix)
+        [[0. 1. 0. 0.]
+         [1. 0. 1. 0.]
+         [0. 1. 0. 1.]
+         [0. 0. 1. 0.]]
+        """
+        if as_numpy_array:
+            return nx.to_numpy_array(self)
+        else:
+            return nx.to_scipy_sparse_matrix(self)
+
+    def draw(self, with_labels=True, node_color="lightblue", node_size=500, font_size=10):
+        r"""
+        Draw the graph using Matplotlib.
+
+        Parameters
+        ----------
+        with_labels : bool, optional
+            Whether to display node labels (default is True).
+        node_color : str or list, optional
+            The color of the nodes (default is "lightblue").
+        node_size : int, optional
+            The size of the nodes (default is 500).
+        font_size : int, optional
+            The font size of the labels (default is 10).
+        """
+        plt.figure(figsize=(8, 6))
+        nx.draw(
+            self,
+            with_labels=with_labels,
+            node_color=node_color,
+            node_size=node_size,
+            font_size=font_size,
+            edge_color="gray"
+        )
+        if self.name:
+            plt.title(self.name, fontsize=14)
+        plt.show()
+
+    def __repr__(self):
+        """
+        String representation of the SimpleGraph.
+
+        Returns
+        -------
+        str
+            A string summarizing the graph's name, information, and basic properties.
+        """
+        description = super().__repr__()
+        metadata = f"Name: {self.name}" if self.name else "No Name"
+        info = f"Info: {self.info}" if self.info else "No Additional Information"
+        return f"{description}\n{metadata}\n{info}"
+
+    def complement(self):
+        r"""
+        Returns the complement of the graph as a GraphCalc SimpleGraph.
+
+        This ensures that constraints specific to SimpleGraph or its subclasses
+        are not applied to the complement graph.
+
+        Returns
+        -------
+        graphcalc.core.basics.SimpleGraph
+            The complement of the graph.
+
+        Examples
+        --------
+        >>> import graphcalc.graphs as gc
+        >>> G = gc.SimpleGraph()
+        >>> G.add_edges_from([(0, 1), (1, 2), (2, 3)])
+        >>> H = G.complement()
+        """
+        H = nx.complement(nx.Graph(self))
+        return SimpleGraph(edges=H.edges, nodes=H.nodes, name=f"{self.name} Complement")
+
+
+from typing import Union
+GraphLike = Union[nx.Graph, SimpleGraph]
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def order(G: GraphLike) -> int:
+    r"""
+    Returns the order of a graph, which is the number of vertices.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    int
+        The order of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+    >>> G = path_graph(4)
+    >>> gc.order(G)
+    4
+    """
+    return len(G.nodes)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def size(G: GraphLike) -> int:
+    r"""
+    Returns the size of a graph, which is the number of edges.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    int
+        The size of the graph.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.size(G)
+    3
+    """
+    return len(G.edges)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is connected.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.connected(G)
+    True
+    """
+    return nx.is_connected(G)
+
+def bipartite(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and bipartite.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is bipartite, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = nx.path_graph(4)
+    >>> gc.bipartite(G)
+    True
+    """
+    return nx.is_bipartite(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_bipartite(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and bipartite.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and bipartite, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = nx.path_graph(4)
+    >>> gc.connected_and_bipartite(G)
+    True
+    """
+    return connected(G) and bipartite(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def tree(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is a tree.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is a tree, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = nx.path_graph(4)
+    >>> gc.tree(G)
+    True
+    """
+    return nx.is_tree(G)
+
+def regular(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is regular.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is regular, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.regular(G)
+    True
+    """
+    return nx.is_regular(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_regular(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and regular.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and regular, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.connected_and_regular(G)
+    True
+    """
+    return connected(G) and regular(G)
+
+def eulerian(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is Eulerian.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is Eulerian, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.eulerian(G)
+    True
+    """
+    return nx.is_eulerian(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_eulerian(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and Eulerian.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and Eulerian, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.connected_and_eulerian(G)
+    True
+    """
+    return connected(G) and eulerian(G)
+
+def planar(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is planar.
+
+    A graph is planar if it can be drawn in the plane without
+    any edges crossing. This function uses the Boyer–Myrvold
+    planarity test implemented in NetworkX.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is planar, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph, complete_graph
+
+    >>> G = cycle_graph(5)
+    >>> gc.planar(G)
+    True
+
+    >>> H = complete_graph(5)
+    >>> gc.planar(H)
+    False
+    """
+    is_planar, _ = nx.check_planarity(G)
+    return is_planar
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_planar(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and planar.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and planar, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph
+
+    >>> G = cycle_graph(4)
+    >>> gc.connected_and_planar(G)
+    True
+    """
+    return connected(G) and planar(G)
+
+def chordal(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is chordal.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is chordal, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.chordal(G)
+    True
+    """
+    return nx.is_chordal(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_chordal(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and chordal.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and chordal, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.connected_and_chordal(G)
+    True
+    """
+    return connected(G) and chordal(G)
+
+def cubic(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is cubic.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is cubic, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import petersen_graph
+
+    >>> G = petersen_graph()
+    >>> gc.cubic(G)
+    True
+    """
+    return all(d == 3 for _, d in G.degree())
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_cubic(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and cubic.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and cubic, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import petersen_graph
+
+    >>> G = petersen_graph()
+    >>> gc.connected_and_cubic(G)
+    True
+    """
+    return connected(G) and cubic(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def subcubic(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is subcubic.
+
+    A graph is subcubic if the degree of every vertex is at most 3.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is subcubic, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph
+
+    >>> G = nx.cycle_graph(4)  # Degree of all nodes is 2
+    >>> gc.subcubic(G)
+    True
+    """
+    return gc.maximum_degree(G) <= 3
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def connected_and_subcubic(G: GraphLike) -> bool:
+    r"""
+    Checks if the graph is both connected and subcubic.
+
+    A graph is subcubic if the degree of every vertex is at most 3.
+    A graph is connected if there is a path between every pair of vertices.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and subcubic, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import cycle_graph, path_graph, star_graph
+
+    >>> G = cycle_graph(4)  # Degree of all nodes is 2, connected
+    >>> gc.connected_and_subcubic(G)
+    True
+
+    >>> H = path_graph(5)  # Maximum degree is 2, connected
+    >>> gc.connected_and_subcubic(H)
+    True
+
+    >>> I = star_graph(4)  # Maximum degree is 4, not subcubic
+    >>> gc.connected_and_subcubic(I)
+    False
+
+    >>> J = gc.SimpleGraph()
+    >>> J.add_edges_from([(1, 2), (3, 4)])  # Disconnected graph
+    >>> connected_and_subcubic(J)
+    False
+    """
+    return connected(G) and subcubic(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def claw_free(G: GraphLike) -> bool:
+    r"""
+    Checks if a graph is claw-free. A claw is a tree with three leaves adjacent to a single vertex.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is claw-free, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph, star_graph
+
+    >>> G = path_graph(4)
+    >>> gc.claw_free(G)
+    True
+
+    >>> H = star_graph(6)
+    >>> gc.claw_free(H)
+    False
+    """
+    for v in G:
+        N = list(G.neighbors(v))
+        if len(N) < 3:
+            continue
+        # Early reject if there exist a,b,c in N with no edges among them
+        # (i.e., independent triple in G[N])
+        GN = G.subgraph(N)
+        # Quick pruning: if there are too few edges, an independent triple must exist
+        # but we’ll just check triples directly (usually small neighborhoods).
+        for a, b, c in itertools.combinations(N, 3):
+            if not GN.has_edge(a, b) and not GN.has_edge(a, c) and not GN.has_edge(b, c):
+                return False
+    return True
+
+def connected_and_claw_free(G: GraphLike) -> bool:
+    r"""
+    Checks if a graph is claw-free. A claw is a tree with three leaves adjacent to a single vertex.
+    A graph is connected if there is a path between every pair of vertices.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        True if the graph is claw-free, otherwise False.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.connected_and_claw_free(G)
+    True
+    """
+    return connected(G) and claw_free(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def K_4_free(G: GraphLike) -> bool:
+    r"""
+    Returns True if *G* does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G does not contain the complete graph K_4 as a subgraph, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import complete_graph, star_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.K_4_free(G)
+    False
+
+    >>> H = star_graph(6)
+    >>> gc.triangle_free(H)
+    True
+    """
+    for v in G:
+        N = list(G.neighbors(v))
+        if len(N) < 3:
+            continue
+        H = G.subgraph(N)  # induced by neighbors of v
+        # Does H contain a triangle?
+        # Fast check: for each u in H, see if its neighbors within H have an edge among them.
+        # (equivalently, any two neighbors of u in H that are adjacent -> triangle)
+        adj = {u: set(H.neighbors(u)) for u in H}
+        for u in H:
+            # check if adj[u] contains an edge: i.e., any w,z in adj[u] with w in adj[z]
+            Au = list(adj[u])
+            for i in range(len(Au)):
+                w = Au[i]
+                # intersect once to avoid O(d^2) worst loops when small
+                if adj[u] & adj[w]:
+                    return False
+    return True
+
+def connected_and_K_4_free(G: GraphLike) -> bool:
+    r"""
+    Returns True if *G* is connected and does not contain an induced subgraph isomorphic to the complete graph on 4 vertices, and False otherwise.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is connected and does not contain the complete graph K_4 as a subgraph, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.connected_and_K_4_free(G)
+    False
+    """
+    return connected(G) and K_4_free(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def triangle_free(G: GraphLike) -> bool:
+    r"""Returns True if *G* is triangle-free, and False otherwise.
+
+    A graph is *triangle-free* if it contains no induced subgraph isomorphic to
+    the complete graph on 3 vertices.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is triangle-free, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gp
+    >>> from graphcalc.graphs.generators import complete_graph, star_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.triangle_free(G)
+    False
+
+    >>> H = star_graph(6)
+    >>> gc.triangle_free(H)
+    True
+    """
+    adj = {u: set(G.neighbors(u)) for u in G}
+    deg = {u: len(adj[u]) for u in G}
+
+    for u in G:
+        Nu_forward = {v for v in adj[u] if (deg[u] < deg[v]) or (deg[u] == deg[v] and u < v)}
+        for v in Nu_forward:
+            # Intersect only with v's forward neighbors to keep sets small
+            if Nu_forward & ({w for w in adj[v] if (deg[v] < deg[w]) or (deg[v] == deg[w] and v < w)}):
+                return False
+    return True
+
+def connected_and_triangle_free(G: GraphLike) -> bool:
+    r"""
+    Returns True if *G* is connected and triangle-free, and False otherwise.
+
+    A graph is *triangle-free* if it contains no induced subgraph isomorphic to
+    the complete graph on 3 vertices.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        An undirected graph.
+
+    Returns
+    -------
+    boolean
+        True if G is connected and triangle-free, False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc as gp
+    >>> from graphcalc.graphs.generators import complete_graph
+
+    >>> G = complete_graph(4)
+    >>> gc.connected_and_triangle_free(G)
+    False
+    """
+    return connected(G) and triangle_free(G)
+
+#@enforce_type(0, (networkx.Graph or graphcalc.SimpleGraph, gc.SimpleGraph))
+def diameter(G: GraphLike) -> int:
+    r"""
+    Returns the diameter of the graph.
+
+    The diameter is the maximum shortest path length between any pair of nodes.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    int
+        The diameter of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.diameter(G)
+    3
+    """
+    return nx.diameter(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def radius(G: GraphLike) -> int:
+    r"""
+    Returns the radius of the graph.
+
+    The radius is the minimum eccentricity among all vertices.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    int
+        The radius of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.radius(G)
+    2
+    """
+    return nx.radius(G)
+
+#@enforce_type(0, (nx.Graph, gc.SimpleGraph))
+def average_shortest_path_length(G: GraphLike) -> float:
+    r"""
+    Returns the average shortest path length of the graph.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    float
+        The average shortest path length of the graph.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph
+
+    >>> G = path_graph(4)
+    >>> gc.average_shortest_path_length(G)
+    1.6666666666666667
+    """
+    return nx.average_shortest_path_length(G)
+
+def cograph(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is a cograph (P4-free).
+
+    A cograph is any graph that contains no induced path on four vertices (P4).
+    Equivalently, the class is generated from K1 by repeatedly taking disjoint
+    unions and joins; or, recursively: a graph is a cograph iff it has at most
+    one vertex, or it is disconnected and each connected component is a cograph,
+    or its complement is disconnected and each complement-component induces
+    a cograph.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph (not necessarily connected).
+
+    Returns
+    -------
+    bool
+        True if the graph is a cograph (P4-free), False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph, complete_graph, cycle_graph
+
+    >>> # P4 is not a cograph
+    >>> gc.cograph(path_graph(4))
+    False
+
+    >>> # Complete graphs are cographs
+    >>> gc.cograph(complete_graph(5))
+    True
+
+    >>> # C4 is P4-free, hence a cograph
+    >>> gc.cograph(cycle_graph(4))
+    True
+    """
+    n = G.number_of_nodes()
+    if n <= 1:
+        return True
+
+    # Case 1: G is disconnected -> all components must be cographs
+    try:
+        connected = nx.is_connected(G)
+    except nx.NetworkXPointlessConcept:
+        # empty graph: treat as cograph by convention
+        return True
+
+    if not connected:
+        for comp in nx.connected_components(G):
+            if not cograph(G.subgraph(comp).copy()):
+                return False
+        return True
+
+    # Case 2: complement is disconnected -> all complement-components (as
+    # node sets) must induce cographs in the ORIGINAL graph
+    H = nx.complement(G)
+    if not nx.is_connected(H):
+        for comp in nx.connected_components(H):
+            if not cograph(G.subgraph(comp).copy()):
+                return False
+        return True
+
+    # Otherwise, both G and its complement are connected and |V|>1 -> not a cograph
+    return False
+
+def connected_and_cograph(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is connacter and a cograph (P4-free).
+
+    A cograph is any graph that contains no induced path on four vertices (P4).
+    Equivalently, the class is generated from K1 by repeatedly taking disjoint
+    unions and joins; or, recursively: a graph is a cograph iff it has at most
+    one vertex, or it is disconnected and each connected component is a cograph,
+    or its complement is disconnected and each complement-component induces
+    a cograph.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph (not necessarily connected).
+
+    Returns
+    -------
+    bool
+        True if the graph is connected and a cograph (P4-free), False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> from graphcalc.graphs.generators import path_graph, complete_graph, cycle_graph
+
+    >>> # P4 is not a cograph
+    >>> gc.connected_and_cograph(path_graph(4))
+    False
+
+    >>> # Complete graphs are cographs
+    >>> gc.connected_and_cograph(complete_graph(5))
+    True
+
+    >>> # C4 is P4-free, hence a cograph
+    >>> gc.connected_and_cograph(cycle_graph(4))
+    True
+    """
+    return connected(G) and cograph(G)
+
+def nontrivial(G: GraphLike) -> bool:
+    r"""
+    Determine whether a graph is nontrivial.
+
+    A graph is **nontrivial** if it has at least two vertices, i.e.,
+    :math:`|V(G)| \ge 2`.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        The input graph.
+
+    Returns
+    -------
+    bool
+        ``True`` if :math:`|V(G)| \ge 2`, and ``False`` otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> import networkx as nx
+    >>> gc.nontrivial(nx.path_graph(1))
+    False
+    >>> gc.nontrivial(nx.path_graph(2))
+    True
+    """
+    return order(G) >= 2
+
+def isolate_free(G: GraphLike) -> bool:
+    """
+    Determine whether a graph is isolate-free (no degree-0 vertices).
+
+    A graph is isolate-free if every vertex has degree at least 1.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected graph.
+
+    Returns
+    -------
+    bool
+        True if minimum degree δ(G) ≥ 1 (or G is empty), False otherwise.
+
+    Examples
+    --------
+    >>> import graphcalc.graphs as gc
+    >>> import networkx as nx
+    >>> H = nx.path_graph(4)
+    >>> gc.isolate_free(H)
+    True
+    >>> H.add_node(100)  # add an isolated vertex
+    >>> gc.isolate_free(H)
+    False
+    """
+    # Fast path: empty graph has no isolates by convention; return True or,
+    # if you prefer “empty is NOT isolate-free”, change to `return G.number_of_nodes() > 0 and ...`
+    if order(G) == 0:
+        return True
+    return all(deg > 0 for deg in gc.degree_sequence(G))
+
+def is_C4_free(G):
+    r"""
+    Test whether a graph is **C4-free** (contains no 4-cycle as a subgraph).
+
+    This function returns ``True`` iff :math:`G` contains **no** copy of the 4-cycle
+    :math:`C_4` as a (not-necessarily-induced) subgraph.
+
+    Characterization used
+    ---------------------
+    An undirected simple graph contains a (not necessarily induced) 4-cycle iff there exist
+    **distinct** vertices :math:`u \neq v` having at least **two distinct common neighbors**.
+    Indeed, if :math:`x` and :math:`y` are distinct common neighbors of :math:`u` and :math:`v`,
+    then the edges
+
+    .. math::
+
+        ux,\; xv,\; vy,\; yu
+
+    form a 4-cycle subgraph :math:`u-x-v-y-u`.
+
+    If additional edges among these four vertices exist (e.g. :math:`uv` or :math:`xy`),
+    they appear as chords; the 4-cycle is still present as a subgraph.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        Intended for **finite simple undirected graphs**. The test is based on common-neighbor
+        intersections computed via ``G.neighbors(u)`` and assumes undirected adjacency.
+
+        If you pass a directed graph, neighbors are interpreted according to NetworkX's directed
+        neighbor semantics (successors), which typically does *not* match the undirected notion of
+        a 4-cycle; convert first via ``G.to_undirected()`` if desired.
+
+    Returns
+    -------
+    bool
+        ``True`` iff :math:`G` contains no (not-necessarily-induced) :math:`C_4` subgraph.
+
+    Notes
+    -----
+    - This checks for :math:`C_4` as a **subgraph**, not as an induced subgraph. In particular,
+      graphs that contain a 4-cycle with one or both diagonals are **not** C4-free.
+    - Graphs with fewer than 4 vertices are vacuously C4-free.
+
+    Complexity
+    ----------
+    Let :math:`n=|V(G)|` and :math:`m=|E(G)|`. Building neighbor sets takes :math:`O(n+m)` time.
+    The code then checks all :math:`\binom{n}{2}` unordered vertex pairs and computes set
+    intersections. In the worst case (dense graphs) the runtime is :math:`O(n^3)`, and it is
+    typically faster on sparse graphs.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc.graphs as gc
+    >>> gc.is_C4_free(nx.cycle_graph(4))
+    False
+    >>> gc.is_C4_free(nx.complete_graph(4))  # contains many C4 subgraphs (with chords)
+    False
+    >>> gc.is_C4_free(nx.path_graph(6))
+    True
+    """
+    nbrs = {u: set(G.neighbors(u)) for u in G.nodes()}
+    nodes = list(G.nodes())
+    for i in range(len(nodes)):
+        u = nodes[i]
+        for j in range(i + 1, len(nodes)):
+            v = nodes[j]
+            if len(nbrs[u] & nbrs[v]) >= 2:
+                return False
+    return True
+
+
+def is_induced_C4_free(G):
+    r"""
+    Test whether a graph is **induced-C4-free** (contains no induced 4-cycle).
+
+    This function returns ``True`` iff :math:`G` contains **no induced** subgraph isomorphic
+    to :math:`C_4`. Equivalently, there do not exist four vertices whose induced subgraph
+    is exactly a 4-cycle.
+
+    Characterization used
+    ---------------------
+    An undirected simple graph contains an induced :math:`C_4` iff there exist distinct vertices
+    :math:`u \neq v` (the opposite vertices of the cycle) such that:
+
+    1. :math:`u` and :math:`v` are **nonadjacent**,
+    2. :math:`u` and :math:`v` have two distinct common neighbors :math:`x` and :math:`y`, and
+    3. :math:`x` and :math:`y` are **nonadjacent**.
+
+    Then the induced subgraph on :math:`\{u,x,v,y\}` has edges :math:`ux, xv, vy, yu` and no chords,
+    hence it is exactly :math:`C_4`.
+
+    Parameters
+    ----------
+    G : networkx.Graph-like
+        Intended for **finite simple undirected graphs**. The test uses ``G.has_edge`` and
+        common-neighbor intersections from ``G.neighbors``.
+
+        If you pass a directed graph, adjacency and neighbor semantics follow NetworkX's directed
+        conventions and typically do not match the undirected induced-cycle notion; convert first via
+        ``G.to_undirected()`` if that matches your intent.
+
+    Returns
+    -------
+    bool
+        ``True`` iff :math:`G` contains no induced :math:`C_4`.
+
+    Notes
+    -----
+    - This property is **strictly weaker** than being C4-free as a subgraph: a graph may contain
+      4-cycles with chords (hence not be C4-free) yet still be induced-C4-free.
+      For example, :math:`K_4` contains many 4-cycles as subgraphs but has no induced :math:`C_4`.
+    - Graphs with fewer than 4 vertices are vacuously induced-C4-free.
+
+    Complexity
+    ----------
+    Building neighbor sets takes :math:`O(n+m)`. The outer loop considers all unordered pairs
+    :math:`\{u,v\}` (i.e. :math:`O(n^2)` pairs). For each nonadjacent pair, it inspects pairs
+    within the common-neighbor set; in the worst case this can be :math:`O(n^4)` for dense graphs,
+    though it is typically much faster on sparse graphs.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import graphcalc.graphs as gc
+    >>> gc.is_induced_C4_free(nx.cycle_graph(4))
+    False
+    >>> gc.is_induced_C4_free(nx.complete_graph(4))  # has C4 subgraphs but no induced C4
+    True
+    >>> gc.is_induced_C4_free(nx.path_graph(6))
+    True
+    """
+    nbrs = {u: set(G.neighbors(u)) for u in G.nodes()}
+    nodes = list(G.nodes())
+    for i in range(len(nodes)):
+        u = nodes[i]
+        for j in range(i + 1, len(nodes)):
+            v = nodes[j]
+            if G.has_edge(u, v):
+                continue  # opposite vertices in an induced C4 must be nonadjacent
+
+            common = list(nbrs[u] & nbrs[v])
+            if len(common) < 2:
+                continue
+
+            # Need two common neighbors that are not adjacent (to avoid chord x-y).
+            for a in range(len(common)):
+                x = common[a]
+                for b in range(a + 1, len(common)):
+                    y = common[b]
+                    if not G.has_edge(x, y):
+                        return False
+    return True

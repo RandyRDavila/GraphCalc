@@ -1,7 +1,7 @@
 Critical Invariants
 ===================
 
-.. automodule:: graphcalc.invariants.critical_invariants
+.. automodule:: graphcalc.graphs.invariants.critical_invariants
    :members:
    :undoc-members:
    :show-inheritance:

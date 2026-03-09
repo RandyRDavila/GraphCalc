@@ -15,7 +15,7 @@ Describe the issue clearly. What function or feature of `graphcalc` behaved inco
 Please include a minimal, self-contained code snippet that reproduces the issue.
 
 ```python
-import graphcalc as gc
+import graphcalc.graphs as gc
 import networkx as nx
 
 # Example graph

@@ -1,7 +1,7 @@
 Degree
 ======
 
-.. automodule:: graphcalc.invariants.degree
+.. automodule:: graphcalc.graphs.invariants.degree
    :members:
    :undoc-members:
    :show-inheritance:

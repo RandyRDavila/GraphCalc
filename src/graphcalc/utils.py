@@ -17,7 +17,7 @@ _extract_and_report
     Helper to read solution status/objective/variables from a solved PuLP model.
 
 Convenience re-exports from :mod:`graphcalc.solvers`
----------------------------------------------------
+----------------------------------------------------
 get_default_solver, resolve_solver, with_solver, solve_or_raise, SolverSpec
 """
 
@@ -29,7 +29,7 @@ from typing import Any, Dict, Hashable, Set, Union
 import networkx as nx
 import pulp
 
-from graphcalc.core import SimpleGraph
+from graphcalc.graphs.core.basics import SimpleGraph
 
 # Re-export solver utilities for convenience (no local solver code here)
 from graphcalc.solvers import (  # noqa: F401

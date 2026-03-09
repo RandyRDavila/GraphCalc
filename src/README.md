@@ -47,7 +47,7 @@ from graphcalc import (
     domination_number,
     zero_forcing_number,
 )
-from graphcalc.generators import petersen_graph
+from graphcalc.graphs.generators import petersen_graph
 
 # Calculate and print the independence number of the Petersen graph.
 G = petersen_graph()
@@ -63,8 +63,8 @@ print(f"Petersen graph zero forcing number = {zero_forcing_number(G)}")
 ## Example Polytope Usage
 
 ```python
-import graphcalc as gc
-from graphcalc.polytopes.generators import (
+import graphcalc.graphs as gc
+from graphcalc.graphs.polytopes.generators import (
     cube_graph,
     octahedron_graph,
     dodecahedron_graph,
@@ -113,7 +113,7 @@ print(df)
 ## Creating Simple Graphs, Polytope Graphs, and Simple Polytope Graphs
 
 ```python
-import graphcalc as gc
+import graphcalc.graphs as gc
 
 # Draw a simple graph
 G = gc.SimpleGraph(name="Example Graph")

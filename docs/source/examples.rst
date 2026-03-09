@@ -8,7 +8,7 @@ Example 1: Computing the Independence and Domination Numbers
 
 .. code-block:: python
 
-    import graphcalc as gc
+    import graphcalc.graphs as gc
 
     # Create a sample graph
     G = gc.cycle_graph(6)
