@@ -9,7 +9,7 @@
 project = 'graphcalc'
 copyright = '2024, Randy Davila, PhD'
 author = 'Randy Davila, PhD'
-release = '1.3.1'
+release = '2.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -14,15 +14,12 @@ include = ["graphcalc*"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-q -rs"
-doctest_optionflags = [
-    "NORMALIZE_WHITESPACE",
-    "ELLIPSIS",
-]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 
 [project]
 name = "graphcalc"
-version = "1.3.1"
-description = "A Python package for graph computation functions"
+version = "2.0.0"
+description = "A Python package for computation in combinatorial mathematics"
 authors = [{ name = "Randy Davila", email = "rrd6@rice.edu" }]
 license = { text = "MIT" }
 readme = "README.md"
