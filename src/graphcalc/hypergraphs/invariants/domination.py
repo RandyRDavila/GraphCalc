@@ -232,12 +232,14 @@ def minimum_dominating_set(
     Examples
     --------
     >>> import graphcalc.hypergraphs as hc
+    >>> from graphcalc.hypergraphs.invariants.domination import minimum_dominating_set
     >>> H = hc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> D = hc.minimum_dominating_set(H)
+    >>> D = minimum_dominating_set(H)
     >>> D == {2}
     True
 
-    >>> hc.domination_number(H)
+    >>> from graphcalc.hypergraphs.invariants.domination import domination_number
+    >>> domination_number(H)
     1
     """
     if k is not None:
@@ -310,8 +312,9 @@ def domination_number(
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.domination import domination_number
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> gc.domination_number(H)
+    >>> domination_number(H)
     1
     """
     return len(minimum_dominating_set(H, **solver_kwargs))
@@ -410,8 +413,9 @@ def minimum_total_dominating_set(
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.domination import minimum_total_dominating_set
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> T = gc.minimum_total_dominating_set(H)
+    >>> T = minimum_total_dominating_set(H)
     >>> len(T)
     2
     """
@@ -496,8 +500,9 @@ def total_domination_number(
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.domination import total_domination_number
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> gc.total_domination_number(H)
+    >>> total_domination_number(H)
     2
     """
     return len(minimum_total_dominating_set(H, **solver_kwargs))

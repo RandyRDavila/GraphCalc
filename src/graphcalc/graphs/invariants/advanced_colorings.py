@@ -469,7 +469,7 @@ def has_proper_open_neighborhood_conflict_free_coloring(
     >>> from graphcalc.graphs.generators import path_graph
     >>> G = path_graph(3)
     >>> gc.has_proper_open_neighborhood_conflict_free_coloring(G, 2)
-    True
+    False
     """
     try:
         return _has_proper_open_neighborhood_conflict_free_coloring_k(G, k, **solver_kwargs).feasible
@@ -518,7 +518,7 @@ def has_open_neighborhood_odd_coloring(
     >>> from graphcalc.graphs.generators import path_graph
     >>> G = path_graph(3)
     >>> gc.has_open_neighborhood_odd_coloring(G, 2)
-    True
+    False
     """
     try:
         return _has_open_neighborhood_odd_coloring_k(G, k, **solver_kwargs).feasible

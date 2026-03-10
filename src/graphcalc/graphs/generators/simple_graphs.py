@@ -554,6 +554,7 @@ def fan_graph(p: int) -> SimpleGraph:
 
     Examples
     --------
+    >>> import graphcalc.graphs as gc
     >>> from graphcalc.graphs.core.basics import SimpleGraph
     >>> G = gc.fan_graph(3)
     >>> gc.order(G)

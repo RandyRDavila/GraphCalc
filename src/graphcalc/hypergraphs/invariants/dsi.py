@@ -105,10 +105,11 @@ def degree_sequence(H: HypergraphLike, *, nonincreasing: bool = True) -> list[in
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.dsi import degree_sequence
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}, {2, 3, 4}])
-    >>> gc.degree_sequence(H)
+    >>> degree_sequence(H)
     [3, 2, 1, 1]
-    >>> gc.degree_sequence(H, nonincreasing=False)
+    >>> degree_sequence(H, nonincreasing=False)
     [1, 1, 2, 3]
     """
     seq = list(H.degrees().values())
@@ -145,8 +146,9 @@ def reverse_degree_sequence(H: HypergraphLike) -> list[int]:
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.dsi import reverse_degree_sequence
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}, {2, 3, 4}])
-    >>> gc.reverse_degree_sequence(H)
+    >>> reverse_degree_sequence(H)
     [1, 1, 2, 3]
     """
     return degree_sequence(H, nonincreasing=False)
@@ -321,8 +323,9 @@ def generalized_havel_hakimi_residue(
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.dsi import generalized_havel_hakimi_residue
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> gc.generalized_havel_hakimi_residue(H, k=2)
+    >>> generalized_havel_hakimi_residue(H, k=2)
     2
     """
     if not H.E:
@@ -427,8 +430,9 @@ def generalized_annihilation_number(
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.dsi import generalized_annihilation_number
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> gc.generalized_annihilation_number(H, k=2)
+    >>> generalized_annihilation_number(H, k=2)
     2
     """
     if H.m == 0:

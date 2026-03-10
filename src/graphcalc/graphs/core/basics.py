@@ -386,6 +386,7 @@ def size(G: GraphLike) -> int:
     Examples
     --------
     >>> import networkx as nx
+    >>> import graphcalc.graphs as gc
     >>> from graphcalc.graphs.generators import path_graph
 
     >>> G = path_graph(4)
@@ -787,7 +788,7 @@ def subcubic(G: GraphLike) -> bool:
     >>> gc.subcubic(G)
     True
     """
-    return gc.maximum_degree(G) <= 3
+    return max((d for _, d in G.degree()), default=0) <= 3
 
 #@enforce_type(0, (nx.Graph, gc.SimpleGraph))
 def connected_and_subcubic(G: GraphLike) -> bool:
@@ -990,7 +991,7 @@ def triangle_free(G: GraphLike) -> bool:
 
     Examples
     --------
-    >>> import graphcalc as gp
+    >>> import graphcalc.graphs as gc
     >>> from graphcalc.graphs.generators import complete_graph, star_graph
 
     >>> G = complete_graph(4)
@@ -1031,7 +1032,7 @@ def connected_and_triangle_free(G: GraphLike) -> bool:
 
     Examples
     --------
-    >>> import graphcalc as gp
+    >>> import graphcalc.graphs as gc
     >>> from graphcalc.graphs.generators import complete_graph
 
     >>> G = complete_graph(4)
@@ -1288,7 +1289,7 @@ def isolate_free(G: GraphLike) -> bool:
     # if you prefer “empty is NOT isolate-free”, change to `return G.number_of_nodes() > 0 and ...`
     if order(G) == 0:
         return True
-    return all(deg > 0 for deg in gc.degree_sequence(G))
+    return all(deg > 0 for _, deg in G.degree())
 
 def is_C4_free(G):
     r"""

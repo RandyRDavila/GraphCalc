@@ -165,12 +165,13 @@ def is_clutter(H: HypergraphLike) -> bool:
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.structure import is_clutter
     >>> H = gc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> gc.is_clutter(H)
+    >>> is_clutter(H)
     True
 
     >>> H = gc.Hypergraph(allow_singletons=True, E=[{1}, {1, 2}])
-    >>> gc.is_clutter(H)
+    >>> is_clutter(H)
     False
     """
     edges = list(H.E)
@@ -232,11 +233,12 @@ def is_t_intersecting(H: HypergraphLike, t: int = 1) -> bool:
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.structure import is_t_intersecting
     >>> H = gc.Hypergraph(E=[{1, 2, 3}, {2, 3, 4}])
-    >>> gc.is_t_intersecting(H, 2)
+    >>> is_t_intersecting(H, 2)
     True
 
-    >>> gc.is_t_intersecting(H, 3)
+    >>> is_t_intersecting(H, 3)
     False
     """
     if t < 0:

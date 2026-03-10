@@ -12,6 +12,12 @@ include = ["graphcalc*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q -rs"
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "ELLIPSIS",
+]
 
 [project]
 name = "graphcalc"

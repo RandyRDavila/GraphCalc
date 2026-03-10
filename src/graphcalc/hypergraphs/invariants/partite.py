@@ -76,8 +76,9 @@ def is_r_partite_r_uniform(
     Examples
     --------
     >>> import graphcalc.hypergraphs as gc
+    >>> from graphcalc.hypergraphs.invariants.partite import is_r_partite_r_uniform
     >>> H = gc.Hypergraph(E=[{1, 3}, {2, 4}])
-    >>> gc.is_r_partite_r_uniform(H, 2)
+    >>> is_r_partite_r_uniform(H, 2)
     (True, {1: 0, 2: 0, 3: 1, 4: 1})
     """
     if r <= 0:

@@ -62,8 +62,9 @@ def is_alpha_acyclic(H: HypergraphLike) -> bool:
     Examples
     --------
     >>> import graphcalc.hypergraphs as hc
+    >>> from graphcalc.hypergraphs.invariants.acyclicity import is_alpha_acyclic
     >>> H = hc.Hypergraph(E=[{1, 2}, {2, 3}])
-    >>> hc.is_alpha_acyclic(H)
+    >>> is_alpha_acyclic(H)
     True
     """
     edges = [set(edge) for edge in H.E if len(edge) > 0]
@@ -157,8 +158,9 @@ def berge_girth(H: HypergraphLike) -> Optional[int]:
     Examples
     --------
     >>> import graphcalc.hypergraphs as hc
+    >>> from graphcalc.hypergraphs.invariants.acyclicity import berge_girth
     >>> H = hc.Hypergraph(E=[{1, 2}, {2, 3}, {1, 3}])
-    >>> hc.berge_girth(H)
+    >>> berge_girth(H)
     3
     """
     vertices = list(H.V)

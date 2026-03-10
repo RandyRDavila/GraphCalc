@@ -97,6 +97,9 @@ class PolytopeGraph(SimpleGraph):
 
         Examples
         --------
+        >>> import graphcalc.graphs as gc
+        >>> import graphcalc.graphs as gc
+        >>> import graphcalc.graphs as gc
         >>> from graphcalc.graphs.polytopes import PolytopeGraph
         >>> from graphcalc.graphs.core.basics import SimpleGraph
         >>> G = gc.polytopes.cube_graph()
@@ -119,6 +122,7 @@ class PolytopeGraph(SimpleGraph):
 
         Examples
         --------
+        >>> import graphcalc.graphs as gc
         >>> from graphcalc.graphs.polytopes import PolytopeGraph
         >>> from graphcalc.graphs.core.basics import SimpleGraph
         >>> G = gc.polytopes.cube_graph()
@@ -127,7 +131,7 @@ class PolytopeGraph(SimpleGraph):
         >>> polytope.is_simple()
         True
         """
-        return gc.connected_and_cubic(self) and self.is_polytope_graph()
+        return nx.is_connected(self) and all(d == 3 for _, d in self.degree()) and self.is_polytope_graph()
 
 
     def draw(self, with_labels=True, node_color="lightblue", node_size=500, font_size=10):
