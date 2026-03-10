@@ -1,7 +1,7 @@
 Coloring Predicates
 ===================
 
-.. automodule:: graphcalc.invariants.coloring_predicates
+.. automodule:: graphcalc.graphs.invariants.coloring_predicates
    :members:
    :undoc-members:
    :show-inheritance:

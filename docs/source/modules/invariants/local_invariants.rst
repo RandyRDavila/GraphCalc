@@ -1,7 +1,7 @@
 Local Invariants
 ================
 
-.. automodule:: graphcalc.invariants.local_invariants
+.. automodule:: graphcalc.graphs.invariants.local_invariants
    :members:
    :undoc-members:
    :show-inheritance:

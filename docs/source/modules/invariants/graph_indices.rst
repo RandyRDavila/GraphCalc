@@ -1,7 +1,7 @@
 Graph Indices
 =============
 
-.. automodule:: graphcalc.invariants.graph_indices
+.. automodule:: graphcalc.graphs.invariants.graph_indices
    :members:
    :undoc-members:
    :show-inheritance:

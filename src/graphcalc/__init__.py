@@ -32,10 +32,7 @@ GraphCalc relies on:
 
 __version__ = "1.3.1"
 
-from graphcalc.core import *
-from graphcalc.data import *
-from graphcalc.generators import *
-from graphcalc.invariants import *
-from graphcalc.polytopes import *
-from graphcalc.utils import *
-from graphcalc.solvers import *
+# from .graphs import *
+# from .utils import *
+# from .solvers import *
+

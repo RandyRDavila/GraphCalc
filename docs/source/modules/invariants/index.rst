@@ -16,3 +16,4 @@ Invariants
    coloring_predicates
    core_invariants
    critical_invariants
+   advanced_colorings

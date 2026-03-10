@@ -23,7 +23,9 @@ extensions = [
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = [
+    'modules/**',
+]
 
 # -- Options for autodoc -----------------------------------------------------
 # Automatically include module/class docstrings

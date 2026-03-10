@@ -1,7 +1,7 @@
 Spectral
 ========
 
-.. automodule:: graphcalc.invariants.spectral
+.. automodule:: graphcalc.graphs.invariants.spectral
    :members:
    :undoc-members:
    :show-inheritance:

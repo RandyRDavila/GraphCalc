@@ -1,7 +1,7 @@
 Classics
 ========
 
-.. automodule:: graphcalc.invariants.classics
+.. automodule:: graphcalc.graphs.invariants.classics
    :members:
    :undoc-members:
    :show-inheritance:

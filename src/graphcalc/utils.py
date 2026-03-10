@@ -17,7 +17,7 @@ _extract_and_report
     Helper to read solution status/objective/variables from a solved PuLP model.
 
 Convenience re-exports from :mod:`graphcalc.solvers`
----------------------------------------------------
+----------------------------------------------------
 get_default_solver, resolve_solver, with_solver, solve_or_raise, SolverSpec
 """
 
@@ -27,9 +27,8 @@ from functools import wraps
 from typing import Any, Dict, Hashable, Set, Union
 
 import networkx as nx
+SimpleGraph = nx.Graph
 import pulp
-
-from graphcalc.core import SimpleGraph
 
 # Re-export solver utilities for convenience (no local solver code here)
 from graphcalc.solvers import (  # noqa: F401
@@ -57,7 +56,7 @@ __all__ = [
 # --------------------------------------------------------------------------------------
 # Types
 # --------------------------------------------------------------------------------------
-GraphLike = Union[nx.Graph, SimpleGraph]
+GraphLike = nx.Graph
 """Type alias for objects accepted as graphs in GraphCalc."""
 
 # --------------------------------------------------------------------------------------
@@ -68,7 +67,7 @@ def require_graph_like(func):
     Decorator that enforces the first argument to be graph-like.
 
     Checks that the wrapped function’s first positional argument is an instance
-    of :class:`networkx.Graph` or :class:`graphcalc.core.SimpleGraph`.
+    of :class:`networkx.Graph`.
 
     Raises
     ------
@@ -77,7 +76,7 @@ def require_graph_like(func):
     """
     @wraps(func)
     def wrapper(G, *args, **kwargs):
-        if not isinstance(G, (nx.Graph, SimpleGraph)):
+        if not isinstance(G, nx.Graph):
             raise TypeError(
                 f"Function '{func.__name__}' requires a NetworkX Graph or SimpleGraph "
                 f"as the first argument, but got {type(G).__name__}."
