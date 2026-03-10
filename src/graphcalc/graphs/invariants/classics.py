@@ -38,6 +38,7 @@ __all__ = [
     "bipartite_number",
     "average_distance",
     "path_cover_number",
+    "is_hamiltonian",
 ]
 
 @enforce_type(0, (nx.Graph, SimpleGraph))
@@ -1720,3 +1721,75 @@ def bipartite_number(
     2
     """
     return len(maximum_induced_bipartite_subgraph(G, **solver_kwargs))
+
+@enforce_type(0, (nx.Graph, SimpleGraph))
+@invariant_metadata(
+    display_name="Hamiltonian",
+    notation=r"Hamiltonian",
+    category="boolean property",
+    aliases=("Is Hamiltonian",),
+    definition=(
+        "True if the graph contains a Hamiltonian cycle."
+    ),
+)
+def is_hamiltonian(G: GraphLike) -> bool:
+    r"""
+    Return True iff the undirected simple graph G has a Hamiltonian cycle.
+
+    This is an exact exponential-time backtracking algorithm, so it is only
+    practical for small to medium graphs.
+
+    Parameters
+    ----------
+    G : networkx.Graph or graphcalc.SimpleGraph
+        An undirected simple graph.
+
+    Returns
+    -------
+    bool
+        True if G is Hamiltonian, else False.
+    """
+    # Basic validation
+    if not isinstance(G, nx.Graph) or G.is_directed():
+        raise TypeError("G must be a NetworkX undirected graph.")
+
+    n = G.number_of_nodes()
+
+    # By the usual convention, graphs with fewer than 3 vertices
+    # cannot contain a Hamiltonian cycle.
+    if n < 3:
+        return False
+
+    # A Hamiltonian graph must be connected.
+    if not nx.is_connected(G):
+        return False
+
+    # Every vertex in a Hamiltonian graph has degree at least 2.
+    if any(G.degree(v) < 2 for v in G.nodes):
+        return False
+
+    nodes = list(G.nodes)
+    start = nodes[0]
+    visited = {start}
+    path = [start]
+
+    def backtrack(current):
+        # If all vertices are used, check whether we can close the cycle.
+        if len(path) == n:
+            return G.has_edge(current, start)
+
+        # Try unvisited neighbors
+        for nbr in G.neighbors(current):
+            if nbr not in visited:
+                visited.add(nbr)
+                path.append(nbr)
+
+                if backtrack(nbr):
+                    return True
+
+                path.pop()
+                visited.remove(nbr)
+
+        return False
+
+    return backtrack(start)

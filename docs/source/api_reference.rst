@@ -11,5 +11,6 @@ The API is organized by mathematical domain and package structure.
    api/graphs/index
    api/hypergraphs/index
    api/quantum/index
+   api/additive_combinatorics/index
    api/solvers
    api/utils

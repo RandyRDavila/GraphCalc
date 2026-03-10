@@ -4,7 +4,6 @@ from .codegree import *
 from .transversals import *
 from .independence import *
 from .matching import *
-from .structure import *
 from .acyclicity import *
 from .partite import *
 from .configurations import *
